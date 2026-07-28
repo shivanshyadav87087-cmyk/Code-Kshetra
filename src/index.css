@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased overflow-x-hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom Cyberpunk Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.6);
+}
+
+/* Pulse Glow Animations */
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.6);
+  }
+}
+
+.animate-neon-pulse {
+  animation: neonPulse 2s infinite ease-in-out;
+}
+
+/* Premium Tactile Hover Glow & Micro-Popup Lift Utility Classes */
+.btn-glow {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-position 0.4s ease;
+  will-change: transform, box-shadow;
+}
+.btn-glow:hover {
+  transform: translateY(-2px) scale(1.025);
+}
+.btn-glow:active {
+  transform: translateY(0) scale(0.975);
+}
+.btn-glow:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+/* Cyan / Teal Neon Glow */
+.btn-glow-cyan {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-glow-cyan:hover {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.5), 0 0 24px rgba(6, 182, 212, 0.3), 0 0 36px rgba(6, 182, 212, 0.15);
+}
+.btn-glow-cyan:active {
+  transform: translateY(0) scale(0.975);
+}
+
+/* Emerald / Green Neon Glow */
+.btn-glow-emerald {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-glow-emerald:hover {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5), 0 0 24px rgba(16, 185, 129, 0.3), 0 0 36px rgba(16, 185, 129, 0.15);
+}
+.btn-glow-emerald:active {
+  transform: translateY(0) scale(0.975);
+}
+
+/* Purple / Magenta Neon Glow */
+.btn-glow-purple {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-glow-purple:hover {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.5), 0 0 24px rgba(168, 85, 247, 0.3), 0 0 36px rgba(168, 85, 247, 0.15);
+}
+.btn-glow-purple:active {
+  transform: translateY(0) scale(0.975);
+}
+
+/* Amber / Gold Neon Glow */
+.btn-glow-amber {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-glow-amber:hover {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5), 0 0 24px rgba(245, 158, 11, 0.3), 0 0 36px rgba(245, 158, 11, 0.15);
+}
+.btn-glow-amber:active {
+  transform: translateY(0) scale(0.975);
+}
+
+/* Rose / Red Neon Glow */
+.btn-glow-rose {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-glow-rose:hover {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.5), 0 0 24px rgba(244, 63, 94, 0.3), 0 0 36px rgba(244, 63, 94, 0.15);
+}
+.btn-glow-rose:active {
+  transform: translateY(0) scale(0.975);
+}
+
+/* Accessibility Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .btn-glow, .btn-glow-cyan, .btn-glow-emerald, .btn-glow-purple, .btn-glow-amber, .btn-glow-rose {
+    transition: none !important;
+    transform: none !important;
+  }
+}
