@@ -3,7 +3,7 @@ import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, Ch
 import { sounds } from '../engine/soundManager';
 import { COUNTRIES } from '../data/countries';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function LandingAuthGate({ onAuthSuccess }) {
   const [mode, setMode] = useState('register'); // 'register' or 'login'

@@ -21,7 +21,7 @@ import { roomEngine } from './engine/roomEngine';
 import { socket } from './engine/socketClient';
 import { sounds } from './engine/soundManager';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -36,7 +36,7 @@ export default function App() {
         return {
           id: parsed._id || parsed.id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
           name: parsed.username || parsed.name || '',
-          rating: parsed.rating !== undefined ? parsed.rating : 1000,
+          rating: parsed.rating !== undefined ? parsed.rating : 0,
           wins: parsed.wins || 0,
           losses: parsed.losses || 0,
           draws: parsed.draws || 0,
@@ -52,7 +52,7 @@ export default function App() {
     return {
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
       name: '',
-      rating: 1000,
+      rating: 0,
       wins: 0,
       losses: 0,
       draws: 0,
@@ -418,7 +418,7 @@ export default function App() {
     const updated = {
       id: userData.id || userData._id,
       name: userData.username,
-      rating: userData.rating !== undefined ? userData.rating : 1000,
+      rating: userData.rating !== undefined ? userData.rating : 0,
       wins: userData.wins || 0,
       losses: userData.losses || 0,
       draws: userData.draws || 0,
@@ -442,7 +442,7 @@ export default function App() {
     setPlayer({
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
       name: '',
-      rating: 1000,
+      rating: 0,
       wins: 0,
       losses: 0,
       draws: 0,

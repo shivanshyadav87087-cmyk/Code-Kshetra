@@ -4,6 +4,8 @@ import { TOPICS, DIFFICULTIES } from '../data/topics';
 import { PROBLEM_BANK } from '../data/problemBank';
 import { sounds } from '../engine/soundManager';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
+
 export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer }) {
   const [activeTab, setActiveTab] = useState('create');
   
@@ -54,7 +56,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     setHandleStatus({ checking: true, available: true, error: null });
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/auth/check-handle?handle=${encodeURIComponent(handleTrimmed)}`);
+        const res = await fetch(`${BACKEND_URL}/api/auth/check-handle?handle=${encodeURIComponent(handleTrimmed)}`);
         const data = await res.json();
         if (data.available) {
           setHandleStatus({ checking: false, available: true, error: null });
