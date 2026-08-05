@@ -1,18 +1,19 @@
 export const TOPICS = [
-  { id: 'arrays', label: 'Arrays 📊', description: 'Array manipulation, prefix sums, subsegment operations' },
-  { id: 'matrix', label: 'Matrix / 2D Grid 🧊', description: '2D arrays, matrix transformations, grid traversals' },
-  { id: 'strings', label: 'Strings & Text Processing 🔤', description: 'Palindromes, anagrams, pattern matching' },
-  { id: 'two-pointers', label: 'Two Pointers 🎯', description: 'Dual pointer traversal, sorting optimizations' },
-  { id: 'sliding-window', label: 'Sliding Window 🪟', description: 'Subarrays, substring window tracking' },
-  { id: 'stack-queue', label: 'Stack & Queue 🥞', description: 'Monotonic stacks, priority queues, BFS' },
-  { id: 'linked-list', label: 'Linked List 🔗', description: 'Pointer manipulation, reversal, cycle detection' },
-  { id: 'trees-graphs', label: 'Trees & Graphs 🌲', description: 'Binary Search Trees, DFS, BFS, shortest path' },
-  { id: 'dynamic-programming', label: 'Dynamic Programming ⚡', description: 'Memoization, tabulation, subproblem optimization' },
-  { id: 'greedy', label: 'Greedy Algorithms 💰', description: 'Interval scheduling, local optimal choices' },
-  { id: 'bit-manipulation', label: 'Bit Manipulation 🔢', description: 'XOR tricks, bitwise masks, binary operations' },
-  { id: 'backtracking', label: 'Backtracking & Recursion 🔄', description: 'N-Queens, permutations, subset generation' },
-  { id: 'math-geometry', label: 'Math & Geometry 📐', description: 'Prime numbers, GCD, coordinate geometry' },
-  { id: 'heaps-hashtables', label: 'Heaps & Hash Tables 🔑', description: 'Fast O(1) lookups, min-heaps, max-heaps' }
+  { id: 'arrays', label: 'Arrays 📊', description: 'Array manipulation, subarray sums, element frequency & rotations' },
+  { id: 'matrix', label: 'Matrix / 2D Grid 🧊', description: '2D matrices, spiral traversal, grid search & 90-degree rotations' },
+  { id: 'strings', label: 'Strings & Text Processing 🔤', description: 'Palindromes, anagrams, pattern matching, KMP & Rabin-Karp' },
+  { id: 'searching-sorting', label: 'Searching & Sorting 🔍', description: 'Binary search, merge sort, quicksort, median of arrays' },
+  { id: 'linked-list', label: 'Linked List 🔗', description: 'Singly/doubly linked lists, cycle detection, list reversal & merging' },
+  { id: 'binary-trees', label: 'Binary Trees 🌲', description: 'Tree traversals, height, diameter, boundary traversal, LCA' },
+  { id: 'bst', label: 'Binary Search Trees 🌴', description: 'BST insertion, deletion, predecessor, successor, LCA & balancing' },
+  { id: 'greedy', label: 'Greedy Algorithms 💰', description: 'Activity selection, job scheduling, Huffman coding, minimum coins' },
+  { id: 'backtracking', label: 'Backtracking & Recursion 🔄', description: 'N-Queens, Rat in a Maze, Sudoku solver, subset sums & permutations' },
+  { id: 'stack-queue', label: 'Stack & Queue 🥞', description: 'Monotonic stacks, balanced parentheses, LRU cache & circular queues' },
+  { id: 'heap', label: 'Heaps & Priority Queues ⚡', description: 'Min/Max heaps, Kth largest/smallest elements, median stream' },
+  { id: 'graph', label: 'Graph Algorithms 🌐', description: 'BFS, DFS, Dijkstra, Topological sort, Kruskal & Prim algorithms' },
+  { id: 'trie', label: 'Trie 🎋', description: 'Prefix trees, word lookup, phone directory & autocomplete' },
+  { id: 'dynamic-programming', label: 'Dynamic Programming 🧠', description: '0/1 Knapsack, LCS, LIS, Matrix Chain Multiplication & Coin Change' },
+  { id: 'bit-manipulation', label: 'Bit Manipulation 🔢', description: 'Set bits, XOR operations, power of two & bitwise masks' }
 ];
 
 export const DIFFICULTIES = [
