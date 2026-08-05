@@ -168,6 +168,39 @@ export default function LandingAuthGate({ onAuthSuccess }) {
           <FestivalBanner />
         </div>
 
+        {/* Contest Invitation Banner (If joining via shared room link) */}
+        {(() => {
+          let roomCode = '';
+          try {
+            const urlParams = new URLSearchParams(window.location.search);
+            roomCode = urlParams.get('room') || urlParams.get('join') || '';
+            if (!roomCode && window.location.hash && window.location.hash.includes('room=')) {
+              roomCode = window.location.hash.split('room=')[1]?.split('&')[0] || '';
+            }
+            if (!roomCode) {
+              roomCode = sessionStorage.getItem('pending_contest_room') || '';
+            }
+          } catch (e) {}
+
+          if (roomCode) {
+            return (
+              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-cyan-500/20 border-2 border-amber-400/60 shadow-xl text-center space-y-1">
+                <div className="flex items-center justify-center gap-2 text-amber-300 font-black text-sm">
+                  <Swords className="w-5 h-5 text-amber-400 animate-bounce" />
+                  <span>CONTEST INVITATION RECEIVED! ⚔️</span>
+                </div>
+                <p className="text-xs text-slate-200 font-medium">
+                  You were invited to 1v1 Contest Room <span className="font-mono font-extrabold text-cyan-300 bg-slate-950 px-2.5 py-1 rounded-xl border border-cyan-500/40">{roomCode.toUpperCase()}</span>
+                </p>
+                <p className="text-[11px] text-amber-300 font-bold">
+                  🔒 Please Register or Sign In below to join the duel battleground immediately!
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Auth Mode Tabs: Register vs Sign In */}
         <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6 font-bold text-xs">
           <button

@@ -87,11 +87,51 @@ export default function App() {
   const [isSpectator, setIsSpectator] = useState(false);
   const [spectateTarget, setSpectateTarget] = useState('host'); // 'host' or 'guest'
 
+  const [pendingRoomId, setPendingRoomId] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room') || urlParams.get('join');
+      if (roomParam) {
+        sessionStorage.setItem('pending_contest_room', roomParam.toUpperCase());
+        return roomParam.toUpperCase();
+      }
+      const hash = window.location.hash;
+      if (hash && hash.includes('room=')) {
+        const extracted = hash.split('room=')[1]?.split('&')[0]?.toUpperCase();
+        if (extracted) {
+          sessionStorage.setItem('pending_contest_room', extracted);
+          return extracted;
+        }
+      }
+      return sessionStorage.getItem('pending_contest_room') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+
   // Mobile Arena Tab Switcher ('problem' | 'editor')
   const [mobileArenaTab, setMobileArenaTab] = useState('editor');
 
   // Fullscreen State
   const [isFullscreenActive, setIsFullscreenActive] = useState(() => Boolean(document.fullscreenElement));
+
+  // Auto-join contest room on initial load if user is already authenticated and has a contest link
+  useEffect(() => {
+    if (isAuthenticated && pendingRoomId && !room) {
+      const targetRoom = pendingRoomId;
+      sessionStorage.removeItem('pending_contest_room');
+      setPendingRoomId('');
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {}
+
+      handleJoinRoom({ roomId: targetRoom, userName: player.name }, (res) => {
+        if (!res.success) {
+          setJoinNotification({ username: 'Contest Room', text: res.error || `Room ${targetRoom} not found.` });
+        }
+      });
+    }
+  }, [isAuthenticated, pendingRoomId, room]);
 
   // Sync player profile with server on load if authenticated
   useEffect(() => {
@@ -444,6 +484,23 @@ export default function App() {
 
     setPlayer(updated);
     localStorage.setItem('codeclash_user', JSON.stringify(updated));
+
+    // Auto-join contest room if user arrived via a shared contest link
+    const targetRoom = pendingRoomId || sessionStorage.getItem('pending_contest_room');
+    if (targetRoom) {
+      setTimeout(() => {
+        handleJoinRoom({ roomId: targetRoom, userName: updated.name }, (res) => {
+          if (!res.success) {
+            setJoinNotification({ username: 'Contest Room', text: res.error || `Could not auto-join room ${targetRoom}.` });
+          }
+        });
+        sessionStorage.removeItem('pending_contest_room');
+        setPendingRoomId('');
+        try {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) {}
+      }, 400);
+    }
   };
 
   const handleSignOut = () => {
