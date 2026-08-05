@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Heart, X, Gift, Globe, ExternalLink } from 'lucide-react';
+import { Sparkles, Heart, X, Gift, Globe } from 'lucide-react';
 import { getCurrentFestival, getAsyncCurrentFestival } from '../data/festivals';
 import { sounds } from '../engine/soundManager';
 
 export default function FestivalBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [activeFestival, setActiveFestival] = useState(() => getCurrentFestival());
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -15,6 +16,7 @@ export default function FestivalBanner() {
         const fetched = await getAsyncCurrentFestival('IN');
         if (isMounted && fetched) {
           setActiveFestival(fetched);
+          setImgError(false);
         }
       } catch (e) {}
     }
@@ -25,15 +27,18 @@ export default function FestivalBanner() {
 
   if (!activeFestival || dismissed) return null;
 
+  const showImage = activeFestival.imageUrl && !imgError;
+
   return (
     <div className={`w-full bg-slate-900/90 border ${activeFestival.borderColor} backdrop-blur-2xl rounded-3xl p-4 sm:p-5 shadow-2xl relative overflow-hidden animate-fadeIn my-3 font-sans`}>
       
       {/* Background HD Image Overlay with Dark Gradient Tint */}
-      {activeFestival.imageUrl && (
-        <div className="absolute inset-0 z-0 opacity-25 mix-blend-overlay pointer-events-none">
+      {showImage && (
+        <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay pointer-events-none">
           <img
             src={activeFestival.imageUrl}
             alt={activeFestival.name}
+            onError={() => setImgError(true)}
             className="w-full h-full object-cover filter blur-[2px] scale-105"
           />
         </div>
@@ -44,23 +49,24 @@ export default function FestivalBanner() {
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
         
-        {/* Left: Festival HD Picture Thumbnail & Greetings Content */}
+        {/* Left: Festival Picture Thumbnail / Artwork Badge & Greetings Content */}
         <div className="flex items-center gap-4 text-left w-full sm:w-auto">
           
-          {/* HD Festival Picture Thumbnail */}
-          {activeFestival.imageUrl ? (
+          {/* Festival Picture Thumbnail or Artwork Badge */}
+          {showImage ? (
             <div className="relative group shrink-0">
               <img
                 src={activeFestival.imageUrl}
                 alt={activeFestival.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400/60 shadow-xl group-hover:scale-105 transition-all duration-300"
+                onError={() => setImgError(true)}
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400/60 shadow-xl group-hover:scale-105 transition-all duration-300 bg-slate-950"
               />
               <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-950 border border-amber-400/60 flex items-center justify-center text-xs shadow">
                 {activeFestival.flag || activeFestival.icon}
               </div>
             </div>
           ) : (
-            <div className="w-14 h-14 rounded-2xl bg-slate-950/90 border border-amber-500/40 flex items-center justify-center text-3xl shadow-xl shrink-0 animate-bounce">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 via-slate-950 to-purple-500/20 border-2 border-amber-400/60 flex items-center justify-center text-3xl sm:text-4xl shadow-xl shrink-0 animate-bounce">
               {activeFestival.flag || activeFestival.icon}
             </div>
           )}

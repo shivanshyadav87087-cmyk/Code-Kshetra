@@ -1,4 +1,4 @@
-// Dynamic Festival & Live Public Calendar API Engine with HD Photography
+// Dynamic Festival & Live Public Calendar API Engine with Ultra-Reliable HD Photography
 
 export const FESTIVALS = [
   {
@@ -6,7 +6,7 @@ export const FESTIVALS = [
     name: 'Independence Day',
     flag: '🇮🇳',
     icon: '🎆',
-    imageUrl: 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
     month: 8, // August
     day: 15,
     title: 'Happy Independence Day! 🇮🇳 🎆',
@@ -20,7 +20,7 @@ export const FESTIVALS = [
     name: 'Krishna Janmashtami',
     flag: '🪈',
     icon: '✨',
-    imageUrl: 'https://images.unsplash.com/photo-1627894483216-2138af692e32?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/12028688/pexels-photo-12028688.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 8, // August
     day: 16,
     title: 'Happy Krishna Janmashtami! 🪈✨',
@@ -34,7 +34,7 @@ export const FESTIVALS = [
     name: 'Raksha Bandhan',
     flag: '🧵',
     icon: '💖',
-    imageUrl: 'https://images.unsplash.com/photo-1629813292419-74d39f7a7504?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/12975984/pexels-photo-12975984.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 8, // August
     day: 9,
     title: 'Happy Raksha Bandhan! 🧵✨',
@@ -48,7 +48,7 @@ export const FESTIVALS = [
     name: 'Ganesh Chaturthi',
     flag: '🐘',
     icon: '🌺',
-    imageUrl: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/12028688/pexels-photo-12028688.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 9, // September
     day: 7,
     title: 'Happy Ganesh Chaturthi! 🐘🌸',
@@ -62,7 +62,7 @@ export const FESTIVALS = [
     name: 'Diwali',
     flag: '🪔',
     icon: '✨',
-    imageUrl: 'https://images.unsplash.com/photo-1605335870020-f5a01bf5788d?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/5725893/pexels-photo-5725893.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 11, // November
     day: 1,
     title: 'Happy Diwali! 🪔✨',
@@ -76,7 +76,7 @@ export const FESTIVALS = [
     name: 'Republic Day',
     flag: '🇮🇳',
     icon: '🕊️',
-    imageUrl: 'https://images.unsplash.com/photo-1569083345305-b1a134375b47?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
     month: 1, // January
     day: 26,
     title: 'Happy Republic Day! 🇮🇳 🕊️',
@@ -90,7 +90,7 @@ export const FESTIVALS = [
     name: 'New Year\'s Day',
     flag: '🎆',
     icon: '🥂',
-    imageUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/1387577/pexels-photo-1387577.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 1, // January
     day: 1,
     title: 'Happy New Year! 🎆🥂',
@@ -104,7 +104,7 @@ export const FESTIVALS = [
     name: 'Merry Christmas',
     flag: '🎄',
     icon: '🎁',
-    imageUrl: 'https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/1303086/pexels-photo-1303086.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 12, // December
     day: 25,
     title: 'Merry Christmas! 🎄🎁',
@@ -118,7 +118,7 @@ export const FESTIVALS = [
     name: 'Holi',
     flag: '🎨',
     icon: '🌈',
-    imageUrl: 'https://images.unsplash.com/photo-1551884170-09fb70a3a2ed?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://images.pexels.com/photos/1119562/pexels-photo-1119562.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 3, // March
     day: 25,
     title: 'Happy Holi! 🎨🌈',
@@ -192,7 +192,7 @@ export async function getAsyncCurrentFestival(countryCode = 'IN') {
       name: todayHoliday.localName || todayHoliday.name,
       flag: '🎆',
       icon: '✨',
-      imageUrl: localMatch?.imageUrl || 'https://images.unsplash.com/photo-1532375810709-75b1da00537c?auto=format&fit=crop&w=800&q=80',
+      imageUrl: localMatch?.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
       title: `Happy ${todayHoliday.localName || todayHoliday.name}! ✨`,
       wishingText: `Celebrating ${todayHoliday.name}! Wishing you happiness, prosperity, and zero bugs from Code क्षेत्र!`,
       bgGradient: localMatch?.bgGradient || 'from-amber-600/30 via-slate-900 to-purple-600/30',
