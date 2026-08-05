@@ -15,6 +15,7 @@ import JoinToast from './components/JoinToast';
 import RematchModal from './components/RematchModal';
 import ProfileModal from './components/ProfileModal';
 import LandingAuthGate from './components/LandingAuthGate';
+import Layer3MatchStartOverlay from './components/Layer3MatchStartOverlay';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
 import { roomEngine } from './engine/roomEngine';
@@ -78,6 +79,7 @@ export default function App() {
   const [mySubmission, setMySubmission] = useState(null);
   const [opponentSubmission, setOpponentSubmission] = useState(null);
   const [showPostMatch, setShowPostMatch] = useState(false);
+  const [showMatchStartOverlay, setShowMatchStartOverlay] = useState(false);
 
   // Solution Viewer State
   const [showSolutionViewerModal, setShowSolutionViewerModal] = useState(false);
@@ -409,6 +411,7 @@ export default function App() {
         
         const freshRoom = JSON.parse(JSON.stringify(payload));
         setRoom(freshRoom);
+        setShowMatchStartOverlay(true);
 
         setShowPostMatch(false);
         setShowSolutionViewerModal(false);
@@ -548,6 +551,7 @@ export default function App() {
     }, (res) => {
       if (res && res.success && res.room) {
         setRoom(res.room);
+        setShowMatchStartOverlay(true);
         const template = res.room.problem?.starterTemplates?.[selectedLanguage] || res.room.problem?.starterTemplates?.javascript || '';
         setCode(template);
         setMyProgress({ passed: 0, total: res.room.problem.testCases.length, status: 'Coding...' });
@@ -563,6 +567,7 @@ export default function App() {
     roomEngine.joinRoom({ roomId, password, player: p, asSpectator }, (res) => {
       if (res.success) {
         setRoom(res.room);
+        setShowMatchStartOverlay(true);
         setIsSpectator(Boolean(res.isSpectator));
         if (res.isSpectator) {
           setSpectateTarget('host');
@@ -851,6 +856,14 @@ export default function App() {
         <JoinToast
           notification={joinNotification}
           onClose={() => setJoinNotification(null)}
+        />
+      )}
+
+      {/* LAYER 3: 3-Second 1v1 Battle Start Overlay Animation ("READY FOR THE TEST ⚔️") */}
+      {showMatchStartOverlay && room && (
+        <Layer3MatchStartOverlay
+          room={room}
+          onComplete={() => setShowMatchStartOverlay(false)}
         />
       )}
 

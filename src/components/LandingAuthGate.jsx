@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, ShieldCheck, Trophy, MapPin, ChevronDown, Heart, Mail } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, AlertCircle, Loader2, Mail, Flame } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { COUNTRIES } from '../data/countries';
 import FestivalBanner from './FestivalBanner';
@@ -7,19 +7,23 @@ import FestivalBanner from './FestivalBanner';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function LandingAuthGate({ onAuthSuccess }) {
-  const [username, setUsername] = useState('');
+  // Layer Step State: 1 = Auth (Sign In / Register), 2 = Unique Handle Setup & Enter Contest
+  const [step, setStep] = useState(1);
+  const [mode, setMode] = useState('register'); // 'register' or 'login'
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [bio, setBio] = useState('Competitive Coder ⚔️ | LeetCode Challenger');
   const [location, setLocation] = useState('India 🇮🇳');
+  
+  const [userProfileData, setUserProfileData] = useState(null);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [handleStatus, setHandleStatus] = useState({ checking: false, available: true, error: null });
+
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Country Autocomplete state
-  const [countryQuery, setCountryQuery] = useState('');
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -80,26 +84,42 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     reader.readAsDataURL(file);
   };
 
-  // Filter countries based on user input
-  const filteredCountries = COUNTRIES.filter(c => 
-    c.name.toLowerCase().startsWith(countryQuery.toLowerCase()) ||
-    c.name.toLowerCase().includes(countryQuery.toLowerCase())
-  );
+  // Debounced Live Unique Username Check for Layer 2
+  useEffect(() => {
+    if (step !== 2) return;
+    const cleanHandle = usernameInput.trim();
+    if (!cleanHandle || cleanHandle.length < 3 || cleanHandle.length > 20) {
+      setHandleStatus({ checking: false, available: false, error: 'Username must be 3-20 characters long.' });
+      return;
+    }
 
-  const handleSelectCountry = (country) => {
-    setLocation(`${country.name} ${country.flag}`);
-    setCountryQuery('');
-    setShowCountryDropdown(false);
-    sounds.playClick();
-  };
+    setHandleStatus({ checking: true, available: true, error: null });
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/check-handle?handle=${encodeURIComponent(cleanHandle)}`);
+        const data = await res.json();
+        if (data.available || (userProfileData && userProfileData.username === cleanHandle)) {
+          setHandleStatus({ checking: false, available: true, error: null });
+        } else {
+          setHandleStatus({ checking: false, available: false, error: data.error || 'This handle is already taken. Choose another!' });
+        }
+      } catch (e) {
+        setHandleStatus({ checking: false, available: true, error: null });
+      }
+    }, 350);
 
-  const handleSubmit = async (e) => {
+    return () => clearTimeout(timer);
+  }, [usernameInput, step, userProfileData]);
+
+  // LAYER 1: Submit Auth (Sign In / Register)
+  const handleAuthSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setLoading(true);
     sounds.playClick();
 
     const endpoint = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    const tempUsername = email ? email.split('@')[0] : 'User_' + Math.floor(Math.random() * 89999 + 10000);
 
     try {
       const res = await fetch(`${BACKEND_URL}${endpoint}`, {
@@ -108,7 +128,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
         body: JSON.stringify({
           email,
           password,
-          username: username.trim() || email.split('@')[0],
+          username: tempUsername,
           leetcodeUsername,
           avatarUrl,
           bio,
@@ -126,10 +146,13 @@ export default function LandingAuthGate({ onAuthSuccess }) {
       }
       if (data.user) {
         localStorage.setItem('codeclash_user', JSON.stringify(data.user));
+        setUserProfileData(data.user);
+        setUsernameInput(data.user.username || tempUsername);
       }
 
       sounds.playSubmitSuccess();
-      onAuthSuccess(data.user);
+      // Move to Layer 2: Unique Username Selection & Enter Contest
+      setStep(2);
     } catch (err) {
       setErrorMsg(err.message);
       sounds.playFail();
@@ -138,7 +161,43 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     }
   };
 
-  const displayAvatar = avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+  // LAYER 2: Submit Unique Handle & Enter Contest
+  const handleEnterContestSubmit = async (e) => {
+    e.preventDefault();
+    const finalHandle = usernameInput.trim();
+    if (!finalHandle || finalHandle.length < 3 || !handleStatus.available) return;
+
+    setLoading(true);
+    sounds.playClick();
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userProfileData?.email || email,
+          username: finalHandle
+        })
+      });
+
+      const data = await res.json();
+      const updatedUser = data.user || { ...userProfileData, username: finalHandle };
+      localStorage.setItem('codeclash_user', JSON.stringify(updatedUser));
+
+      sounds.playSubmitSuccess();
+      onAuthSuccess(updatedUser);
+    } catch (err) {
+      // Fallback update if profile save fails
+      const fallbackUser = { ...userProfileData, username: finalHandle };
+      localStorage.setItem('codeclash_user', JSON.stringify(fallbackUser));
+      sounds.playSubmitSuccess();
+      onAuthSuccess(fallbackUser);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayAvatar = avatarUrl || userProfileData?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
@@ -165,7 +224,6 @@ export default function LandingAuthGate({ onAuthSuccess }) {
             Official 1v1 Real-Time Competitive Coding Arena. Boost your Rating by solving questions!
           </p>
 
-          {/* Dynamic Festival & Holiday Greetings Banner */}
           <FestivalBanner />
         </div>
 
@@ -193,40 +251,11 @@ export default function LandingAuthGate({ onAuthSuccess }) {
                 <p className="text-xs text-slate-200 font-medium">
                   You were invited to 1v1 Contest Room <span className="font-mono font-extrabold text-cyan-300 bg-slate-950 px-2.5 py-1 rounded-xl border border-cyan-500/40">{roomCode.toUpperCase()}</span>
                 </p>
-                <p className="text-[11px] text-amber-300 font-bold">
-                  🔒 Please Register or Sign In below to join the duel battleground immediately!
-                </p>
               </div>
             );
           }
           return null;
         })()}
-
-        {/* Auth Mode Tabs: Register vs Sign In */}
-        <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6 font-bold text-xs">
-          <button
-            type="button"
-            onClick={() => { setMode('register'); setErrorMsg(''); sounds.playClick(); }}
-            className={`flex-1 py-2.5 rounded-xl btn-glow transition-all ${
-              mode === 'register'
-                ? 'bg-gradient-to-r from-cyan-500 to-emerald-600 text-slate-950 font-extrabold shadow-lg shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            New User (Register)
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('login'); setErrorMsg(''); sounds.playClick(); }}
-            className={`flex-1 py-2.5 rounded-xl btn-glow transition-all ${
-              mode === 'login'
-                ? 'bg-gradient-to-r from-emerald-600 to-purple-600 text-white font-extrabold shadow-lg shadow-purple-500/20'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Existing User (Sign In)
-          </button>
-        </div>
 
         {/* Error Alert */}
         {errorMsg && (
@@ -235,226 +264,213 @@ export default function LandingAuthGate({ onAuthSuccess }) {
           </div>
         )}
 
-        {/* Form Container */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Registration Extra Fields: Photo Upload (Clean UI) */}
-          {mode === 'register' && (
-            <div className="flex flex-col items-center justify-center space-y-2 pb-2">
-              <div className="relative group">
-                <img
-                  src={displayAvatar}
-                  alt="Profile Avatar"
-                  className="w-20 h-20 rounded-3xl object-cover border-2 border-cyan-500/50 shadow-xl group-hover:opacity-80 transition-all"
-                />
-                
-                {/* Upload Button overlay */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute inset-0 bg-slate-950/70 rounded-3xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-cyan-300 text-[10px] font-bold transition-all cursor-pointer"
-                >
-                  <Camera className="w-5 h-5 mb-0.5" />
-                  <span>Upload</span>
-                </button>
-              </div>
-
-              {/* Hidden HTML File Input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoFileUpload}
-                className="hidden"
-              />
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 font-mono font-bold underline flex items-center gap-1 cursor-pointer"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Choose Device Photo</span>
-                </button>
-              </div>
+        {/* LAYER 1: SIGN IN / REGISTER FORM */}
+        {step === 1 && (
+          <div className="space-y-4">
+            {/* Auth Mode Tabs: Register vs Sign In */}
+            <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6 font-bold text-xs">
+              <button
+                type="button"
+                onClick={() => { setMode('register'); setErrorMsg(''); sounds.playClick(); }}
+                className={`flex-1 py-2.5 rounded-xl btn-glow transition-all ${
+                  mode === 'register'
+                    ? 'bg-gradient-to-r from-cyan-500 to-emerald-600 text-slate-950 font-extrabold shadow-lg shadow-cyan-500/20'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                1. New User (Register)
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setErrorMsg(''); sounds.playClick(); }}
+                className={`flex-1 py-2.5 rounded-xl btn-glow transition-all ${
+                  mode === 'login'
+                    ? 'bg-gradient-to-r from-emerald-600 to-purple-600 text-white font-extrabold shadow-lg shadow-purple-500/20'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                1. Existing User (Sign In)
+              </button>
             </div>
-          )}
 
-          {/* Arena Display Handle (Username - Registration Mode) */}
-          {mode === 'register' && (
-            <div className="space-y-1">
-              <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Arena Display Handle (Username)</span>
-              </label>
-              <input
-                type="text"
-                required
-                minLength={3}
-                maxLength={20}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. CodeMaster99"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-emerald-300 placeholder:text-slate-600 outline-none transition-all font-bold"
-              />
-            </div>
-          )}
-
-          {/* Email Address Input */}
-          <div className="space-y-1">
-            <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Email Address</span>
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. alex@example.com"
-              className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="space-y-1">
-            <label className="text-xs font-mono text-slate-300 font-bold flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Password</span>
-              </span>
-              {mode === 'register' && passStrength.label && (
-                <span className={`text-[10px] font-bold ${passStrength.color.split(' ')[1]}`}>
-                  {passStrength.label}
-                </span>
-              )}
-            </label>
-            
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Minimum 6 characters"
-              className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-            />
-
-            {/* Live Password Strength Meter Bar */}
-            {mode === 'register' && password && (
-              <div className="space-y-1 pt-1">
-                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-300 ${passStrength.color.split(' ')[0]}`}
-                    style={{ width: passStrength.width }}
+            <form onSubmit={handleAuthSubmit} className="space-y-4">
+              {/* Photo Upload */}
+              {mode === 'register' && (
+                <div className="flex flex-col items-center justify-center space-y-2 pb-2">
+                  <div className="relative group">
+                    <img
+                      src={displayAvatar}
+                      alt="Profile Avatar"
+                      className="w-20 h-20 rounded-3xl object-cover border-2 border-cyan-500/50 shadow-xl group-hover:opacity-80 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute inset-0 bg-slate-950/70 rounded-3xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-cyan-300 text-[10px] font-bold transition-all cursor-pointer"
+                    >
+                      <Camera className="w-5 h-5 mb-0.5" />
+                      <span>Upload</span>
+                    </button>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoFileUpload}
+                    className="hidden"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 font-mono text-right">
-                  {passStrength.tip}
-                </p>
-              </div>
-            )}
-          </div>
+              )}
 
-          {/* Registration Optional Details */}
-          {mode === 'register' && (
-            <>
-              {/* LeetCode Handle */}
+              {/* Email Input */}
               <div className="space-y-1">
-                <label className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-                  <Code className="w-3.5 h-3.5 text-amber-400" />
-                  <span>LeetCode Username (Optional)</span>
+                <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Email Address</span>
                 </label>
                 <input
-                  type="text"
-                  value={leetcodeUsername}
-                  onChange={(e) => setLeetcodeUsername(e.target.value)}
-                  placeholder="e.g. tourist"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500/50 rounded-2xl px-4 py-2.5 text-xs font-mono text-amber-300 placeholder:text-slate-600 outline-none"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. alex@example.com"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
                 />
               </div>
 
-              {/* Country Autocomplete Dropdown */}
-              <div className="space-y-1 relative">
-                <label className="text-xs font-mono text-slate-400 flex items-center justify-between">
+              {/* Password Input */}
+              <div className="space-y-1">
+                <label className="text-xs font-mono text-slate-300 font-bold flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Country / Location</span>
+                    <Lock className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Password</span>
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-bold">{location}</span>
+                  {mode === 'register' && passStrength.label && (
+                    <span className={`text-[10px] font-bold ${passStrength.color.split(' ')[1]}`}>
+                      {passStrength.label}
+                    </span>
+                  )}
+                </label>
+                
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
+                />
+              </div>
+
+              {/* Next Step Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-purple-600 text-slate-950 font-black text-sm tracking-wider uppercase shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
+                ) : (
+                  <>
+                    <span>Next: Set Unique Username ➔</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* LAYER 2: CHOOSE UNIQUE USERNAME & ENTER CONTEST */}
+        {step === 2 && (
+          <div className="space-y-5 animate-fade-in">
+            <div className="text-center bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto mb-2">
+                <User className="w-6 h-6 animate-pulse" />
+              </div>
+              <h2 className="text-lg font-black text-white uppercase tracking-wider">
+                2. Choose Unique Arena Handle
+              </h2>
+              <p className="text-xs text-slate-400 font-mono mt-1">
+                This handle will represent you in all 1v1 duels, leaderboards & chats!
+              </p>
+            </div>
+
+            <form onSubmit={handleEnterContestSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-mono text-slate-200 font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <span>Unique Display Handle (Username)</span>
                 </label>
 
                 <div className="relative">
                   <input
                     type="text"
-                    value={countryQuery}
-                    onFocus={() => setShowCountryDropdown(true)}
-                    onChange={(e) => {
-                      setCountryQuery(e.target.value);
-                      setShowCountryDropdown(true);
-                    }}
-                    placeholder="Search country (e.g. India, United States, Japan)..."
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-2xl px-4 py-2.5 text-xs font-mono text-slate-200 placeholder:text-slate-600 outline-none"
+                    required
+                    minLength={3}
+                    maxLength={20}
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    placeholder="e.g. CodeMaster99"
+                    className={`w-full bg-slate-950 border ${
+                      handleStatus.error
+                        ? 'border-rose-500/80 focus:border-rose-500'
+                        : 'border-emerald-500/50 focus:border-emerald-400'
+                    } rounded-2xl px-4 py-3.5 text-sm font-mono text-emerald-300 font-bold placeholder:text-slate-600 outline-none transition-all`}
                   />
-                  <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3.5 top-3 pointer-events-none" />
 
-                  {/* Autocomplete Dropdown List */}
-                  {showCountryDropdown && filteredCountries.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-2xl max-h-44 overflow-y-auto z-50 shadow-2xl">
-                      {filteredCountries.map((c, index) => (
-                        <div
-                          key={c.code || index}
-                          onClick={() => handleSelectCountry(c)}
-                          className="px-4 py-2 text-xs font-mono hover:bg-slate-800 cursor-pointer flex items-center justify-between border-b border-slate-800/50"
-                        >
-                          <span className="text-slate-200">{c.name}</span>
-                          <span className="text-base">{c.flag}</span>
-                        </div>
-                      ))}
-                    </div>
+                  {handleStatus.checking && (
+                    <Loader2 className="w-4 h-4 text-cyan-400 animate-spin absolute right-4 top-4" />
                   )}
                 </div>
+
+                {/* Handle Availability Feedback */}
+                {!handleStatus.checking && usernameInput.trim().length >= 3 && (
+                  <div className="text-xs font-mono font-bold mt-1">
+                    {handleStatus.available ? (
+                      <p className="text-emerald-400 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>✓ Handle "{usernameInput.trim()}" is AVAILABLE!</span>
+                      </p>
+                    ) : (
+                      <p className="text-rose-400 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        <span>{handleStatus.error || 'Handle taken.'}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Bio */}
-              <div className="space-y-1">
-                <label className="text-xs font-mono text-slate-400">Bio / Tagline</label>
-                <input
-                  type="text"
-                  maxLength={60}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Competitive Coder ⚔️"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-2.5 text-xs font-mono text-slate-300 placeholder:text-slate-600 outline-none"
-                />
-              </div>
-            </>
-          )}
+              {/* BUTTON UNDERNEATH USERNAME: ENTER IN THE CONTEST */}
+              <button
+                type="submit"
+                disabled={loading || !handleStatus.available || usernameInput.trim().length < 3}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-500 to-cyan-500 text-slate-950 font-black text-sm tracking-widest uppercase shadow-2xl shadow-amber-500/30 hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 btn-glow"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
+                ) : (
+                  <>
+                    <Swords className="w-5 h-5 text-slate-950 animate-bounce" />
+                    <span>ENTER IN THE CONTEST ⚔️</span>
+                  </>
+                )}
+              </button>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-slate-950 font-extrabold text-sm btn-glow-cyan transition-all shadow-xl shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-6"
-          >
-            <span>{loading ? 'Processing...' : mode === 'register' ? 'Register Account & Enter Arena' : 'Sign In & Enter Arena'}</span>
-            <ArrowRight className="w-4 h-4 text-slate-950" />
-          </button>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="w-full text-center text-xs font-mono text-slate-400 hover:text-slate-200 underline cursor-pointer"
+              >
+                ← Back to Sign In / Register
+              </button>
+            </form>
+          </div>
+        )}
 
-        </form>
       </div>
-
-      {/* Sleek Footer */}
-      <footer className="text-center text-xs text-slate-400 font-mono mt-4 flex items-center justify-center gap-1.5 py-2">
-        <span>Made with</span>
-        <Heart className="w-4 h-4 text-rose-500 fill-rose-500 animate-pulse" />
-        <span>by</span>
-        <span className="font-extrabold bg-gradient-to-r from-cyan-400 via-emerald-300 to-purple-400 bg-clip-text text-transparent tracking-widest text-sm">NOVA</span>
-        <span className="text-slate-600">•</span>
-        <span className="text-slate-400">Code क्षेत्र 1v1 Arena</span>
-      </footer>
-
     </div>
   );
 }
