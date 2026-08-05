@@ -552,11 +552,13 @@ export default function App() {
     }, (res) => {
       if (res && res.success && res.room) {
         setRoom(res.room);
-        setShowMatchStartOverlay(true);
+        if (isBot) {
+          setShowMatchStartOverlay(true);
+        }
         const template = res.room.problem?.starterTemplates?.[selectedLanguage] || res.room.problem?.starterTemplates?.javascript || '';
         setCode(template);
-        setMyProgress({ passed: 0, total: res.room.problem.testCases.length, status: 'Coding...' });
-        setOpponentProgress({ passed: 0, total: res.room.problem.testCases.length, status: isBot ? 'Coding...' : 'Waiting...' });
+        setMyProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: 'Coding...' });
+        setOpponentProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: isBot ? 'Coding...' : 'Waiting...' });
       }
     });
   };
@@ -568,7 +570,9 @@ export default function App() {
     roomEngine.joinRoom({ roomId, password, player: p, asSpectator }, (res) => {
       if (res.success) {
         setRoom(res.room);
-        setShowMatchStartOverlay(true);
+        if (res.room.status === 'in-progress') {
+          setShowMatchStartOverlay(true);
+        }
         setIsSpectator(Boolean(res.isSpectator));
         if (res.isSpectator) {
           setSpectateTarget('host');

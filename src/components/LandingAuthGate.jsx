@@ -456,7 +456,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
                 ) : (
                   <>
                     <Swords className="w-5 h-5 text-slate-950 animate-bounce" />
-                    <span>ENTER IN THE CONTEST ⚔️</span>
+                    <span>Create 1v1 Room Code & Wait for Opponent ⚔️</span>
                   </>
                 )}
               </button>
