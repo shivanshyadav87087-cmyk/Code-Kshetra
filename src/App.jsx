@@ -494,7 +494,7 @@ export default function App() {
     setPlayer(updated);
     localStorage.setItem('codeclash_user', JSON.stringify(updated));
 
-    // Auto-join contest room immediately to land straight on contest page
+    // Auto-join or auto-create contest room immediately to land straight on contest page
     const targetRoom = pendingRoomId || sessionStorage.getItem('pending_contest_room');
     if (targetRoom) {
       sessionStorage.removeItem('pending_contest_room');
@@ -505,9 +505,13 @@ export default function App() {
 
       handleJoinRoom({ roomId: targetRoom, userName: updated.name }, (res) => {
         if (!res || !res.success) {
-          setJoinNotification({ username: 'Contest Room', text: res?.error || `Could not join room ${targetRoom}.` });
+          // Fallback: If room link expired, create a fresh 1v1 contest room for user!
+          handleCreateRoom({ userName: updated.name });
         }
       });
+    } else {
+      // Direct contest entry: Create a fresh 1v1 contest room!
+      handleCreateRoom({ userName: updated.name });
     }
   };
 
