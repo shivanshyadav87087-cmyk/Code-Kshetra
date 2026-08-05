@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Send, CheckCircle2, XCircle, AlertTriangle, Terminal, Layers, Lock, Cpu, Hourglass, Check, Diff, Sparkles } from 'lucide-react';
+import { Play, Send, CheckCircle2, XCircle, AlertTriangle, Terminal, Layers, Lock, Cpu, Hourglass, Check, Diff, Sparkles, Clock } from 'lucide-react';
 import { runCode } from '../engine/codeRunner';
 import { sounds } from '../engine/soundManager';
 
@@ -386,7 +386,7 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
 
                 {/* Clickable Pill Case Tabs */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800 custom-scrollbar">
-                  {testResults.results.map((r, idx) => (
+                  {testResults.results?.map((r, idx) => (
                     <button
                       key={idx}
                       type="button"
