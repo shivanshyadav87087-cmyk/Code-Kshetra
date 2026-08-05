@@ -1,11 +1,13 @@
 /**
  * LeetCode-Grade Multi-Language Code Execution Judge Engine
- * Auto-injects standard headers (bits/stdc++.h, climits, vector, etc.),
- * protects against infinite loops (TLE), and classifies verdicts.
+ * Emulates C++ STL (unordered_map, vector, set, stack, queue, sort),
+ * Python builtins (enumerate, range, len, defaultdict, zip, set, sorted),
+ * and Java Collections (HashMap, HashSet, ArrayList) in JavaScript.
  */
 
-// Global Standard Polyfills for C++, Python, Java, and JS
-const GLOBAL_HEADER_POLYFILLS = `
+// Comprehensive Polyfills for C++ STL, Python Builtins & Java Collections
+const GLOBAL_POLYFILLS = `
+  // Global Constants & Math
   const INT_MAX = 2147483647;
   const INT_MIN = -2147483648;
   const LLONG_MAX = Number.MAX_SAFE_INTEGER;
@@ -15,25 +17,175 @@ const GLOBAL_HEADER_POLYFILLS = `
   const sys = { maxsize: Number.MAX_SAFE_INTEGER };
   const math = Math;
 
-  function max(...args) { return Math.max(...args); }
-  function min(...args) { return Math.min(...args); }
+  // C++ / Python / Java Math Helpers
+  function max(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) return Math.max(...args[0]);
+    return Math.max(...args);
+  }
+  function min(...args) {
+    if (args.length === 1 && Array.isArray(args[0])) return Math.min(...args[0]);
+    return Math.min(...args);
+  }
   function abs(val) { return Math.abs(val); }
   function swap(arr, i, j) { const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; }
-  function reverse(arr, start = 0, end = arr.length) {
+  function reverse(arr, start = 0, end = arr ? arr.length : 0) {
+    if (!arr) return;
     let l = start, r = end - 1;
     while (l < r) { swap(arr, l, r); l++; r--; }
   }
-  function sort(arr) { arr.sort((a, b) => a - b); }
+  function sort(arr, cmp) {
+    if (!arr) return;
+    if (typeof cmp === 'function') arr.sort(cmp);
+    else arr.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }
 
-  let __loopCounter = 0;
+  // Python Builtins
+  function len(obj) {
+    if (!obj) return 0;
+    if (typeof obj.length === 'number') return obj.length;
+    if (typeof obj.size === 'number') return obj.size;
+    if (typeof obj === 'object') return Object.keys(obj).length;
+    return 0;
+  }
+
+  function range(...args) {
+    let start = 0, stop = 0, step = 1;
+    if (args.length === 1) { stop = args[0]; }
+    else if (args.length >= 2) { start = args[0]; stop = args[1]; step = args[2] || 1; }
+    const res = [];
+    if (step > 0) {
+      for (let i = start; i < stop; i += step) res.push(i);
+    } else if (step < 0) {
+      for (let i = start; i > stop; i += step) res.push(i);
+    }
+    return res;
+  }
+
+  function enumerate(arr) {
+    if (!arr) return [];
+    if (Array.isArray(arr)) {
+      return arr.map((item, idx) => [idx, item]);
+    }
+    return Object.entries(arr).map(([k, v], idx) => [idx, v]);
+  }
+
+  function zip(...arrays) {
+    if (!arrays.length) return [];
+    const minLen = Math.min(...arrays.map(a => a.length));
+    const res = [];
+    for (let i = 0; i < minLen; i++) {
+      res.push(arrays.map(a => a[i]));
+    }
+    return res;
+  }
+
+  function sum(arr, start = 0) {
+    if (!arr) return start;
+    return arr.reduce((acc, curr) => acc + curr, start);
+  }
+
+  function sorted(iterable, key, reverseOrder = false) {
+    const arr = Array.from(iterable);
+    arr.sort((a, b) => {
+      const valA = key ? key(a) : a;
+      const valB = key ? key(b) : b;
+      if (valA < valB) return reverseOrder ? 1 : -1;
+      if (valA > valB) return reverseOrder ? -1 : 1;
+      return 0;
+    });
+    return arr;
+  }
+
+  // Smart C++ / Java / Python Map Polyfill
+  class CppMap {
+    constructor() {
+      this.store = new Map();
+    }
+    set(key, val) { this.store.set(String(key), val); return this; }
+    get(key) { return this.store.get(String(key)); }
+    has(key) { return this.store.has(String(key)); }
+    count(key) { return this.has(key) ? 1 : 0; }
+    containsKey(key) { return this.has(key); }
+    contains(key) { return this.has(key); }
+    put(key, val) { this.set(key, val); return val; }
+    getOrDefault(key, defaultVal) { return this.has(key) ? this.get(key) : defaultVal; }
+    get size() { return this.store.size; }
+    get length() { return this.store.size; }
+  }
+
+  // Proxy wrapper to allow map[key] = val and map[key] subscript access
+  function createSmartMap() {
+    const target = new CppMap();
+    return new Proxy(target, {
+      get(obj, prop) {
+        if (prop in obj || typeof prop === 'symbol' || typeof obj[prop] === 'function') {
+          return typeof obj[prop] === 'function' ? obj[prop].bind(obj) : obj[prop];
+        }
+        return obj.get(prop);
+      },
+      set(obj, prop, value) {
+        if (prop in obj) {
+          obj[prop] = value;
+        } else {
+          obj.set(prop, value);
+        }
+        return true;
+      }
+    });
+  }
+
+  // C++ unordered_set / Java HashSet Polyfill
+  class CppSet extends Set {
+    count(val) { return this.has(val) ? 1 : 0; }
+    contains(val) { return this.has(val); }
+    add(val) { super.add(val); return this; }
+    insert(val) { super.add(val); return this; }
+    erase(val) { return this.delete(val); }
+    remove(val) { return this.delete(val); }
+  }
+
+  // Python defaultdict Polyfill
+  function defaultdict(defaultType) {
+    return new Proxy({}, {
+      get: (target, prop) => {
+        if (prop in target) return target[prop];
+        if (typeof prop === 'symbol' || prop === 'inspect') return undefined;
+        let val;
+        if (defaultType === Number || defaultType === int) val = 0;
+        else if (defaultType === Array || defaultType === list) val = [];
+        else if (defaultType === Object || defaultType === dict) val = {};
+        else if (typeof defaultType === 'function') val = defaultType();
+        else val = 0;
+        target[prop] = val;
+        return val;
+      }
+    });
+  }
+
+  const unordered_map = function() { return createSmartMap(); };
+  const map = function() { return createSmartMap(); };
+  const HashMap = function() { return createSmartMap(); };
+  const MapClass = createSmartMap;
+  const unordered_set = CppSet;
+  const set = CppSet;
+  const HashSet = CppSet;
+  const SetClass = CppSet;
+  const int = Number;
+  const float = Number;
+  const str = String;
+  const list = Array;
+  const dict = Object;
+
+  // Infinite Loop Protection (TLE)
+  var __loopCounter = 0;
   function __checkTLE() {
-    if (++__loopCounter > 2500000) {
+    if (++__loopCounter > 3000000) {
       throw new Error("Time Limit Exceeded (TLE) - Loop iteration limit exceeded.");
     }
   }
 `;
 
-// Flexible LeetCode Deep Equality Check
+// LeetCode Flexible Output Comparator
 function isEqual(a, b) {
   if (a === b) return true;
   if (a === null || b === null || typeof a === 'undefined' || typeof b === 'undefined') return false;
@@ -61,6 +213,7 @@ function isEqual(a, b) {
     }
     if (exactMatch) return true;
 
+    // Unsorted array matching for problem sets returning indices or pairs in any order
     if (a.every(item => typeof item === 'number' || typeof item === 'string') &&
         b.every(item => typeof item === 'number' || typeof item === 'string')) {
       const sortedA = [...a].sort();
@@ -97,9 +250,9 @@ function transpileToJs(code, language, entryFunctionName) {
   if (language === 'python') {
     // 1. Strip comments & imports
     jsCode = jsCode.replace(/#.*/g, '');
-    jsCode = jsCode.replace(/(?:from\s+\w+\s+)?import\s+[\w*,\s]+/g, '');
+    jsCode = jsCode.replace(/(?:from\s+[\w.]+\s+)?import\s+[\w*,\s]+/g, '');
 
-    // 2. Infinity & sys values
+    // 2. Infinity & typing syntax
     jsCode = jsCode.replace(/float\(['"]inf['"]\)/g, 'Infinity');
     jsCode = jsCode.replace(/float\(['"]-inf['"]\)/g, '-Infinity');
 
@@ -112,7 +265,7 @@ function transpileToJs(code, language, entryFunctionName) {
       return `function ${name}(${cleanArgs}) {`;
     });
 
-    // 5. Line-by-line Python indentation stack transpilation
+    // 5. Python Indentation Stack Transpiler
     const lines = jsCode.split('\n');
     const outLines = [];
     const indentStack = [];
@@ -127,14 +280,34 @@ function transpileToJs(code, language, entryFunctionName) {
         outLines.push('}');
       }
 
-      line = line.replace(/while\s+(.*?):/g, 'while ($1) { __checkTLE();');
-      line = line.replace(/for\s+(\w+)\s+in\s+range\((.*?)\)\s*:/g, 'for (let $1 = 0; $1 < $2; $1++) { __checkTLE();');
-      line = line.replace(/for\s+(\w+)\s+in\s+(.*?):/g, 'for (let $1 of $2) { __checkTLE();');
-      line = line.replace(/elif\s+(.*?):/g, 'else if ($1) {');
-      line = line.replace(/if\s+(.*?):/g, 'if ($1) {');
-      line = line.replace(/else\s*:/g, 'else {');
+      const trimmed = line.trim();
+      if (!trimmed) continue;
 
-      if (line.includes('{')) {
+      if (/^while\s+.*:/.test(trimmed)) {
+        line = line.replace(/while\s+(.*?):/, 'while ($1) { __checkTLE();');
+        indentStack.push(indentLevel + 2);
+      } else if (/^for\s+.*in\s+range\(.*:\s*$/.test(trimmed)) {
+        line = line.replace(/for\s+(\w+)\s+in\s+range\((.*?)\)\s*:/, 'for (let $1 of range($2)) { __checkTLE();');
+        indentStack.push(indentLevel + 2);
+      } else if (/^for\s+.*,\s*.*in\s+enumerate\(.*:\s*$/.test(trimmed)) {
+        line = line.replace(/for\s+(\w+),\s*(\w+)\s+in\s+enumerate\((.*?)\)\s*:/, 'for (let [$1, $2] of enumerate($3)) { __checkTLE();');
+        indentStack.push(indentLevel + 2);
+      } else if (/^for\s+.*in\s+enumerate\(.*:\s*$/.test(trimmed)) {
+        line = line.replace(/for\s+(\w+)\s+in\s+enumerate\((.*?)\)\s*:/, 'for (let [__idx, $1] of enumerate($2)) { __checkTLE();');
+        indentStack.push(indentLevel + 2);
+      } else if (/^for\s+.*in\s+.*:\s*$/.test(trimmed)) {
+        line = line.replace(/for\s+(\w+)\s+in\s+(.*?):/, 'for (let $1 of $2) { __checkTLE();');
+        indentStack.push(indentLevel + 2);
+      } else if (/^if\s+.*:\s*$/.test(trimmed)) {
+        line = line.replace(/if\s+(.*?):/, 'if ($1) {');
+        indentStack.push(indentLevel + 2);
+      } else if (/^elif\s+.*:\s*$/.test(trimmed)) {
+        line = line.replace(/elif\s+(.*?):/, 'else if ($1) {');
+        indentStack.push(indentLevel + 2);
+      } else if (/^else\s*:\s*$/.test(trimmed)) {
+        line = line.replace(/else\s*:/, 'else {');
+        indentStack.push(indentLevel + 2);
+      } else if (/^function\s+\w+/.test(trimmed)) {
         indentStack.push(indentLevel + 2);
       }
 
@@ -144,7 +317,6 @@ function transpileToJs(code, language, entryFunctionName) {
       line = line.replace(/\band\b/g, '&&');
       line = line.replace(/\bor\b/g, '||');
       line = line.replace(/\bnot\b/g, '!');
-      line = line.replace(/\blen\((.*?)\)/g, '$1.length');
 
       outLines.push(line);
     }
@@ -164,10 +336,12 @@ function transpileToJs(code, language, entryFunctionName) {
     // 2. Strip class Solution & public:
     jsCode = jsCode.replace(/class\s+Solution\s*\{/g, '');
     jsCode = jsCode.replace(/public\s*:/g, '');
+    jsCode = jsCode.replace(/public\s+/g, '');
 
-    // 3. Convert C++ initializer list returns FIRST
+    // 3. Convert C++ / Java returns and array initializations
     jsCode = jsCode.replace(/return\s*\{\s*\}\s*;/g, 'return [];');
     jsCode = jsCode.replace(/return\s*\{([^{}]*)\}\s*;/g, 'return [$1];');
+    jsCode = jsCode.replace(/new\s+int\s*\[\]\s*\{([^{}]*)\}/g, '[$1]');
 
     // 4. Strip trailing C++ class closing brace & semicolon ONLY at end of string
     jsCode = jsCode.trim();
@@ -177,10 +351,16 @@ function transpileToJs(code, language, entryFunctionName) {
       jsCode = jsCode.substring(0, jsCode.length - 1).trim();
     }
 
-    // 5. Convert C++ ranged-for loops: for (int x : vec) -> for (let x of vec)
+    // 5. C++ / Java Map & Set instantiations
+    jsCode = jsCode.replace(/(?:unordered_map|map|HashMap|Map)<[\w<>,\s]+>\s+(\w+)\s*=\s*new\s+HashMap<.*?>\(\);/g, 'let $1 = createSmartMap();');
+    jsCode = jsCode.replace(/(?:unordered_map|map|HashMap|Map)<[\w<>,\s]+>\s+(\w+)\s*;/g, 'let $1 = createSmartMap();');
+    jsCode = jsCode.replace(/(?:unordered_set|set|HashSet|Set)<[\w<>,\s]+>\s+(\w+)\s*=\s*new\s+HashSet<.*?>\(\);/g, 'let $1 = new CppSet();');
+    jsCode = jsCode.replace(/(?:unordered_set|set|HashSet|Set)<[\w<>,\s]+>\s+(\w+)\s*;/g, 'let $1 = new CppSet();');
+
+    // 6. Convert C++ ranged-for loops: for (int x : vec) -> for (let x of vec)
     jsCode = jsCode.replace(/for\s*\(\s*(?:int|size_t|auto|double|float|long|short|string|char|const\s+[\w<>&]+)\s+(\w+)\s*:\s*(.*?)\)\s*\{/g, 'for (let $1 of $2) { __checkTLE();');
 
-    // 6. Strip C++ / Java return types & parameter types from function signatures
+    // 7. Strip C++ / Java return types & parameter types from function signatures
     jsCode = jsCode.replace(/(?:vector<[\w<>,\s]+>&?|int\[\]|int|boolean|bool|string|void|List<[\w<>,\s]+>)\s+(\w+)\s*\((.*?)\)\s*\{/gi, (match, fnName, args) => {
       const cleanArgs = args.split(',').map(arg => {
         const parts = arg.trim().split(/\s+/);
@@ -189,20 +369,24 @@ function transpileToJs(code, language, entryFunctionName) {
       return `function ${fnName}(${cleanArgs}) {`;
     });
 
-    // 7. Convert C++ / Java index loop variable declarations
+    // 8. Convert C++ / Java index loops
     jsCode = jsCode.replace(/for\s*\(\s*(?:int|size_t|auto|double|float|long|short)\s+(\w+)(.*?)\)\s*\{/g, 'for (let $1$2) { __checkTLE();');
     jsCode = jsCode.replace(/while\s*\((.*?)\)\s*\{/g, 'while ($1) { __checkTLE();');
 
-    // 8. Convert standalone variable initializations: int n = ...; -> let n = ...;
+    // 9. Convert standalone variable initializations: int n = ...; -> let n = ...;
     jsCode = jsCode.replace(/(?:int|double|float|string|bool|auto|vector<[\w<>,\s]+>)\s+(\w+)\s*=/g, 'let $1 =');
 
-    // 9. C++ / Java methods & symbols
+    // 10. C++ / Java methods & symbols
     jsCode = jsCode.replace(/\.size\(\)/g, '.length');
     jsCode = jsCode.replace(/\.length\(\)/g, '.length');
     jsCode = jsCode.replace(/\bpush_back\b/g, 'push');
     jsCode = jsCode.replace(/\bstd::/g, '');
   } else if (language === 'javascript' || language === 'typescript') {
-    // Inject TLE check into JS while / for loops
+    // 1. Convert standalone function or class method
+    jsCode = jsCode.replace(/class\s+Solution\s*\{/g, '');
+    jsCode = jsCode.replace(/var\s+(\w+)\s*=\s*function\s*\((.*?)\)/g, 'function $1($2)');
+
+    // 2. Inject TLE check into JS loops
     jsCode = jsCode.replace(/while\s*\((.*?)\)\s*\{/g, 'while ($1) { __checkTLE();');
     jsCode = jsCode.replace(/for\s*\((.*?)\)\s*\{/g, 'for ($1) { __checkTLE();');
   }
@@ -239,7 +423,7 @@ export async function runCode(code, language, entryFunctionName, testCases) {
 
   try {
     // Build sandboxed runner function with Auto-Injected Headers & Polyfills
-    const wrapperCode = GLOBAL_HEADER_POLYFILLS + "\n\n" +
+    const wrapperCode = GLOBAL_POLYFILLS + "\n\n" +
       executableCode + "\n\n" +
       "__loopCounter = 0;\n" +
       "if (typeof " + entryFunctionName + " === 'function') {\n" +
@@ -269,6 +453,7 @@ export async function runCode(code, language, entryFunctionName, testCases) {
         // Reset loop counter per testcase
         actualOutput = userFn(...inputClone);
 
+        // Handle in-place array/matrix mutation (e.g. Rotate Image, Sort Colors) where function returns void/undefined
         if (typeof actualOutput === 'undefined' && Array.isArray(inputClone[0])) {
           actualOutput = inputClone[0];
         }
@@ -301,7 +486,7 @@ export async function runCode(code, language, entryFunctionName, testCases) {
       capturedLogs.length = 0;
     }
   } catch (outerErr) {
-    // Compile Error
+    // Compile / Syntax Error
     return {
       success: false,
       verdict: 'Compile Error',
