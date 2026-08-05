@@ -1,4 +1,4 @@
-// Dynamic Festival & Live Public Calendar API Engine with Ultra-Reliable HD Photography
+// Dynamic Festival & Live Public Calendar API Engine with Exact Date Matching
 
 export const FESTIVALS = [
   {
@@ -156,34 +156,22 @@ export function getCurrentFestival(customDate = null) {
   const currentMonth = now.getMonth() + 1; // 1-indexed
   const currentDay = now.getDate();
 
-  // 1. Exact Date Match
+  // STRICT EXACT DATE MATCH ONLY! No window guessing or month fallbacks.
   const exactMatch = FESTIVALS.find(f => f.month === currentMonth && f.day === currentDay);
   if (exactMatch) return exactMatch;
-
-  // 2. Window Match (+/- 3 days around major festival)
-  const windowMatch = FESTIVALS.find(f => {
-    if (f.month === currentMonth && Math.abs(f.day - currentDay) <= 3) {
-      return true;
-    }
-    return false;
-  });
-  if (windowMatch) return windowMatch;
-
-  // 3. Fallback: Always return Independence Day / National Pride Greetings for August month!
-  if (currentMonth === 8) {
-    return FESTIVALS.find(f => f.id === 'independence-day-india');
-  }
 
   return null;
 }
 
 export async function getAsyncCurrentFestival(countryCode = 'IN') {
   const localMatch = getCurrentFestival();
+  if (localMatch) return localMatch;
 
   // Fetch live public holidays from Nager.Date API
   const liveHolidays = await fetchLivePublicHolidays(countryCode);
   const todayStr = new Date().toISOString().split('T')[0];
 
+  // STRICT TODAY DATE MATCH ONLY!
   const todayHoliday = liveHolidays.find(h => h.date === todayStr);
 
   if (todayHoliday) {
@@ -192,14 +180,14 @@ export async function getAsyncCurrentFestival(countryCode = 'IN') {
       name: todayHoliday.localName || todayHoliday.name,
       flag: '🎆',
       icon: '✨',
-      imageUrl: localMatch?.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
       title: `Happy ${todayHoliday.localName || todayHoliday.name}! ✨`,
       wishingText: `Celebrating ${todayHoliday.name}! Wishing you happiness, prosperity, and zero bugs from Code क्षेत्र!`,
-      bgGradient: localMatch?.bgGradient || 'from-amber-600/30 via-slate-900 to-purple-600/30',
-      borderColor: localMatch?.borderColor || 'border-amber-500/50',
-      textColor: localMatch?.textColor || 'text-amber-300'
+      bgGradient: 'from-amber-600/30 via-slate-900 to-purple-600/30',
+      borderColor: 'border-amber-500/50',
+      textColor: 'text-amber-300'
     };
   }
 
-  return localMatch;
+  return null;
 }
