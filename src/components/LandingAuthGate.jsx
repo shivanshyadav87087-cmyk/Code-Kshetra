@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, ShieldCheck, Trophy, MapPin, ChevronDown, Heart } from 'lucide-react';
+import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, ShieldCheck, Trophy, MapPin, ChevronDown, Heart, Mail } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { COUNTRIES } from '../data/countries';
 
@@ -7,6 +7,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.on
 
 export default function LandingAuthGate({ onAuthSuccess }) {
   const [mode, setMode] = useState('register'); // 'register' or 'login'
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
@@ -79,7 +80,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     reader.readAsDataURL(file);
   };
 
-  // Filter countries based on user input (e.g. typing "I" or "In")
+  // Filter countries based on user input
   const filteredCountries = COUNTRIES.filter(c => 
     c.name.toLowerCase().startsWith(countryQuery.toLowerCase()) ||
     c.name.toLowerCase().includes(countryQuery.toLowerCase())
@@ -105,7 +106,8 @@ export default function LandingAuthGate({ onAuthSuccess }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username,
+          email,
+          username: username || email.split('@')[0],
           password,
           leetcodeUsername,
           avatarUrl,
@@ -192,7 +194,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
 
         {/* Error Alert */}
         {errorMsg && (
-          <div className="p-3 mb-5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center font-bold">
+          <div className="p-3 mb-5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center font-bold font-mono">
             {errorMsg}
           </div>
         )}
@@ -243,23 +245,43 @@ export default function LandingAuthGate({ onAuthSuccess }) {
             </div>
           )}
 
-          {/* Username Handle */}
+          {/* Email Address Input */}
           <div className="space-y-1">
             <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Username Handle</span>
+              <Mail className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Email Address</span>
             </label>
             <input
-              type="text"
+              type="email"
               required
-              minLength={5}
-              maxLength={20}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Unique Handle (Min 5 - Max 20 chars)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. alex@example.com"
               className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
             />
           </div>
+
+          {/* Optional Display Handle (Register Mode) */}
+          {mode === 'register' && (
+            <div className="space-y-1">
+              <label className="text-xs font-mono text-slate-300 font-bold flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Display Username / Handle</span>
+                </span>
+                <span className="text-[10px] text-slate-500">Optional (Defaults to Email Name)</span>
+              </label>
+              <input
+                type="text"
+                minLength={3}
+                maxLength={20}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. CodeMaster99"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-emerald-300 placeholder:text-slate-600 outline-none transition-all"
+              />
+            </div>
+          )}
 
           {/* Password */}
           <div className="space-y-1">

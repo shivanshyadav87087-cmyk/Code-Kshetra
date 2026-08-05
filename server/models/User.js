@@ -1,11 +1,17 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true
+  },
   username: {
     type: String,
     required: true,
     trim: true,
-    minlength: 5,
+    minlength: 3,
     maxlength: 20
   },
   avatarUrl: {
@@ -58,7 +64,8 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Case-insensitive global unique index on username
+// Case-insensitive global unique indexes on email and username
+userSchema.index({ email: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 userSchema.index({ username: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 
 userSchema.set('toJSON', {

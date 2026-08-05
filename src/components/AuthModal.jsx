@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { User, Key, Lock, ArrowRight, ShieldCheck, Sparkles, X, Code, CheckCircle, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { User, Key, Lock, ArrowRight, ShieldCheck, Sparkles, X, Code, CheckCircle, AlertTriangle, ShieldAlert, Mail } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
@@ -67,7 +68,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username,
+          email,
+          username: username || (email ? email.split('@')[0] : ''),
           password,
           leetcodeUsername
         })
@@ -80,6 +82,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
       if (data.token) {
         localStorage.setItem('codeclash_token', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('codeclash_user', JSON.stringify(data.user));
       }
 
       sounds.playSubmitSuccess();
@@ -115,7 +120,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <Sparkles className="w-4 h-4 text-cyan-400" />
           </h2>
           <p className="text-xs text-slate-400 mt-1 font-mono">
-            {mode === 'login' ? 'Sign in to save your ELO rating & contest points' : 'Create an account to join 1v1 competitive duels'}
+            {mode === 'login' ? 'Sign in with your Email & Password' : 'Register an account with Email & Password'}
           </p>
         </div>
 
@@ -155,23 +160,40 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
           
-          {/* Username Input */}
+          {/* Email Address Input */}
           <div className="space-y-1">
             <label className="text-slate-300 font-bold flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Username Handle</span>
+              <Mail className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Email Address</span>
             </label>
             <input
-              type="text"
+              type="email"
               required
-              minLength={5}
-              maxLength={20}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. CodeMaster99"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. alex@example.com"
               className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-xl px-3.5 py-2.5 text-slate-100 placeholder:text-slate-600 outline-none transition-all"
             />
           </div>
+
+          {/* Optional Display Username (Register Mode) */}
+          {mode === 'register' && (
+            <div className="space-y-1">
+              <label className="text-slate-300 font-bold flex items-center gap-1">
+                <User className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Display Username / Handle</span>
+              </label>
+              <input
+                type="text"
+                minLength={3}
+                maxLength={20}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. CodeMaster99 (Optional)"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-xl px-3.5 py-2.5 text-emerald-300 placeholder:text-slate-600 outline-none transition-all"
+              />
+            </div>
+          )}
 
           {/* Password Input */}
           <div className="space-y-1">

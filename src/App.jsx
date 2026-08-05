@@ -35,6 +35,7 @@ export default function App() {
         const parsed = JSON.parse(savedUser);
         return {
           id: parsed._id || parsed.id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
+          email: parsed.email || '',
           name: parsed.username || parsed.name || '',
           rating: parsed.rating !== undefined ? parsed.rating : 0,
           wins: parsed.wins || 0,
@@ -51,6 +52,7 @@ export default function App() {
 
     return {
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
+      email: '',
       name: '',
       rating: 0,
       wins: 0,
@@ -88,13 +90,16 @@ export default function App() {
 
   // Sync player profile with server on load if authenticated
   useEffect(() => {
-    if (isAuthenticated && player.name) {
-      fetch(`${BACKEND_URL}/api/auth/me?username=${encodeURIComponent(player.name)}`)
+    const queryKey = player.email || player.name;
+    if (isAuthenticated && queryKey) {
+      fetch(`${BACKEND_URL}/api/auth/me?email=${encodeURIComponent(queryKey)}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.user) {
             setPlayer(prev => ({
               ...prev,
+              email: data.user.email || prev.email,
+              name: data.user.username || prev.name,
               rating: data.user.rating !== undefined ? data.user.rating : prev.rating,
               wins: data.user.wins || prev.wins,
               losses: data.user.losses || prev.losses,
@@ -109,11 +114,12 @@ export default function App() {
         })
         .catch(() => {});
     }
-  }, [isAuthenticated, player.name]);
+  }, [isAuthenticated, player.email, player.name]);
 
   // Helper to persist rating delta & match result to server & localStorage
   const syncPlayerStats = async (ratingDelta, result) => {
-    if (!player.name) return;
+    const queryKey = player.email || player.name;
+    if (!queryKey) return;
 
     try {
       const newRating = Math.max(0, (player.rating || 0) + ratingDelta);
@@ -136,6 +142,7 @@ export default function App() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          email: player.email,
           username: player.name,
           ratingDelta,
           result
@@ -417,7 +424,8 @@ export default function App() {
     setIsAuthenticated(true);
     const updated = {
       id: userData.id || userData._id,
-      name: userData.username,
+      email: userData.email || '',
+      name: userData.username || (userData.email ? userData.email.split('@')[0] : ''),
       rating: userData.rating !== undefined ? userData.rating : 0,
       wins: userData.wins || 0,
       losses: userData.losses || 0,
@@ -441,6 +449,7 @@ export default function App() {
     setIsSpectator(false);
     setPlayer({
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
+      email: '',
       name: '',
       rating: 0,
       wins: 0,
@@ -456,7 +465,7 @@ export default function App() {
   };
 
   const handleCreateRoom = ({ userName, topic, difficulty, maxPlayers = 2, timeLimit, password, isBot, customProblem }) => {
-    const p = { ...player, name: userName };
+    const p = { ...player, name: userName || player.name };
     setPlayer(p);
     setIsSpectator(false);
     
@@ -481,7 +490,7 @@ export default function App() {
   };
 
   const handleJoinRoom = ({ roomId, password, userName, asSpectator = false }, cb) => {
-    const p = { ...player, name: userName };
+    const p = { ...player, name: userName || player.name };
     setPlayer(p);
     
     roomEngine.joinRoom({ roomId, password, player: p, asSpectator }, (res) => {

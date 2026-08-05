@@ -14,14 +14,48 @@ function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-// Live Handle Availability Endpoint (Case-Insensitive Global Check)
+// Simple email regex validator
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Live Email Availability Endpoint
+router.get('/check-email', async (req, res) => {
+  try {
+    const rawEmail = req.query.email || '';
+    const sanitized = String(rawEmail).trim().toLowerCase();
+
+    if (!sanitized || !isValidEmail(sanitized)) {
+      return res.json({ available: false, error: 'Please enter a valid email address.' });
+    }
+
+    // 1. Check MongoDB if connected
+    if (mongoose.connection.readyState === 1) {
+      const existingDb = await User.findOne({ email: sanitized });
+      if (existingDb) {
+        return res.json({ available: false, error: 'This email is already registered. Please sign in.' });
+      }
+    }
+
+    // 2. Check Memory Store
+    if (memoryUsers.has(sanitized)) {
+      return res.json({ available: false, error: 'This email is already registered. Please sign in.' });
+    }
+
+    return res.json({ available: true, message: 'Email is available!' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error checking email.' });
+  }
+});
+
+// Live Handle Availability Endpoint
 router.get('/check-handle', async (req, res) => {
   try {
     const rawHandle = req.query.handle || '';
     const sanitized = String(rawHandle).replace(/<[^>]*>?/gm, '').trim();
 
-    if (!sanitized || sanitized.length < 5) {
-      return res.json({ available: false, error: 'Handle must be at least 5 characters long.' });
+    if (!sanitized || sanitized.length < 3) {
+      return res.json({ available: false, error: 'Handle must be at least 3 characters long.' });
     }
 
     if (sanitized.length > 20) {
@@ -30,7 +64,6 @@ router.get('/check-handle', async (req, res) => {
 
     const lowerHandle = sanitized.toLowerCase();
 
-    // 1. Check MongoDB if connected
     if (mongoose.connection.readyState === 1) {
       const existingDb = await User.findOne({ username: { $regex: new RegExp(`^${sanitized}$`, 'i') } });
       if (existingDb) {
@@ -38,7 +71,6 @@ router.get('/check-handle', async (req, res) => {
       }
     }
 
-    // 2. Check Memory Store
     if (memoryUsers.has(lowerHandle)) {
       return res.json({ available: false, error: 'This handle is already taken. Please choose a different handle.' });
     }
@@ -49,26 +81,31 @@ router.get('/check-handle', async (req, res) => {
   }
 });
 
-// Fetch Current User Profile with Real-Time Rating Stats
+// Fetch Current User Profile by Email or Username
 router.get('/me', async (req, res) => {
   try {
-    const rawUsername = req.query.username || '';
-    const sanitized = String(rawUsername).replace(/<[^>]*>?/gm, '').trim();
+    const rawQuery = req.query.email || req.query.username || '';
+    const sanitized = String(rawQuery).replace(/<[^>]*>?/gm, '').trim().toLowerCase();
 
     if (!sanitized) {
-      return res.status(400).json({ error: 'Username query parameter is required.' });
+      return res.status(400).json({ error: 'Email or username query parameter is required.' });
     }
 
     // 1. Fetch from MongoDB if connected
     if (mongoose.connection.readyState === 1) {
-      const dbUser = await User.findOne({ username: { $regex: new RegExp(`^${sanitized}$`, 'i') } });
+      const dbUser = await User.findOne({
+        $or: [
+          { email: sanitized },
+          { username: { $regex: new RegExp(`^${sanitized}$`, 'i') } }
+        ]
+      });
       if (dbUser) {
         return res.json({ user: dbUser });
       }
     }
 
     // 2. Fetch from Memory Store
-    const memUser = memoryUsers.get(sanitized.toLowerCase());
+    const memUser = memoryUsers.get(sanitized);
     if (memUser) {
       const { passwordHash: _, ...safeUser } = memUser;
       return res.json({ user: safeUser });
@@ -80,23 +117,31 @@ router.get('/me', async (req, res) => {
   }
 });
 
-// Register Account (Unique Handle Check) - Default Rating = 0
+// Register Account (Email & Password)
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, leetcodeUsername, avatarUrl, bio, location } = req.body;
+    const { email, username, password, leetcodeUsername, avatarUrl, bio, location } = req.body;
     
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required.' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email address and password are required.' });
     }
 
-    const cleanUsername = username.trim();
-    if (cleanUsername.length < 5 || cleanUsername.length > 20) {
-      return res.status(400).json({ error: 'Username must be between 5 and 20 characters.' });
+    const cleanEmail = String(email).trim().toLowerCase();
+    if (!isValidEmail(cleanEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
     }
 
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
     }
+
+    // Derive display handle from username or email prefix
+    let cleanUsername = (username || '').trim();
+    if (!cleanUsername) {
+      cleanUsername = cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+    }
+    if (cleanUsername.length < 3) cleanUsername = cleanUsername + '_' + Math.floor(Math.random() * 899 + 100);
+    if (cleanUsername.length > 20) cleanUsername = cleanUsername.substring(0, 20);
 
     const passwordHash = hashPassword(password);
     const cleanLcUsername = (leetcodeUsername || '').trim().replace(/^@/, '');
@@ -107,12 +152,13 @@ router.post('/register', async (req, res) => {
     // 1. Check MongoDB ONLY if connected
     if (mongoose.connection.readyState === 1) {
       try {
-        const existingDb = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } });
-        if (existingDb) {
-          return res.status(400).json({ error: 'This handle is already taken. Please choose a different handle.' });
+        const existingEmail = await User.findOne({ email: cleanEmail });
+        if (existingEmail) {
+          return res.status(400).json({ error: 'This email is already registered. Please Sign In!' });
         }
 
         const newUser = new User({
+          email: cleanEmail,
           username: cleanUsername,
           passwordHash,
           leetcodeUsername: cleanLcUsername,
@@ -127,22 +173,23 @@ router.post('/register', async (req, res) => {
         });
 
         await newUser.save();
-        const token = jwt.sign({ id: newUser._id, username: newUser.username }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: newUser._id, email: newUser.email, username: newUser.username }, JWT_SECRET, { expiresIn: '7d' });
         return res.status(201).json({ user: newUser, token });
       } catch (e) {
         if (e.code === 11000) {
-          return res.status(400).json({ error: 'This handle is already taken. Please choose a different handle.' });
+          return res.status(400).json({ error: 'Email or handle already registered. Please Sign In!' });
         }
       }
     }
 
     // 2. Fast Instant Memory Store Fallback
-    if (memoryUsers.has(cleanUsername.toLowerCase())) {
-      return res.status(400).json({ error: 'This handle is already taken. Please choose a different handle.' });
+    if (memoryUsers.has(cleanEmail)) {
+      return res.status(400).json({ error: 'This email is already registered. Please Sign In!' });
     }
 
     const userObj = {
       id: 'mem_' + Date.now(),
+      email: cleanEmail,
       username: cleanUsername,
       leetcodeUsername: cleanLcUsername,
       avatarUrl: userAvatar,
@@ -155,9 +202,10 @@ router.post('/register', async (req, res) => {
       totalMatches: 0,
       passwordHash
     };
+    memoryUsers.set(cleanEmail, userObj);
     memoryUsers.set(cleanUsername.toLowerCase(), userObj);
 
-    const token = jwt.sign({ id: userObj.id, username: cleanUsername }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: userObj.id, email: cleanEmail, username: cleanUsername }, JWT_SECRET, { expiresIn: '7d' });
     const { passwordHash: _, ...safeUser } = userObj;
     return res.status(201).json({ user: safeUser, token });
   } catch (err) {
@@ -166,41 +214,48 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Sign In
+// Sign In (Email & Password)
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required.' });
+    const { email, username, password } = req.body;
+    const loginIdentifier = String(email || username || '').trim().toLowerCase();
+
+    if (!loginIdentifier || !password) {
+      return res.status(400).json({ error: 'Email address and password are required.' });
     }
 
-    const cleanUsername = username.trim();
     const passwordHash = hashPassword(password);
 
     if (mongoose.connection.readyState === 1) {
       try {
-        const user = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } });
+        const user = await User.findOne({
+          $or: [
+            { email: loginIdentifier },
+            { username: { $regex: new RegExp(`^${loginIdentifier}$`, 'i') } }
+          ]
+        });
+
         if (user) {
           if (user.passwordHash !== passwordHash) {
             return res.status(400).json({ error: 'Incorrect password. Please try again.' });
           }
-          const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+          const token = jwt.sign({ id: user._id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
           return res.json({ user, token });
         }
       } catch (e) {}
     }
 
-    const memUser = memoryUsers.get(cleanUsername.toLowerCase());
+    const memUser = memoryUsers.get(loginIdentifier);
     if (memUser) {
       if (memUser.passwordHash !== passwordHash) {
         return res.status(400).json({ error: 'Incorrect password. Please try again.' });
       }
-      const token = jwt.sign({ id: memUser.id, username: memUser.username }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: memUser.id, email: memUser.email, username: memUser.username }, JWT_SECRET, { expiresIn: '7d' });
       const { passwordHash: _, ...safeUser } = memUser;
       return res.json({ user: safeUser, token });
     }
 
-    return res.status(400).json({ error: `User "${cleanUsername}" not found. Please Register first!` });
+    return res.status(400).json({ error: `Account "${loginIdentifier}" not found. Please Register first!` });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error during login.' });
@@ -210,15 +265,21 @@ router.post('/login', async (req, res) => {
 // Update Profile API
 router.put('/profile', async (req, res) => {
   try {
-    const { username, avatarUrl, bio, location, leetcodeUsername } = req.body;
-    if (!username) return res.status(400).json({ error: 'Username is required.' });
+    const { username, email, avatarUrl, bio, location, leetcodeUsername } = req.body;
+    const key = String(email || username || '').trim().toLowerCase();
+    if (!key) return res.status(400).json({ error: 'User identifier is required.' });
 
     const cleanLcUsername = (leetcodeUsername || '').trim().replace(/^@/, '');
 
     if (mongoose.connection.readyState === 1) {
       try {
         const updatedUser = await User.findOneAndUpdate(
-          { username: { $regex: new RegExp(`^${username.trim()}$`, 'i') } },
+          {
+            $or: [
+              { email: key },
+              { username: { $regex: new RegExp(`^${key}$`, 'i') } }
+            ]
+          },
           {
             $set: {
               avatarUrl: avatarUrl || undefined,
@@ -236,7 +297,7 @@ router.put('/profile', async (req, res) => {
       } catch (e) {}
     }
 
-    const memUser = memoryUsers.get(username.trim().toLowerCase());
+    const memUser = memoryUsers.get(key);
     if (memUser) {
       if (avatarUrl) memUser.avatarUrl = avatarUrl;
       if (bio) memUser.bio = bio;
@@ -257,14 +318,18 @@ router.put('/profile', async (req, res) => {
 // Update Rating & Match Stats API
 router.put('/update-stats', async (req, res) => {
   try {
-    const { username, ratingDelta, result } = req.body; // result: 'win' | 'loss' | 'draw'
-    if (!username) return res.status(400).json({ error: 'Username is required.' });
+    const { username, email, ratingDelta, result } = req.body;
+    const key = String(email || username || '').trim().toLowerCase();
+    if (!key) return res.status(400).json({ error: 'User identifier is required.' });
 
-    const cleanUsername = username.trim();
-
-    // 1. Update in MongoDB if connected
     if (mongoose.connection.readyState === 1) {
-      const user = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } });
+      const user = await User.findOne({
+        $or: [
+          { email: key },
+          { username: { $regex: new RegExp(`^${key}$`, 'i') } }
+        ]
+      });
+
       if (user) {
         user.rating = Math.max(0, (user.rating || 0) + (ratingDelta || 0));
         if (result === 'win') user.wins = (user.wins || 0) + 1;
@@ -276,8 +341,7 @@ router.put('/update-stats', async (req, res) => {
       }
     }
 
-    // 2. Update Memory Store fallback
-    const memUser = memoryUsers.get(cleanUsername.toLowerCase());
+    const memUser = memoryUsers.get(key);
     if (memUser) {
       memUser.rating = Math.max(0, (memUser.rating || 0) + (ratingDelta || 0));
       if (result === 'win') memUser.wins = (memUser.wins || 0) + 1;
