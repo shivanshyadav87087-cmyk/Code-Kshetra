@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkles, Hash, CheckCircle2, Eye, AlertCircle, Lock, Loader2, Info, RotateCcw, Heart } from 'lucide-react';
+import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkles, Hash, CheckCircle2, Eye, AlertCircle, Lock, Loader2, Info, RotateCcw, Heart, UserCheck } from 'lucide-react';
 import { TOPICS, DIFFICULTIES } from '../data/topics';
 import { PROBLEM_BANK } from '../data/problemBank';
 import { sounds } from '../engine/soundManager';
@@ -23,7 +23,24 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
   const [joinPassword, setJoinPassword] = useState('');
 
   const [spectatorPrompt, setSpectatorPrompt] = useState(null);
+
+  // One-time Handle Setup Modal State
+  const [newHandleInput, setNewHandleInput] = useState('');
+  const [showHandleSetupModal, setShowHandleSetupModal] = useState(false);
   const [handleStatus, setHandleStatus] = useState({ checking: false, available: true, error: null });
+  const [savingHandle, setSavingHandle] = useState(false);
+
+  // Check if player has a permanent handle on mount
+  useEffect(() => {
+    if (player) {
+      if (player.name && player.name.trim().length >= 3) {
+        setUserName(player.name);
+        setShowHandleSetupModal(false);
+      } else {
+        setShowHandleSetupModal(true);
+      }
+    }
+  }, [player?.name]);
 
   useEffect(() => {
     try {
@@ -37,10 +54,10 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     } catch (e) {}
   }, []);
 
-  const handleTrimmed = userName.replace(/<[^>]*>?/gm, '').trim();
-  const isNameTooShort = userName.length > 0 && handleTrimmed.length < 5;
+  const handleTrimmed = (showHandleSetupModal ? newHandleInput : userName).replace(/<[^>]*>?/gm, '').trim();
+  const isNameTooShort = handleTrimmed.length > 0 && handleTrimmed.length < 3;
   const isNameTooLong = handleTrimmed.length > 20;
-  const isNameValid = handleTrimmed.length >= 5 && handleTrimmed.length <= 20 && handleStatus.available;
+  const isNameValid = handleTrimmed.length >= 3 && handleTrimmed.length <= 20 && handleStatus.available;
 
   // Mutual exclusion flags
   const isTopicOrDifficultySelected = selectedTopic !== 'all' || selectedDifficulty !== 'all';
@@ -48,7 +65,8 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
   // Debounced Live Handle Availability Check (400ms)
   useEffect(() => {
-    if (!handleTrimmed || handleTrimmed.length < 5 || handleTrimmed.length > 20) {
+    if (!showHandleSetupModal) return;
+    if (!handleTrimmed || handleTrimmed.length < 3 || handleTrimmed.length > 20) {
       setHandleStatus({ checking: false, available: false, error: null });
       return;
     }
@@ -69,7 +87,45 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [handleTrimmed]);
+  }, [handleTrimmed, showHandleSetupModal]);
+
+  const handleSavePermanentHandle = async (e) => {
+    e.preventDefault();
+    if (!isNameValid || handleTrimmed.length < 3) return;
+
+    setSavingHandle(true);
+    sounds.playClick();
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: player?.email,
+          username: handleTrimmed
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save handle');
+
+      const updatedName = data.user?.username || handleTrimmed;
+      setUserName(updatedName);
+      setPlayer(prev => {
+        const updated = { ...prev, name: updatedName };
+        localStorage.setItem('codeclash_user', JSON.stringify(updated));
+        return updated;
+      });
+
+      setShowHandleSetupModal(false);
+      sounds.playSubmitSuccess();
+    } catch (err) {
+      alert(err.message);
+      sounds.playFail();
+    } fontFinally: {
+      setSavingHandle(false);
+    }
+  };
 
   const triggerFullscreen = () => {
     if (document.documentElement.requestFullscreen) {
@@ -91,8 +147,8 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
-    if (!isNameValid) {
-      alert(handleStatus.error || (handleTrimmed.length < 5 ? "Handle must be at least 5 characters long (e.g. 'Coder99')." : "Handle must not exceed 20 characters."));
+    if (!userName || userName.length < 3) {
+      setShowHandleSetupModal(true);
       return;
     }
 
@@ -115,7 +171,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     sounds.playClick();
 
     onCreateRoom({
-      userName: handleTrimmed,
+      userName: userName,
       topic: selectedProblem ? selectedProblem.topic : selectedTopic,
       difficulty: selectedProblem ? selectedProblem.difficulty : selectedDifficulty,
       timeLimit: Number(timeLimit),
@@ -127,8 +183,8 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
   const handleJoinSubmit = (e, asSpectator = false) => {
     e.preventDefault();
-    if (!isNameValid) {
-      alert(handleStatus.error || (handleTrimmed.length < 5 ? "Handle must be at least 5 characters long (e.g. 'Coder99')." : "Handle must not exceed 20 characters."));
+    if (!userName || userName.length < 3) {
+      setShowHandleSetupModal(true);
       return;
     }
 
@@ -143,7 +199,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     onJoinRoom({
       roomId: joinRoomId.trim().toUpperCase(),
       password: joinPassword,
-      userName: handleTrimmed,
+      userName: userName,
       asSpectator
     }, (res) => {
       if (res && !res.success) {
@@ -190,73 +246,21 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
       {/* Main Lobby Card */}
       <div className="w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
         
-        {/* User Handle Input with Live Character Count & Uniqueness Feedback */}
-        <div className="space-y-2">
-          <label className="flex items-center justify-between text-sm font-mono text-slate-200 font-bold">
-            <span className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-cyan-400" />
-              <span>Player Display Handle (Global System-Wide Unique)</span>
-            </span>
-            <span className={`text-xs font-mono ${
-              isNameTooShort || isNameTooLong || handleStatus.error ? 'text-rose-400 font-bold' : handleTrimmed.length > 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'
-            }`}>
-              {handleTrimmed.length} / 20 chars
-            </span>
-          </label>
-
-          <div className="relative">
-            <input
-              type="text"
-              required
-              minLength={5}
-              maxLength={20}
-              value={userName}
-              onChange={(e) => {
-                const val = e.target.value;
-                setUserName(val);
-                setPlayer(prev => ({ ...prev, name: val }));
-              }}
-              placeholder="Enter unique handle (e.g. CodeMaster99)"
-              className={`w-full bg-slate-950 border rounded-2xl px-4 py-3.5 text-base font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all ${
-                handleStatus.error || isNameTooShort || isNameTooLong
-                  ? 'border-rose-500/80 focus:border-rose-400 shadow-rose-500/10'
-                  : handleStatus.available && isNameValid
-                  ? 'border-emerald-500/80 focus:border-emerald-400 shadow-emerald-500/10'
-                  : 'border-slate-800 focus:border-cyan-500/50'
-              }`}
-            />
-            {handleStatus.checking && (
-              <Loader2 className="w-5 h-5 text-cyan-400 animate-spin absolute right-4 top-4" />
-            )}
+        {/* Permanent Player Handle Badge */}
+        <div className="flex items-center justify-between bg-slate-950/80 border border-slate-800/80 px-5 py-3.5 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-cyan-400" />
+            <div>
+              <div className="text-xs text-slate-400 font-mono">Permanent Arena Handle</div>
+              <div className="text-base font-extrabold text-slate-100 font-mono flex items-center gap-2">
+                <span>{userName || 'Anonymous Coder'}</span>
+                <Lock className="w-3.5 h-3.5 text-emerald-400 inline" />
+              </div>
+            </div>
           </div>
-
-          {isNameTooShort && (
-            <p className="text-xs text-rose-400 font-mono flex items-center gap-1.5 pt-0.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-              <span>Handle is too short! Minimum 5 characters required (current: {handleTrimmed.length}).</span>
-            </p>
-          )}
-
-          {isNameTooLong && (
-            <p className="text-xs text-rose-400 font-mono flex items-center gap-1.5 pt-0.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-              <span>Handle exceeds 20 characters limit!</span>
-            </p>
-          )}
-
-          {handleStatus.error && !isNameTooShort && !isNameTooLong && (
-            <p className="text-xs text-rose-400 font-mono flex items-center gap-1.5 font-bold pt-0.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-              <span>{handleStatus.error}</span>
-            </p>
-          )}
-
-          {!handleStatus.checking && handleStatus.available && isNameValid && (
-            <p className="text-xs text-emerald-400 font-mono flex items-center gap-1.5 font-bold pt-0.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Handle "{handleTrimmed}" is available system-wide!</span>
-            </p>
-          )}
+          <div className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
+            Saved & Locked 🔒
+          </div>
         </div>
 
         {/* Tab Navigation (Create Room vs Join Room) */}
@@ -348,7 +352,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
               </div>
             ) : null}
 
-            {/* Topic & Difficulty Selectors (Disabled when Custom Problem is Selected) */}
+            {/* Topic & Difficulty Selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               
               {/* Topic Selector */}
@@ -458,7 +462,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
             </div>
 
-            {/* Search & Select Custom LeetCode Problem (Disabled when Topic/Difficulty is Selected) */}
+            {/* Search & Select Custom LeetCode Problem */}
             <div className="space-y-2 border-t border-slate-800/80 pt-5">
               <label className="text-sm font-mono text-slate-200 flex items-center justify-between">
                 <span className="flex items-center gap-2 font-bold">
@@ -542,8 +546,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
             {/* Submit Create Button */}
             <button
               type="submit"
-              disabled={!isNameValid}
-              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-base btn-glow-cyan transition-all shadow-xl shadow-cyan-500/20 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-base btn-glow-cyan transition-all shadow-xl shadow-cyan-500/20 flex items-center justify-center gap-2.5 cursor-pointer"
             >
               <Swords className="w-5 h-5 text-slate-950" />
               <span>{isBotMatch ? 'Start AI Practice Match' : 'Create 1v1 Room Code & Wait for Opponent'}</span>
@@ -592,7 +595,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <button
                 type="submit"
-                disabled={!isNameValid || !joinRoomId.trim()}
+                disabled={!joinRoomId.trim()}
                 className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-sm btn-glow-emerald transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <LogIn className="w-5 h-5 text-slate-950" />
@@ -601,7 +604,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
               <button
                 type="button"
-                disabled={!isNameValid || !joinRoomId.trim()}
+                disabled={!joinRoomId.trim()}
                 onClick={(e) => handleJoinSubmit(e, true)}
                 className="w-full py-4 px-5 rounded-2xl bg-purple-900/80 hover:bg-purple-800 text-purple-200 font-black text-sm border border-purple-500/60 btn-glow-purple transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -624,6 +627,78 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
         <span className="text-slate-600">•</span>
         <span className="text-slate-400">Code क्षेत्र 1v1 Arena</span>
       </footer>
+
+      {/* ONE-TIME PERMANENT HANDLE SETUP MODAL */}
+      {showHandleSetupModal && (
+        <div className="fixed inset-0 z-100 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-slate-900 border border-cyan-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 font-sans">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-emerald-500 p-0.5 mx-auto shadow-xl shadow-cyan-500/20">
+              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-cyan-400">
+                <UserCheck className="w-7 h-7" />
+              </div>
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="text-xl font-black text-slate-100">Set Your Permanent Arena Handle</h3>
+              <p className="text-xs text-slate-400 font-mono leading-relaxed">
+                Choose a unique display handle for all 1v1 duels, leaderboards, & chats. This is set **once** and saved permanently to your account!
+              </p>
+            </div>
+
+            <form onSubmit={handleSavePermanentHandle} className="space-y-4 font-mono text-xs">
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold flex items-center justify-between">
+                  <span>Display Handle</span>
+                  <span className={`text-[10px] ${isNameTooShort || isNameTooLong || handleStatus.error ? 'text-rose-400 font-bold' : handleTrimmed.length >= 3 ? 'text-emerald-400 font-bold' : 'text-slate-500'}`}>
+                    {handleTrimmed.length} / 20 chars
+                  </span>
+                </label>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    minLength={3}
+                    maxLength={20}
+                    value={newHandleInput}
+                    onChange={(e) => setNewHandleInput(e.target.value)}
+                    placeholder="e.g. CodeMaster99"
+                    className={`w-full bg-slate-950 border rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition-all ${
+                      handleStatus.error || isNameTooShort || isNameTooLong
+                        ? 'border-rose-500/80 focus:border-rose-400'
+                        : handleStatus.available && isNameValid
+                        ? 'border-emerald-500/80 focus:border-emerald-400'
+                        : 'border-slate-800 focus:border-cyan-500/50'
+                    }`}
+                  />
+                  {handleStatus.checking && (
+                    <Loader2 className="w-4 h-4 text-cyan-400 animate-spin absolute right-3.5 top-3.5" />
+                  )}
+                </div>
+
+                {isNameTooShort && (
+                  <p className="text-[10px] text-rose-400 pt-0.5">Min 3 characters required.</p>
+                )}
+                {handleStatus.error && !isNameTooShort && (
+                  <p className="text-[10px] text-rose-400 font-bold pt-0.5">{handleStatus.error}</p>
+                )}
+                {!handleStatus.checking && handleStatus.available && isNameValid && (
+                  <p className="text-[10px] text-emerald-400 font-bold pt-0.5">Handle "{handleTrimmed}" is available!</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={!isNameValid || savingHandle}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-extrabold text-sm btn-glow-cyan transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Lock className="w-4 h-4 text-slate-950" />
+                <span>{savingHandle ? 'Saving...' : 'Save Permanent Handle & Enter Arena'}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Spectator Fallback Modal */}
       {spectatorPrompt && (

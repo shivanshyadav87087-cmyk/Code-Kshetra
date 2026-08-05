@@ -8,7 +8,6 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.on
 export default function LandingAuthGate({ onAuthSuccess }) {
   const [mode, setMode] = useState('register'); // 'register' or 'login'
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -107,7 +106,6 @@ export default function LandingAuthGate({ onAuthSuccess }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          username: username || email.split('@')[0],
           password,
           leetcodeUsername,
           avatarUrl,
@@ -260,28 +258,6 @@ export default function LandingAuthGate({ onAuthSuccess }) {
               className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
             />
           </div>
-
-          {/* Optional Display Handle (Register Mode) */}
-          {mode === 'register' && (
-            <div className="space-y-1">
-              <label className="text-xs font-mono text-slate-300 font-bold flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Display Username / Handle</span>
-                </span>
-                <span className="text-[10px] text-slate-500">Optional (Defaults to Email Name)</span>
-              </label>
-              <input
-                type="text"
-                minLength={3}
-                maxLength={20}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. CodeMaster99"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-emerald-300 placeholder:text-slate-600 outline-none transition-all"
-              />
-            </div>
-          )}
 
           {/* Password */}
           <div className="space-y-1">
