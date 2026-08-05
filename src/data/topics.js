@@ -1,5 +1,6 @@
 export const TOPICS = [
-  { id: 'arrays', label: 'Arrays & Matrices 📊', description: 'Array manipulation, prefix sums, subsegment operations' },
+  { id: 'arrays', label: 'Arrays 📊', description: 'Array manipulation, prefix sums, subsegment operations' },
+  { id: 'matrix', label: 'Matrix / 2D Grid 🧊', description: '2D arrays, matrix transformations, grid traversals' },
   { id: 'strings', label: 'Strings & Text Processing 🔤', description: 'Palindromes, anagrams, pattern matching' },
   { id: 'two-pointers', label: 'Two Pointers 🎯', description: 'Dual pointer traversal, sorting optimizations' },
   { id: 'sliding-window', label: 'Sliding Window 🪟', description: 'Subarrays, substring window tracking' },

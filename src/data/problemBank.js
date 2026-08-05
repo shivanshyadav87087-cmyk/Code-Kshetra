@@ -126,6 +126,56 @@ export const PROBLEM_BANK = [
     ]
   },
 
+  // 1b. MATRIX / 2D GRID 🧊
+  {
+    id: 'rotate-image',
+    number: 48,
+    title: '48. Rotate Image',
+    difficulty: 'Medium',
+    topic: 'matrix',
+    leetcodeUrl: 'https://leetcode.com/problems/rotate-image/',
+    description: `You are given an \`n x n\` 2D \`matrix\` representing an image, rotate the image by 90 degrees (clockwise) in-place.`,
+    examples: [{ input: 'matrix = [[1,2,3],[4,5,6],[7,8,9]]', output: '[[7,4,1],[8,5,2],[9,6,3]]' }],
+    constraints: ['n == matrix.length == matrix[i].length', '1 <= n <= 20'],
+    entryFunction: 'rotate',
+    starterTemplates: {
+      javascript: `function rotate(matrix) {\n    \n};`,
+      python: `class Solution:\n    def rotate(self, matrix: list[list[int]]) -> None:\n        pass`,
+      cpp: `class Solution {\npublic:\n    void rotate(vector<vector<int>>& matrix) {\n        \n    }\n};`,
+      java: `class Solution {\n    public void rotate(int[][] matrix) {\n        \n    }\n}`
+    },
+    testCases: [
+      { input: [[[1, 2, 3], [4, 5, 6], [7, 8, 9]]], expectedOutput: [[7, 4, 1], [8, 5, 2], [9, 6, 3]], isSecret: false },
+      { input: [[[5, 1, 9, 11], [2, 4, 8, 10], [13, 3, 6, 7], [15, 14, 12, 16]]], expectedOutput: [[15, 13, 2, 5], [14, 3, 4, 1], [12, 6, 8, 9], [16, 7, 10, 11]], isSecret: false },
+      { input: [[[1]]], expectedOutput: [[1]], isSecret: false },
+      { input: [[[1, 2], [3, 4]]], expectedOutput: [[3, 1], [4, 2]], isSecret: true }
+    ]
+  },
+  {
+    id: 'spiral-matrix',
+    number: 54,
+    title: '54. Spiral Matrix',
+    difficulty: 'Medium',
+    topic: 'matrix',
+    leetcodeUrl: 'https://leetcode.com/problems/spiral-matrix/',
+    description: `Given an \`m x n\` \`matrix\`, return *all elements of the \`matrix\` in spiral order*.`,
+    examples: [{ input: 'matrix = [[1,2,3],[4,5,6],[7,8,9]]', output: '[1,2,3,6,9,8,7,4,5]' }],
+    constraints: ['m == matrix.length', 'n == matrix[i].length', '1 <= m, n <= 10'],
+    entryFunction: 'spiralOrder',
+    starterTemplates: {
+      javascript: `function spiralOrder(matrix) {\n    \n};`,
+      python: `class Solution:\n    def spiralOrder(self, matrix: list[list[int]]) -> list[int]:\n        pass`,
+      cpp: `class Solution {\npublic:\n    vector<int> spiralOrder(vector<vector<int>>& matrix) {\n        \n    }\n};`,
+      java: `class Solution {\n    public List<Integer> spiralOrder(int[][] matrix) {\n        \n    }\n}`
+    },
+    testCases: [
+      { input: [[[1, 2, 3], [4, 5, 6], [7, 8, 9]]], expectedOutput: [1, 2, 3, 6, 9, 8, 7, 4, 5], isSecret: false },
+      { input: [[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]], expectedOutput: [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7], isSecret: false },
+      { input: [[[1]]], expectedOutput: [1], isSecret: false },
+      { input: [[[1, 2], [3, 4]]], expectedOutput: [1, 2, 4, 3], isSecret: true }
+    ]
+  },
+
   // 2. STRINGS 🔤
   {
     id: 'valid-anagram',
