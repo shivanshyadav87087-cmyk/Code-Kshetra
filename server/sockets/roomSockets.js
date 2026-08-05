@@ -543,19 +543,31 @@ export function setupRoomSockets(io) {
         return;
       }
 
-      const isHost = socket.id === roomState.host?.id || socket.username === roomState.host?.username;
-      const opponentName = isHost ? roomState.guest?.username : roomState.host?.username;
+      // Handle AI Bot Instant Rematch
+      if (roomState.isBot) {
+        const freshProblem = selectFreshProblem(roomState);
+        roomState.problem = freshProblem;
+        roomState.status = 'in-progress';
+        roomState.matchStartTime = Date.now();
+        roomState.winningSolution = null;
+        roomState.matchEndReason = null;
+        roomState.hostCode = freshProblem.starterTemplates?.javascript || '';
+        roomState.guestCode = freshProblem.starterTemplates?.javascript || '';
 
-      if (!opponentName || opponentName === 'DevBot AI 🤖') {
-        if (typeof callback === 'function') callback({ success: false, error: 'Opponent is no longer available.' });
+        io.to(normalizedRoomId).emit('match_started', {
+          room: roomState,
+          matchStartTime: roomState.matchStartTime
+        });
+        if (typeof callback === 'function') callback({ success: true });
         return;
       }
 
-      let opponentSocket = null;
-      const oppLower = opponentName.toLowerCase();
+      const isHost = socket.id === roomState.host?.id || socket.username === roomState.host?.username;
+      const opponentName = isHost ? roomState.guest?.username : roomState.host?.username;
 
+      let opponentSocket = null;
       for (const [, sSocket] of io.of("/").sockets) {
-        if (sSocket.username && sSocket.username.toLowerCase() === oppLower) {
+        if (sSocket.id !== socket.id && (sSocket.rooms.has(normalizedRoomId) || (opponentName && sSocket.username?.toLowerCase() === opponentName.toLowerCase()))) {
           opponentSocket = sSocket;
           break;
         }
@@ -588,7 +600,7 @@ export function setupRoomSockets(io) {
       rematchTimeoutMap.set(normalizedRoomId, timeoutId);
 
       socket.to(normalizedRoomId).emit('rematch_requested', {
-        requesterName: socket.username,
+        requesterName: socket.username || 'Opponent',
         readyCount: 1,
         totalCount: 2
       });
@@ -619,18 +631,6 @@ export function setupRoomSockets(io) {
       roomState.antiCheat = { hostTabSwitches: 0, guestTabSwitches: 0, hostLargePastes: 0, guestLargePastes: 0, flags: [] };
       roomState.hostCode = freshProblem.starterTemplates?.javascript || '';
       roomState.guestCode = freshProblem.starterTemplates?.javascript || '';
-
-      const hostName = roomState.host?.username?.toLowerCase();
-      const guestName = roomState.guest?.username?.toLowerCase();
-
-      for (const [, sSocket] of io.of("/").sockets) {
-        if (sSocket.username) {
-          const sLower = sSocket.username.toLowerCase();
-          if (sLower === hostName || sLower === guestName) {
-            sSocket.join(normalizedRoomId);
-          }
-        }
-      }
 
       io.to(normalizedRoomId).emit('match_started', {
         room: roomState,

@@ -85,6 +85,9 @@ export default function App() {
   const [isSpectator, setIsSpectator] = useState(false);
   const [spectateTarget, setSpectateTarget] = useState('host'); // 'host' or 'guest'
 
+  // Mobile Arena Tab Switcher ('problem' | 'editor')
+  const [mobileArenaTab, setMobileArenaTab] = useState('editor');
+
   // Fullscreen State
   const [isFullscreenActive, setIsFullscreenActive] = useState(() => Boolean(document.fullscreenElement));
 
@@ -581,8 +584,8 @@ export default function App() {
             setPlayer={setPlayer}
           />
         ) : (
-          /* Active Arena State (100% Fullscreen Fitted Height) */
-          <div className="flex-1 flex flex-col gap-3 h-[calc(100vh-76px)] overflow-hidden">
+          /* Active Arena State (100% Responsive Fitted Height) */
+          <div className="flex-1 flex flex-col gap-3 lg:h-[calc(100vh-76px)] overflow-y-auto lg:overflow-hidden">
             
             {/* Top Opponent HUD Panel */}
             <OpponentPanel
@@ -602,18 +605,44 @@ export default function App() {
               onSwitchSpectateTarget={handleSwitchSpectateTarget}
             />
 
+            {/* Mobile Tab View Switcher (< 1024px) */}
+            <div className="flex lg:hidden bg-slate-900 border border-slate-800 p-1.5 rounded-2xl font-mono text-xs font-bold shrink-0 shadow-lg">
+              <button
+                type="button"
+                onClick={() => setMobileArenaTab('problem')}
+                className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  mobileArenaTab === 'problem'
+                    ? 'bg-slate-800 text-cyan-300 border border-cyan-500/30 shadow-md font-black'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                📝 Problem Description
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileArenaTab('editor')}
+                className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  mobileArenaTab === 'editor'
+                    ? 'bg-slate-800 text-emerald-300 border border-emerald-500/30 shadow-md font-black'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                💻 Code & Test Console
+              </button>
+            </div>
+
             {/* Split Arena Grid */}
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 overflow-hidden">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 overflow-y-auto lg:overflow-hidden">
               
               {/* Left Column: Problem Description */}
-              <div className="lg:col-span-5 h-full overflow-hidden">
+              <div className={`lg:col-span-5 h-full overflow-hidden ${mobileArenaTab === 'problem' ? 'block' : 'hidden lg:block'}`}>
                 <ProblemDescription problem={room.problem} />
               </div>
 
               {/* Right Column: Code Editor & Test Console */}
-              <div className="lg:col-span-7 flex flex-col gap-3 h-full overflow-hidden">
+              <div className={`lg:col-span-7 flex flex-col gap-3 h-full overflow-hidden ${mobileArenaTab === 'editor' ? 'block' : 'hidden lg:block'}`}>
                 {/* Code Editor */}
-                <div className="flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-[350px] lg:min-h-0 overflow-hidden">
                   <CodeEditor
                     problem={room.problem}
                     selectedLanguage={selectedLanguage}
@@ -627,7 +656,7 @@ export default function App() {
 
                 {/* Test Console */}
                 {!isSpectator && (
-                  <div className="h-[220px] sm:h-[250px] shrink-0">
+                  <div className="h-[250px] sm:h-[270px] shrink-0">
                     <TestConsole
                       problem={room.problem}
                       selectedLanguage={selectedLanguage}
