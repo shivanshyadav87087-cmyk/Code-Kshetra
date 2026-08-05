@@ -89,8 +89,50 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
     }
   };
 
-  const currentSampleCase = allCases[selectedCaseIdx];
+  const sampleCases = (problem.testCases || []).filter(c => !c.isSecret);
+  const displayCases = sampleCases.length > 0 ? sampleCases : (problem.testCases || []);
+  const currentSampleCase = displayCases[selectedCaseIdx] || displayCases[0];
   const activeResultCase = testResults?.results?.[selectedResultCaseIdx];
+
+  // Helper to extract labeled parameter names & values for any test case input
+  const getParamEntries = (sampleCase) => {
+    if (!sampleCase) return [];
+
+    if (sampleCase.params && typeof sampleCase.params === 'object' && !Array.isArray(sampleCase.params)) {
+      return Object.entries(sampleCase.params);
+    }
+
+    let paramNames = [];
+    const template = problem?.starterTemplates?.[selectedLanguage] ||
+                     problem?.starterTemplates?.javascript ||
+                     problem?.starterTemplates?.python ||
+                     problem?.starterTemplates?.cpp ||
+                     problem?.starterTemplates?.java || '';
+
+    if (template) {
+      const sigMatch = template.match(/\(([^)]*)\)/);
+      if (sigMatch && sigMatch[1]) {
+        const rawArgs = sigMatch[1].split(',');
+        paramNames = rawArgs
+          .map(a => a.trim())
+          .filter(a => a && a !== 'self')
+          .map(a => {
+            const tokens = a.split(':')[0].trim().split(/\s+/);
+            const name = tokens[tokens.length - 1].replace(/[&*]/g, '');
+            return name;
+          })
+          .filter(Boolean);
+      }
+    }
+
+    const rawInput = sampleCase.input !== undefined ? sampleCase.input : sampleCase.params;
+    const inputs = Array.isArray(rawInput) ? rawInput : [rawInput];
+
+    return inputs.map((val, idx) => {
+      const name = paramNames[idx] || (inputs.length === 1 ? 'input' : `param${idx + 1}`);
+      return [name, val];
+    });
+  };
 
   return (
     <div className="h-full flex flex-col bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-md font-sans select-none">
@@ -174,7 +216,7 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
             
             {/* Pill Tabs for Cases */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800 custom-scrollbar">
-              {allCases.map((c, idx) => (
+              {displayCases.map((c, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -190,13 +232,13 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
               ))}
             </div>
 
-            {/* Selected Sample Case Input Parameters (Scrollable) */}
+            {/* Selected Sample Case Input Parameters (LeetCode Style Labeled Textboxes) */}
             {currentSampleCase && (
               <div className="space-y-3 font-mono text-xs">
-                {Object.entries(currentSampleCase.params || {}).map(([paramName, paramVal]) => (
+                {getParamEntries(currentSampleCase).map(([paramName, paramVal]) => (
                   <div key={paramName} className="space-y-1">
                     <div className="text-slate-400 text-[11px] font-bold">{paramName} =</div>
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-cyan-300 font-semibold overflow-x-auto custom-scrollbar whitespace-pre">
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-cyan-300 font-semibold overflow-x-auto custom-scrollbar whitespace-pre select-all">
                       {formatParamValue(paramVal)}
                     </div>
                   </div>
@@ -300,11 +342,15 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                   <div className="space-y-3 font-mono text-xs">
                     
                     {/* Input */}
-                    <div className="space-y-1">
-                      <div className="text-slate-400 text-[11px] font-bold">Input =</div>
-                      <div className="bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-cyan-300 font-semibold overflow-x-auto custom-scrollbar whitespace-pre">
-                        {activeResultCase.inputStr}
-                      </div>
+                    <div className="space-y-2">
+                      {getParamEntries(activeResultCase).map(([paramName, paramVal]) => (
+                        <div key={paramName} className="space-y-1">
+                          <div className="text-slate-400 text-[11px] font-bold">{paramName} =</div>
+                          <div className="bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-cyan-300 font-semibold overflow-x-auto custom-scrollbar whitespace-pre select-all">
+                            {formatParamValue(paramVal)}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Diff Mode Side-by-Side Comparison */}
