@@ -165,35 +165,37 @@ export default function LandingAuthGate({ onAuthSuccess }) {
   const handleEnterContestSubmit = async (e) => {
     e.preventDefault();
     const finalHandle = usernameInput.trim();
-    if (!finalHandle || finalHandle.length < 3 || !handleStatus.available) return;
+    if (!finalHandle || finalHandle.length < 3) return;
 
     setLoading(true);
     sounds.playClick();
 
+    const currentUser = userProfileData || JSON.parse(localStorage.getItem('codeclash_user') || '{}');
+    const updatedUser = {
+      ...currentUser,
+      username: finalHandle,
+      name: finalHandle
+    };
+
+    localStorage.setItem('codeclash_user', JSON.stringify(updatedUser));
+
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/profile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userProfileData?.email || email,
-          username: finalHandle
-        })
-      });
-
-      const data = await res.json();
-      const updatedUser = data.user || { ...userProfileData, username: finalHandle };
-      localStorage.setItem('codeclash_user', JSON.stringify(updatedUser));
-
-      sounds.playSubmitSuccess();
-      onAuthSuccess(updatedUser);
+      if (currentUser.email || email) {
+        await fetch(`${BACKEND_URL}/api/auth/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentUser.email || email,
+            username: finalHandle
+          })
+        });
+      }
     } catch (err) {
-      // Fallback update if profile save fails
-      const fallbackUser = { ...userProfileData, username: finalHandle };
-      localStorage.setItem('codeclash_user', JSON.stringify(fallbackUser));
-      sounds.playSubmitSuccess();
-      onAuthSuccess(fallbackUser);
+      console.warn('Profile update fallback:', err);
     } finally {
       setLoading(false);
+      sounds.playSubmitSuccess();
+      onAuthSuccess(updatedUser);
     }
   };
 
@@ -446,7 +448,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
               {/* BUTTON UNDERNEATH USERNAME: ENTER IN THE CONTEST */}
               <button
                 type="submit"
-                disabled={loading || !handleStatus.available || usernameInput.trim().length < 3}
+                disabled={loading || usernameInput.trim().length < 3}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-500 to-cyan-500 text-slate-950 font-black text-sm tracking-widest uppercase shadow-2xl shadow-amber-500/30 hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 btn-glow"
               >
                 {loading ? (
