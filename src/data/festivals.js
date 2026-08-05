@@ -1,0 +1,147 @@
+// Dynamic Festival & Holiday Greetings Engine
+
+export const FESTIVALS = [
+  {
+    id: 'independence-day-india',
+    name: 'Independence Day',
+    flag: '🇮🇳',
+    icon: '🎆',
+    month: 8, // August
+    day: 15,
+    title: 'Happy Independence Day! 🇮🇳 🎆',
+    wishingText: 'Wishing you a proud and joyful 79th Independence Day! Code, innovate & build for the nation on Code क्षेत्र!',
+    bgGradient: 'from-amber-500/20 via-slate-900 to-emerald-500/20',
+    borderColor: 'border-amber-500/40',
+    textColor: 'text-amber-300'
+  },
+  {
+    id: 'janmashtami',
+    name: 'Krishna Janmashtami',
+    flag: '🪈',
+    icon: '✨',
+    month: 8, // August
+    day: 16,
+    title: 'Happy Krishna Janmashtami! 🪈✨',
+    wishingText: 'May Lord Krishna fill your life with joy, wisdom, and victory in every 1v1 coding battle!',
+    bgGradient: 'from-cyan-500/20 via-slate-900 to-purple-500/20',
+    borderColor: 'border-cyan-500/40',
+    textColor: 'text-cyan-300'
+  },
+  {
+    id: 'raksha-bandhan',
+    name: 'Raksha Bandhan',
+    flag: '🧵',
+    icon: '💖',
+    month: 8, // August
+    day: 9,
+    title: 'Happy Raksha Bandhan! 🧵✨',
+    wishingText: 'Celebrating the sacred bond of love, protection, and companionship. Happy Raksha Bandhan from Code क्षेत्र!',
+    bgGradient: 'from-rose-500/20 via-slate-900 to-purple-500/20',
+    borderColor: 'border-rose-500/40',
+    textColor: 'text-rose-300'
+  },
+  {
+    id: 'ganesh-chaturthi',
+    name: 'Ganesh Chaturthi',
+    flag: '🐘',
+    icon: '🌺',
+    month: 9, // September
+    day: 7,
+    title: 'Happy Ganesh Chaturthi! 🐘🌸',
+    wishingText: 'May Lord Ganesha remove all obstacles and bugs from your code! Wish you wisdom and high ELO ratings!',
+    bgGradient: 'from-amber-500/20 via-slate-900 to-rose-500/20',
+    borderColor: 'border-amber-500/40',
+    textColor: 'text-amber-300'
+  },
+  {
+    id: 'diwali',
+    name: 'Diwali',
+    flag: '🪔',
+    icon: '✨',
+    month: 11, // November
+    day: 1,
+    title: 'Happy Diwali! 🪔✨',
+    wishingText: 'May the festival of lights illuminate your path with joy, prosperity, and green testcases!',
+    bgGradient: 'from-amber-500/25 via-purple-900/40 to-yellow-500/25',
+    borderColor: 'border-amber-400/50',
+    textColor: 'text-amber-200'
+  },
+  {
+    id: 'republic-day-india',
+    name: 'Republic Day',
+    flag: '🇮🇳',
+    icon: '🕊️',
+    month: 1, // January
+    day: 26,
+    title: 'Happy Republic Day! 🇮🇳 🕊️',
+    wishingText: 'Saluting the spirit of India! Wishing everyone a proud Happy Republic Day. Code for progress!',
+    bgGradient: 'from-amber-500/20 via-slate-900 to-emerald-500/20',
+    borderColor: 'border-emerald-500/40',
+    textColor: 'text-emerald-300'
+  },
+  {
+    id: 'new-year',
+    name: 'New Year\'s Day',
+    flag: '🎆',
+    icon: '🥂',
+    month: 1, // January
+    day: 1,
+    title: 'Happy New Year! 🎆🥂',
+    wishingText: 'Welcome to the New Year! May your year be filled with 100% testcase acceptance and peak ELO ratings!',
+    bgGradient: 'from-cyan-500/20 via-purple-900/40 to-emerald-500/20',
+    borderColor: 'border-cyan-400/50',
+    textColor: 'text-cyan-200'
+  },
+  {
+    id: 'christmas',
+    name: 'Merry Christmas',
+    flag: '🎄',
+    icon: '🎁',
+    month: 12, // December
+    day: 25,
+    title: 'Merry Christmas! 🎄🎁',
+    wishingText: 'Wishing you peace, joy, and happiness this festive season. Merry Christmas from Code क्षेत्र!',
+    bgGradient: 'from-rose-500/20 via-slate-900 to-emerald-500/20',
+    borderColor: 'border-rose-500/40',
+    textColor: 'text-rose-300'
+  },
+  {
+    id: 'holi',
+    name: 'Holi',
+    flag: '🎨',
+    icon: '🌈',
+    month: 3, // March
+    day: 25,
+    title: 'Happy Holi! 🎨🌈',
+    wishingText: 'May your life be filled with vibrant colors of happiness, good health, and competitive victory!',
+    bgGradient: 'from-pink-500/20 via-purple-900/40 to-cyan-500/20',
+    borderColor: 'border-pink-500/40',
+    textColor: 'text-pink-300'
+  }
+];
+
+export function getCurrentFestival(customDate = null) {
+  const now = customDate ? new Date(customDate) : new Date();
+  const currentMonth = now.getMonth() + 1; // 1-indexed
+  const currentDay = now.getDate();
+
+  // 1. Exact Date Match
+  const exactMatch = FESTIVALS.find(f => f.month === currentMonth && f.day === currentDay);
+  if (exactMatch) return exactMatch;
+
+  // 2. Window Match (+/- 3 days around major festival)
+  const windowMatch = FESTIVALS.find(f => {
+    if (f.month === currentMonth && Math.abs(f.day - currentDay) <= 3) {
+      return true;
+    }
+    return false;
+  });
+  if (windowMatch) return windowMatch;
+
+  // 3. Fallback: Always return Independence Day / National Pride Greetings for August month!
+  if (currentMonth === 8) {
+    return FESTIVALS.find(f => f.id === 'independence-day-india');
+  }
+
+  return null;
+}

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, ShieldCheck, Trophy, MapPin, ChevronDown, Heart, Mail } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { COUNTRIES } from '../data/countries';
+import FestivalBanner from './FestivalBanner';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
@@ -162,6 +163,9 @@ export default function LandingAuthGate({ onAuthSuccess }) {
           <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto font-mono">
             Official 1v1 Real-Time Competitive Coding Arena. Boost your Rating by solving questions!
           </p>
+
+          {/* Dynamic Festival & Holiday Greetings Banner */}
+          <FestivalBanner />
         </div>
 
         {/* Auth Mode Tabs: Register vs Sign In */}

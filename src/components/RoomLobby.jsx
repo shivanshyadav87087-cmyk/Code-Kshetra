@@ -3,6 +3,7 @@ import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkl
 import { TOPICS, DIFFICULTIES } from '../data/topics';
 import { PROBLEM_BANK } from '../data/problemBank';
 import { sounds } from '../engine/soundManager';
+import FestivalBanner from './FestivalBanner';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
@@ -229,11 +230,15 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Header Banner */}
-      <div className="text-center mb-8 space-y-2">
+      <div className="text-center mb-8 space-y-2 w-full">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-mono font-bold uppercase tracking-widest">
           <Swords className="w-4 h-4 text-cyan-400 animate-pulse" />
           <span>Real-Time 1v1 Code Arena</span>
         </div>
+
+        {/* Dynamic Festival & Holiday Greetings Banner */}
+        <FestivalBanner />
+
         <h1 className="text-4xl sm:text-6xl font-black tracking-tight flex items-center justify-center gap-3">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-emerald-300 to-purple-300">CODE</span>
           <span className="text-slate-100 font-['Noto_Sans_Devanagari'] font-extrabold">क्षेत्र</span>
