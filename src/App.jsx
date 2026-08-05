@@ -491,21 +491,20 @@ export default function App() {
     setPlayer(updated);
     localStorage.setItem('codeclash_user', JSON.stringify(updated));
 
-    // Auto-join contest room if user arrived via a shared contest link
+    // Auto-join contest room immediately to land straight on contest page
     const targetRoom = pendingRoomId || sessionStorage.getItem('pending_contest_room');
     if (targetRoom) {
-      setTimeout(() => {
-        handleJoinRoom({ roomId: targetRoom, userName: updated.name }, (res) => {
-          if (!res.success) {
-            setJoinNotification({ username: 'Contest Room', text: res.error || `Could not auto-join room ${targetRoom}.` });
-          }
-        });
-        sessionStorage.removeItem('pending_contest_room');
-        setPendingRoomId('');
-        try {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (e) {}
-      }, 400);
+      sessionStorage.removeItem('pending_contest_room');
+      setPendingRoomId('');
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {}
+
+      handleJoinRoom({ roomId: targetRoom, userName: updated.name }, (res) => {
+        if (!res || !res.success) {
+          setJoinNotification({ username: 'Contest Room', text: res?.error || `Could not join room ${targetRoom}.` });
+        }
+      });
     }
   };
 
