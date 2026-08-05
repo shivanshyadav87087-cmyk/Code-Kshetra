@@ -1,4 +1,4 @@
-// Dynamic Festival & Live Public Calendar API Engine with Exact Date Matching
+// Dynamic Festival & Live Public Calendar API Engine with Full Platform Theme Transformation
 
 export const FESTIVALS = [
   {
@@ -11,9 +11,15 @@ export const FESTIVALS = [
     day: 15,
     title: 'Happy Independence Day! 🇮🇳 🎆',
     wishingText: 'Wishing you a proud and joyful 79th Independence Day! Code, innovate & build for the nation on Code क्षेत्र!',
-    bgGradient: 'from-amber-600/30 via-slate-900 to-emerald-600/30',
-    borderColor: 'border-amber-500/50',
-    textColor: 'text-amber-300'
+    bgGradient: 'from-amber-500/30 via-slate-950 to-emerald-500/30',
+    borderColor: 'border-amber-500/60 shadow-amber-500/20',
+    textColor: 'text-amber-300',
+    theme: {
+      ambientGlow: 'from-amber-500/20 via-emerald-600/20 to-cyan-500/20',
+      cardBorder: 'border-amber-500/40 hover:border-emerald-400/60',
+      badgeBg: 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/20 border-amber-500/40 text-amber-300',
+      buttonGradient: 'bg-gradient-to-r from-amber-500 via-emerald-500 to-cyan-500 text-slate-950 font-black'
+    }
   },
   {
     id: 'janmashtami',
@@ -25,9 +31,15 @@ export const FESTIVALS = [
     day: 16,
     title: 'Happy Krishna Janmashtami! 🪈✨',
     wishingText: 'May Lord Krishna fill your life with joy, wisdom, and victory in every 1v1 coding battle!',
-    bgGradient: 'from-cyan-600/30 via-slate-900 to-purple-600/30',
-    borderColor: 'border-cyan-500/50',
-    textColor: 'text-cyan-300'
+    bgGradient: 'from-cyan-600/30 via-slate-950 to-purple-600/30',
+    borderColor: 'border-cyan-500/60 shadow-cyan-500/20',
+    textColor: 'text-cyan-300',
+    theme: {
+      ambientGlow: 'from-cyan-500/20 via-indigo-600/20 to-amber-500/20',
+      cardBorder: 'border-cyan-500/40 hover:border-amber-400/60',
+      badgeBg: 'bg-gradient-to-r from-cyan-500/20 via-slate-900 to-purple-500/20 border-cyan-500/40 text-cyan-300',
+      buttonGradient: 'bg-gradient-to-r from-cyan-400 via-indigo-500 to-amber-400 text-slate-950 font-black'
+    }
   },
   {
     id: 'raksha-bandhan',
@@ -39,9 +51,15 @@ export const FESTIVALS = [
     day: 9,
     title: 'Happy Raksha Bandhan! 🧵✨',
     wishingText: 'Celebrating the sacred bond of love, protection, and companionship. Happy Raksha Bandhan from Code क्षेत्र!',
-    bgGradient: 'from-rose-600/30 via-slate-900 to-purple-600/30',
-    borderColor: 'border-rose-500/50',
-    textColor: 'text-rose-300'
+    bgGradient: 'from-rose-600/30 via-slate-950 to-purple-600/30',
+    borderColor: 'border-rose-500/60 shadow-rose-500/20',
+    textColor: 'text-rose-300',
+    theme: {
+      ambientGlow: 'from-rose-500/20 via-purple-600/20 to-pink-500/20',
+      cardBorder: 'border-rose-500/40 hover:border-pink-400/60',
+      badgeBg: 'bg-gradient-to-r from-rose-500/20 via-slate-900 to-purple-500/20 border-rose-500/40 text-rose-300',
+      buttonGradient: 'bg-gradient-to-r from-rose-500 via-pink-500 to-purple-500 text-slate-950 font-black'
+    }
   },
   {
     id: 'ganesh-chaturthi',
@@ -53,9 +71,15 @@ export const FESTIVALS = [
     day: 7,
     title: 'Happy Ganesh Chaturthi! 🐘🌸',
     wishingText: 'May Lord Ganesha remove all obstacles and bugs from your code! Wish you wisdom and high ELO ratings!',
-    bgGradient: 'from-amber-600/30 via-slate-900 to-rose-600/30',
-    borderColor: 'border-amber-500/50',
-    textColor: 'text-amber-300'
+    bgGradient: 'from-amber-600/30 via-slate-950 to-rose-600/30',
+    borderColor: 'border-amber-500/60 shadow-amber-500/20',
+    textColor: 'text-amber-300',
+    theme: {
+      ambientGlow: 'from-amber-500/20 via-rose-600/20 to-yellow-500/20',
+      cardBorder: 'border-amber-500/40 hover:border-rose-400/60',
+      badgeBg: 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-rose-500/20 border-amber-500/40 text-amber-300',
+      buttonGradient: 'bg-gradient-to-r from-amber-500 via-rose-500 to-yellow-400 text-slate-950 font-black'
+    }
   },
   {
     id: 'diwali',
@@ -68,8 +92,14 @@ export const FESTIVALS = [
     title: 'Happy Diwali! 🪔✨',
     wishingText: 'May the festival of lights illuminate your path with joy, prosperity, and green testcases!',
     bgGradient: 'from-amber-500/35 via-purple-900/50 to-yellow-500/35',
-    borderColor: 'border-amber-400/60',
-    textColor: 'text-amber-200'
+    borderColor: 'border-amber-400/70 shadow-amber-400/30',
+    textColor: 'text-amber-200',
+    theme: {
+      ambientGlow: 'from-amber-500/30 via-yellow-500/20 to-purple-600/30',
+      cardBorder: 'border-amber-400/50 hover:border-yellow-300/70 shadow-amber-500/20',
+      badgeBg: 'bg-gradient-to-r from-amber-500/25 via-purple-900/50 to-yellow-500/25 border-amber-400/50 text-amber-200',
+      buttonGradient: 'bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-950 font-black'
+    }
   },
   {
     id: 'republic-day-india',
@@ -81,9 +111,15 @@ export const FESTIVALS = [
     day: 26,
     title: 'Happy Republic Day! 🇮🇳 🕊️',
     wishingText: 'Saluting the spirit of India! Wishing everyone a proud Happy Republic Day. Code for progress!',
-    bgGradient: 'from-amber-600/30 via-slate-900 to-emerald-600/30',
-    borderColor: 'border-emerald-500/50',
-    textColor: 'text-emerald-300'
+    bgGradient: 'from-amber-600/30 via-slate-950 to-emerald-600/30',
+    borderColor: 'border-emerald-500/60 shadow-emerald-500/20',
+    textColor: 'text-emerald-300',
+    theme: {
+      ambientGlow: 'from-amber-500/20 via-emerald-600/20 to-cyan-500/20',
+      cardBorder: 'border-emerald-500/40 hover:border-amber-400/60',
+      badgeBg: 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-emerald-500/20 border-emerald-500/40 text-emerald-300',
+      buttonGradient: 'bg-gradient-to-r from-amber-500 via-emerald-500 to-cyan-500 text-slate-950 font-black'
+    }
   },
   {
     id: 'new-year',
@@ -96,8 +132,14 @@ export const FESTIVALS = [
     title: 'Happy New Year! 🎆🥂',
     wishingText: 'Welcome to the New Year! May your year be filled with 100% testcase acceptance and peak ELO ratings!',
     bgGradient: 'from-cyan-600/30 via-purple-900/50 to-emerald-600/30',
-    borderColor: 'border-cyan-400/60',
-    textColor: 'text-cyan-200'
+    borderColor: 'border-cyan-400/70 shadow-cyan-400/30',
+    textColor: 'text-cyan-200',
+    theme: {
+      ambientGlow: 'from-cyan-500/30 via-purple-600/30 to-emerald-500/30',
+      cardBorder: 'border-cyan-400/50 hover:border-emerald-400/70 shadow-cyan-500/20',
+      badgeBg: 'bg-gradient-to-r from-cyan-500/25 via-purple-900/50 to-emerald-500/25 border-cyan-400/50 text-cyan-200',
+      buttonGradient: 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-purple-400 text-slate-950 font-black'
+    }
   },
   {
     id: 'christmas',
@@ -109,9 +151,15 @@ export const FESTIVALS = [
     day: 25,
     title: 'Merry Christmas! 🎄🎁',
     wishingText: 'Wishing you peace, joy, and happiness this festive season. Merry Christmas from Code क्षेत्र!',
-    bgGradient: 'from-rose-600/30 via-slate-900 to-emerald-600/30',
-    borderColor: 'border-rose-500/50',
-    textColor: 'text-rose-300'
+    bgGradient: 'from-rose-600/30 via-slate-950 to-emerald-600/30',
+    borderColor: 'border-rose-500/60 shadow-rose-500/20',
+    textColor: 'text-rose-300',
+    theme: {
+      ambientGlow: 'from-rose-500/25 via-emerald-600/25 to-slate-900',
+      cardBorder: 'border-rose-500/40 hover:border-emerald-400/60 shadow-rose-500/20',
+      badgeBg: 'bg-gradient-to-r from-rose-500/20 via-slate-900 to-emerald-500/20 border-rose-500/40 text-rose-300',
+      buttonGradient: 'bg-gradient-to-r from-rose-500 via-emerald-500 to-rose-400 text-slate-950 font-black'
+    }
   },
   {
     id: 'holi',
@@ -124,8 +172,14 @@ export const FESTIVALS = [
     title: 'Happy Holi! 🎨🌈',
     wishingText: 'May your life be filled with vibrant colors of happiness, good health, and competitive victory!',
     bgGradient: 'from-pink-600/30 via-purple-900/50 to-cyan-600/30',
-    borderColor: 'border-pink-500/50',
-    textColor: 'text-pink-300'
+    borderColor: 'border-pink-500/60 shadow-pink-500/20',
+    textColor: 'text-pink-300',
+    theme: {
+      ambientGlow: 'from-pink-500/30 via-cyan-500/30 to-purple-600/30',
+      cardBorder: 'border-pink-500/40 hover:border-cyan-400/60 shadow-pink-500/20',
+      badgeBg: 'bg-gradient-to-r from-pink-500/25 via-purple-900/50 to-cyan-500/25 border-pink-500/40 text-pink-300',
+      buttonGradient: 'bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 text-slate-950 font-black'
+    }
   }
 ];
 
@@ -183,9 +237,15 @@ export async function getAsyncCurrentFestival(countryCode = 'IN') {
       imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg',
       title: `Happy ${todayHoliday.localName || todayHoliday.name}! ✨`,
       wishingText: `Celebrating ${todayHoliday.name}! Wishing you happiness, prosperity, and zero bugs from Code क्षेत्र!`,
-      bgGradient: 'from-amber-600/30 via-slate-900 to-purple-600/30',
+      bgGradient: 'from-amber-600/30 via-slate-950 to-purple-600/30',
       borderColor: 'border-amber-500/50',
-      textColor: 'text-amber-300'
+      textColor: 'text-amber-300',
+      theme: {
+        ambientGlow: 'from-amber-500/20 via-purple-600/20 to-cyan-500/20',
+        cardBorder: 'border-amber-500/40 hover:border-cyan-400/60',
+        badgeBg: 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-purple-500/20 border-amber-500/40 text-amber-300',
+        buttonGradient: 'bg-gradient-to-r from-amber-500 via-purple-500 to-cyan-500 text-slate-950 font-black'
+      }
     };
   }
 

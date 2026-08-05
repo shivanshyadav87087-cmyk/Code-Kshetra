@@ -21,6 +21,8 @@ import { roomEngine } from './engine/roomEngine';
 import { socket } from './engine/socketClient';
 import { sounds } from './engine/soundManager';
 
+import { getCurrentFestival } from './data/festivals';
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function App() {
@@ -556,13 +558,15 @@ export default function App() {
     }
   };
 
-  if (!isAuthenticated) {
-    return <LandingAuthGate onAuthSuccess={handleAuthSuccess} />;
-  }
+  const activeFest = getCurrentFestival();
+  const ambientThemeGlow = activeFest?.theme?.ambientGlow || 'from-cyan-500/20 via-emerald-600/20 to-purple-500/20';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden relative">
       
+      {/* Dynamic Ambient Festival Background Mesh (Transforms on Active Festival) */}
+      <div className={`fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr ${ambientThemeGlow} rounded-full blur-[140px] pointer-events-none -z-10 animate-float-slow`} />
+
       {/* Top Navbar */}
       <Navbar
         player={player}
