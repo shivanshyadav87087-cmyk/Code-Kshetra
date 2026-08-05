@@ -4,7 +4,7 @@ import { sounds } from '../engine/soundManager';
 import { getRatingTier } from '../engine/eloEngine';
 
 export default function Navbar({ player, setPlayer, room, onLeaveRoom, onOpenAuth, onOpenLeaderboard, onOpenProfile, onSignOut }) {
-  const [soundEnabled, setSoundEnabled] = React.useState(true);
+  const [soundEnabled, setSoundEnabled] = React.useState(false);
 
   const toggleSound = () => {
     const next = !soundEnabled;
