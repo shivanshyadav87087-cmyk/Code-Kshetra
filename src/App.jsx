@@ -155,9 +155,15 @@ export default function App() {
               location: data.user.location || prev.location
             }));
             localStorage.setItem('codeclash_user', JSON.stringify(data.user));
+          } else if (data && (data.error || !data.user)) {
+            // Profile not found on backend -> sign out to prompt Register/Sign-In
+            handleSignOut();
           }
         })
         .catch(() => {});
+    } else if (isAuthenticated && !player.email) {
+      // Unregistered session token -> sign out to prompt Register/Sign-In
+      handleSignOut();
     }
   }, [isAuthenticated, player.email, player.name]);
 

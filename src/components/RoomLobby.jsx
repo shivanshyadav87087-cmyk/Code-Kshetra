@@ -121,9 +121,15 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
       setShowHandleSetupModal(false);
       sounds.playSubmitSuccess();
     } catch (err) {
+      if (!player?.email || err.message?.toLowerCase().includes('not found')) {
+        localStorage.removeItem('codeclash_token');
+        localStorage.removeItem('codeclash_user');
+        window.location.reload();
+        return;
+      }
       alert(err.message);
       sounds.playFail();
-    } fontFinally: {
+    } finally {
       setSavingHandle(false);
     }
   };
