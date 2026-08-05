@@ -7,7 +7,7 @@ import FestivalBanner from './FestivalBanner';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function LandingAuthGate({ onAuthSuccess }) {
-  const [mode, setMode] = useState('register'); // 'register' or 'login'
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
@@ -108,6 +108,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
         body: JSON.stringify({
           email,
           password,
+          username: username.trim() || email.split('@')[0],
           leetcodeUsername,
           avatarUrl,
           bio,
@@ -277,6 +278,26 @@ export default function LandingAuthGate({ onAuthSuccess }) {
                   <span>Choose Device Photo</span>
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Arena Display Handle (Username - Registration Mode) */}
+          {mode === 'register' && (
+            <div className="space-y-1">
+              <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Arena Display Handle (Username)</span>
+              </label>
+              <input
+                type="text"
+                required
+                minLength={3}
+                maxLength={20}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. CodeMaster99"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-emerald-300 placeholder:text-slate-600 outline-none transition-all font-bold"
+              />
             </div>
           )}
 

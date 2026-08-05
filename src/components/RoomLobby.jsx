@@ -31,16 +31,12 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
   const [handleStatus, setHandleStatus] = useState({ checking: false, available: true, error: null });
   const [savingHandle, setSavingHandle] = useState(false);
 
-  // Check if player has a permanent handle on mount
+  // Sync player username on mount
   useEffect(() => {
-    if (player) {
-      if (player.name && player.name.trim().length >= 3) {
-        setUserName(player.name);
-        setShowHandleSetupModal(false);
-      } else {
-        setShowHandleSetupModal(true);
-      }
+    if (player && player.name) {
+      setUserName(player.name);
     }
+    setShowHandleSetupModal(false);
   }, [player?.name]);
 
   useEffect(() => {
