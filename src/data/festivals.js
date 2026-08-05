@@ -1,4 +1,4 @@
-// Dynamic Festival & Holiday Greetings Engine
+// Dynamic Festival & Live Public Calendar API Engine
 
 export const FESTIVALS = [
   {
@@ -120,6 +120,28 @@ export const FESTIVALS = [
   }
 ];
 
+// Live Public Calendar API Fetcher (Nager.Date API)
+export async function fetchLivePublicHolidays(countryCode = 'IN') {
+  const currentYear = new Date().getFullYear();
+  const cacheKey = `public_holidays_${countryCode}_${currentYear}`;
+
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${currentYear}/${countryCode}`);
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+    return data;
+  } catch (e) {
+    return [];
+  }
+}
+
 export function getCurrentFestival(customDate = null) {
   const now = customDate ? new Date(customDate) : new Date();
   const currentMonth = now.getMonth() + 1; // 1-indexed
@@ -144,4 +166,30 @@ export function getCurrentFestival(customDate = null) {
   }
 
   return null;
+}
+
+export async function getAsyncCurrentFestival(countryCode = 'IN') {
+  const localMatch = getCurrentFestival();
+
+  // Fetch live public holidays from Nager.Date API
+  const liveHolidays = await fetchLivePublicHolidays(countryCode);
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const todayHoliday = liveHolidays.find(h => h.date === todayStr);
+
+  if (todayHoliday) {
+    return {
+      id: todayHoliday.name.toLowerCase().replace(/\s+/g, '-'),
+      name: todayHoliday.localName || todayHoliday.name,
+      flag: '🎆',
+      icon: '✨',
+      title: `Happy ${todayHoliday.localName || todayHoliday.name}! ✨`,
+      wishingText: `Celebrating ${todayHoliday.name}! Wishing you happiness, prosperity, and zero bugs from Code क्षेत्र!`,
+      bgGradient: localMatch?.bgGradient || 'from-amber-500/20 via-slate-900 to-purple-500/20',
+      borderColor: localMatch?.borderColor || 'border-amber-500/40',
+      textColor: localMatch?.textColor || 'text-amber-300'
+    };
+  }
+
+  return localMatch;
 }

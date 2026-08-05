@@ -1,11 +1,27 @@
-import React, { useState } from 'react';
-import { Sparkles, Heart, X, Gift, ChevronRight } from 'lucide-react';
-import { getCurrentFestival } from '../data/festivals';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Heart, X, Gift, Globe } from 'lucide-react';
+import { getCurrentFestival, getAsyncCurrentFestival } from '../data/festivals';
 import { sounds } from '../engine/soundManager';
 
 export default function FestivalBanner() {
   const [dismissed, setDismissed] = useState(false);
-  const activeFestival = getCurrentFestival();
+  const [activeFestival, setActiveFestival] = useState(() => getCurrentFestival());
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadLiveHolidays() {
+      try {
+        const fetched = await getAsyncCurrentFestival('IN');
+        if (isMounted && fetched) {
+          setActiveFestival(fetched);
+        }
+      } catch (e) {}
+    }
+
+    loadLiveHolidays();
+    return () => { isMounted = false; };
+  }, []);
 
   if (!activeFestival || dismissed) return null;
 
@@ -30,6 +46,9 @@ export default function FestivalBanner() {
               <span className={`font-black text-xs sm:text-sm tracking-wide ${activeFestival.textColor} flex items-center gap-1.5`}>
                 <span>{activeFestival.title}</span>
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-mono text-cyan-300 font-bold">
+                <Globe className="w-2.5 h-2.5" /> Auto Calendar Sync
               </span>
             </div>
 
