@@ -494,7 +494,7 @@ export default function App() {
     setPlayer(updated);
     localStorage.setItem('codeclash_user', JSON.stringify(updated));
 
-    // Auto-join or auto-create contest room immediately to land straight on contest page
+    // Auto-join contest room if user opened a contest room link
     const targetRoom = pendingRoomId || sessionStorage.getItem('pending_contest_room');
     if (targetRoom) {
       sessionStorage.removeItem('pending_contest_room');
@@ -505,19 +505,16 @@ export default function App() {
 
       handleJoinRoom({ roomId: targetRoom, userName: updated.name }, (res) => {
         if (!res || !res.success) {
-          // Fallback: If room link expired, create a fresh 1v1 contest room for user!
           handleCreateRoom({ userName: updated.name });
         }
       });
-    } else {
-      // Direct contest entry: Create a fresh 1v1 contest room!
-      handleCreateRoom({ userName: updated.name });
     }
   };
 
   const handleSignOut = () => {
     localStorage.removeItem('codeclash_token');
     localStorage.removeItem('codeclash_user');
+    sessionStorage.removeItem('pending_contest_room');
     setIsAuthenticated(false);
     setRoom(null);
     setIsSpectator(false);
@@ -650,7 +647,9 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 flex flex-col p-2 sm:p-4 gap-3 max-w-[1920px] mx-auto w-full overflow-hidden">
-        {!room ? (
+        {!isAuthenticated ? (
+          <LandingAuthGate onAuthSuccess={handleAuthSuccess} />
+        ) : !room ? (
           /* Lobby State */
           <RoomLobby
             onCreateRoom={handleCreateRoom}
