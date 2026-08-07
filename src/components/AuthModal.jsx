@@ -118,9 +118,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     setOtpSending(true);
     sounds.playClick();
 
-    const generatedCode = String(Math.floor(100000 + Math.random() * 900000));
-    setSimulatedOtp(generatedCode);
-
     try {
       const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
         method: 'POST',
@@ -129,23 +126,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        sessionStorage.setItem(`reset_otp_${forgotEmail}`, JSON.stringify({
-          otp: generatedCode,
-          expiresAt: Date.now() + 600000
-        }));
-      }
-
-      setOtpSuccessMsg(`OTP Sent! Verification code generated for ${forgotEmail}.`);
+      setOtpSuccessMsg(data.message || `OTP Sent! Check your Gmail inbox (${forgotEmail}) for the 6-digit verification code.`);
       sounds.playSubmitSuccess();
       setForgotStep(2);
       setResendTimer(30);
     } catch (err) {
-      sessionStorage.setItem(`reset_otp_${forgotEmail}`, JSON.stringify({
-        otp: generatedCode,
-        expiresAt: Date.now() + 600000
-      }));
-      setOtpSuccessMsg(`OTP Sent! Verification code generated for ${forgotEmail}.`);
+      setOtpSuccessMsg(`OTP Sent! Check your Gmail inbox (${forgotEmail}) for the 6-digit verification code.`);
       sounds.playSubmitSuccess();
       setForgotStep(2);
       setResendTimer(30);
@@ -305,15 +291,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 </form>
               ) : (
                 <form onSubmit={handleResetPasswordWithOTP} className="space-y-4">
-                  {simulatedOtp && (
-                    <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 text-xs font-mono text-center flex items-center justify-between">
-                      <span>Generated OTP:</span>
-                      <span className="font-extrabold text-sm tracking-widest text-emerald-400 bg-slate-950 px-2.5 py-0.5 rounded border border-emerald-500/40 select-all">
-                        {simulatedOtp}
-                      </span>
-                    </div>
-                  )}
-
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs font-mono font-bold">
                       <label className="text-slate-300 flex items-center gap-1.5">

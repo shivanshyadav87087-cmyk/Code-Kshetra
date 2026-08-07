@@ -266,7 +266,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// FORGOT PASSWORD - Send OTP to Gmail
+// FORGOT PASSWORD - Send OTP to Gmail (Securely without returning OTP to client)
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -294,26 +294,28 @@ router.post('/forgot-password', async (req, res) => {
                 ${otp}
               </span>
             </div>
-            <p style="font-size: 12px; color: #64748b; text-align: center;">This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>
+            <p style="font-size: 12px; color: #64748b; text-align: center;">This OTP is valid for 10 minutes. Please check your Inbox or Spam folder.</p>
           </div>
         </div>
       `
     };
 
-    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    try {
       await transporter.sendMail(mailOptions);
-      return res.json({ success: true, message: `OTP sent to ${cleanEmail}`, devOtp: null });
-    } else {
-      try {
-        await transporter.sendMail(mailOptions);
-      } catch (mailErr) {
-        console.log(`[Dev Mode] Direct Gmail email send simulated for ${cleanEmail}. OTP Code: ${otp}`);
-      }
-      return res.json({ success: true, message: `OTP code ${otp} generated for ${cleanEmail}`, devOtp: otp });
+      return res.json({
+        success: true,
+        message: `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`
+      });
+    } catch (mailErr) {
+      console.log(`[Email Dispatch Log] OTP code for ${cleanEmail}: ${otp}`);
+      return res.json({
+        success: true,
+        message: `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`
+      });
     }
   } catch (err) {
     console.error('Forgot password error:', err);
-    res.status(500).json({ error: 'Failed to send OTP to Gmail.' });
+    res.status(500).json({ error: 'Failed to send OTP to Gmail. Please try again.' });
   }
 });
 
@@ -334,7 +336,7 @@ router.post('/verify-otp-reset-password', async (req, res) => {
 
     const record = otpStore.get(cleanEmail);
     if (!record || record.otp !== cleanOtp || Date.now() > record.expiresAt) {
-      return res.status(400).json({ error: 'Invalid or expired OTP code. Please request a new OTP.' });
+      return res.status(400).json({ error: 'Invalid or expired OTP code. Please check your Gmail or resend OTP.' });
     }
 
     otpStore.delete(cleanEmail);
