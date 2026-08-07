@@ -2,12 +2,23 @@ import express from 'express';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 import { User } from '../models/User.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'codeclash_super_secret_jwt_key_99';
 
 export const memoryUsers = new Map();
+const otpStore = new Map(); // In-memory store for OTPs: { email: { otp, expiresAt } }
+
+// Nodemailer SMTP Transporter configuration for direct Gmail delivery
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER || 'shivanshyadav87087@gmail.com',
+    pass: process.env.GMAIL_APP_PASSWORD || ''
+  }
+});
 
 // Fast Instant 0ms SHA-256 Password Hash Helper
 function hashPassword(password) {
@@ -29,7 +40,6 @@ router.get('/check-email', async (req, res) => {
       return res.json({ available: false, error: 'Please enter a valid email address.' });
     }
 
-    // 1. Check MongoDB if connected
     if (mongoose.connection.readyState === 1) {
       const existingDb = await User.findOne({ email: sanitized });
       if (existingDb) {
@@ -37,7 +47,6 @@ router.get('/check-email', async (req, res) => {
       }
     }
 
-    // 2. Check Memory Store
     if (memoryUsers.has(sanitized)) {
       return res.json({ available: false, error: 'This email is already registered. Please sign in.' });
     }
@@ -91,7 +100,6 @@ router.get('/me', async (req, res) => {
       return res.status(400).json({ error: 'Email or username query parameter is required.' });
     }
 
-    // 1. Fetch from MongoDB if connected
     if (mongoose.connection.readyState === 1) {
       const dbUser = await User.findOne({
         $or: [
@@ -104,7 +112,6 @@ router.get('/me', async (req, res) => {
       }
     }
 
-    // 2. Fetch from Memory Store
     const memUser = memoryUsers.get(sanitized);
     if (memUser) {
       const { passwordHash: _, ...safeUser } = memUser;
@@ -135,7 +142,6 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
     }
 
-    // Derive display handle from username or email prefix
     let cleanUsername = (username || '').trim();
     if (!cleanUsername) {
       cleanUsername = cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
@@ -149,7 +155,6 @@ router.post('/register', async (req, res) => {
     const userBio = bio || 'Competitive Coder ⚔️ | Multi-Language Specialist';
     const userLocation = location || 'India 🇮🇳';
 
-    // 1. Check MongoDB ONLY if connected
     if (mongoose.connection.readyState === 1) {
       try {
         const existingEmail = await User.findOne({ email: cleanEmail });
@@ -182,7 +187,6 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // 2. Fast Instant Memory Store Fallback
     if (memoryUsers.has(cleanEmail)) {
       return res.status(400).json({ error: 'This email is already registered. Please Sign In!' });
     }
@@ -259,6 +263,117 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error during login.' });
+  }
+});
+
+// FORGOT PASSWORD - Send OTP to Gmail
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: 'Please enter a valid Gmail address.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    otpStore.set(cleanEmail, { otp, expiresAt });
+
+    const mailOptions = {
+      from: '"Code क्षेत्र Arena" <shivanshyadav87087@gmail.com>',
+      to: cleanEmail,
+      subject: '🔐 Code क्षेत्र — Password Reset OTP Code',
+      html: `
+        <div style="font-family: Arial, sans-serif; background-color: #0f172a; padding: 24px; color: #f8fafc; border-radius: 16px;">
+          <div style="max-width: 500px; margin: 0 auto; background-color: #1e293b; padding: 24px; border-radius: 16px; border: 1px solid #334155;">
+            <h2 style="color: #38bdf8; text-align: center;">Code क्षेत्र ⚔️ Password Reset</h2>
+            <p style="font-size: 14px; color: #94a3b8; text-align: center;">You requested a password reset for your Code क्षेत्र account.</p>
+            <div style="text-align: center; margin: 24px 0;">
+              <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #34d399; background: #090d16; padding: 12px 24px; border-radius: 12px; border: 1px solid #10b981;">
+                ${otp}
+              </span>
+            </div>
+            <p style="font-size: 12px; color: #64748b; text-align: center;">This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>
+          </div>
+        </div>
+      `
+    };
+
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      await transporter.sendMail(mailOptions);
+      return res.json({ success: true, message: `OTP sent to ${cleanEmail}`, devOtp: null });
+    } else {
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (mailErr) {
+        console.log(`[Dev Mode] Direct Gmail email send simulated for ${cleanEmail}. OTP Code: ${otp}`);
+      }
+      return res.json({ success: true, message: `OTP code ${otp} generated for ${cleanEmail}`, devOtp: otp });
+    }
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Failed to send OTP to Gmail.' });
+  }
+});
+
+// VERIFY OTP & RESET PASSWORD
+router.post('/verify-otp-reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'Email, OTP, and new password are required.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanOtp = String(otp).trim();
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+    }
+
+    const record = otpStore.get(cleanEmail);
+    if (!record || record.otp !== cleanOtp || Date.now() > record.expiresAt) {
+      return res.status(400).json({ error: 'Invalid or expired OTP code. Please request a new OTP.' });
+    }
+
+    otpStore.delete(cleanEmail);
+    const newPasswordHash = hashPassword(newPassword);
+
+    if (mongoose.connection.readyState === 1) {
+      const user = await User.findOneAndUpdate(
+        { email: cleanEmail },
+        { $set: { passwordHash: newPasswordHash } },
+        { new: true }
+      );
+
+      if (user) {
+        const token = jwt.sign({ id: user._id, email: user.email, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+        return res.json({ success: true, message: 'Password updated successfully!', user, token });
+      }
+    }
+
+    const memUser = memoryUsers.get(cleanEmail);
+    if (memUser) {
+      memUser.passwordHash = newPasswordHash;
+      const token = jwt.sign({ id: memUser.id, email: memUser.email, username: memUser.username }, JWT_SECRET, { expiresIn: '7d' });
+      const { passwordHash: _, ...safeUser } = memUser;
+      return res.json({ success: true, message: 'Password updated successfully!', user: safeUser, token });
+    }
+
+    const newUserObj = {
+      id: 'mem_' + Date.now(),
+      email: cleanEmail,
+      username: cleanEmail.split('@')[0],
+      passwordHash: newPasswordHash
+    };
+    memoryUsers.set(cleanEmail, newUserObj);
+
+    const token = jwt.sign({ id: newUserObj.id, email: cleanEmail, username: newUserObj.username }, JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ success: true, message: 'Password updated successfully!', user: newUserObj, token });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Server error resetting password.' });
   }
 });
 
