@@ -375,7 +375,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
                   <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
                 ) : (
                   <>
-                    <span>Next: Set Unique Username ➔</span>
+                    <span>Continue ➔</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -445,7 +445,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
                 )}
               </div>
 
-              {/* BUTTON UNDERNEATH USERNAME: ENTER IN THE CONTEST */}
+              {/* BUTTON UNDERNEATH USERNAME: ENTER CONTEST */}
               <button
                 type="submit"
                 disabled={loading || usernameInput.trim().length < 3}
@@ -456,7 +456,7 @@ export default function LandingAuthGate({ onAuthSuccess }) {
                 ) : (
                   <>
                     <Swords className="w-5 h-5 text-slate-950 animate-bounce" />
-                    <span>Create 1v1 Room Code & Wait for Opponent ⚔️</span>
+                    <span>Enter Contest Arena ⚔️</span>
                   </>
                 )}
               </button>
