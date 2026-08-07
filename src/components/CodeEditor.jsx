@@ -103,6 +103,32 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
     editorRef.current = editor;
     monacoRef.current = monaco;
 
+    // Define Custom LeetCode Dark Theme for Monaco
+    monaco.editor.defineTheme('leetcode-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '569CD6', fontStyle: 'bold' },
+        { token: 'number', foreground: 'B5CEA8' },
+        { token: 'string', foreground: 'CE9178' },
+        { token: 'operator', foreground: 'D4D4D4' },
+        { token: 'function', foreground: 'DCDCAA' },
+        { token: 'variable', foreground: '9CDCFE' },
+      ],
+      colors: {
+        'editor.background': '#0b0f19',
+        'editor.foreground': '#f8fafc',
+        'editor.lineHighlightBackground': '#1e293b60',
+        'editorCursor.foreground': '#38bdf8',
+        'editorLineNumber.foreground': '#475569',
+        'editorLineNumber.activeForeground': '#38bdf8',
+        'editorIndentGuide.background': '#33415530',
+        'editorIndentGuide.activeBackground': '#38bdf880',
+      }
+    });
+    monaco.editor.setTheme('leetcode-dark');
+
     // Listen to Monaco Paste Event to block pastes exceeding 50 characters
     editor.onDidPaste((e) => {
       if (readOnly || !room || room.status !== 'in-progress') return;
@@ -181,7 +207,7 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
           e.preventDefault();
         }
       }}
-      className={`flex flex-col bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-md relative transition-all ${
+      className={`flex flex-col bg-slate-900/95 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-md relative transition-all ${
         isFullscreen
           ? 'fixed inset-0 z-80 rounded-none border-none shadow-2xl'
           : 'h-full'
@@ -282,14 +308,14 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
             <span className="text-[10px] font-mono uppercase hidden sm:inline">Font:</span>
             <button
               onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
-              className="hover:text-cyan-300 px-1 font-extrabold"
+              className="hover:text-cyan-300 px-1 font-extrabold cursor-pointer"
             >
               -
             </button>
             <span className="font-mono text-slate-200 font-bold">{fontSize}</span>
             <button
               onClick={() => setFontSize(prev => Math.min(22, prev + 1))}
-              className="hover:text-cyan-300 px-1 font-extrabold"
+              className="hover:text-cyan-300 px-1 font-extrabold cursor-pointer"
             >
               +
             </button>
@@ -298,7 +324,7 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
           {/* Copy Button */}
           <button
             onClick={handleCopyCode}
-            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all text-xs flex items-center gap-1"
+            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all text-xs flex items-center gap-1 cursor-pointer"
             title="Copy Code"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
@@ -308,7 +334,7 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
           {!readOnly && (
             <button
               onClick={handleResetCode}
-              className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all text-xs flex items-center gap-1"
+              className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all text-xs flex items-center gap-1 cursor-pointer"
               title="Reset to Starter Template"
             >
               <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
@@ -322,7 +348,7 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
               setIsFullscreen(prev => !prev);
               sounds.playClick();
             }}
-            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all text-xs flex items-center gap-1"
+            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all text-xs flex items-center gap-1 cursor-pointer"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Editor'}
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-cyan-400" /> : <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />}
@@ -330,8 +356,8 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
         </div>
       </div>
 
-      {/* Monaco Editor Container */}
-      <div className="flex-1 w-full bg-[#1e1e1e] relative">
+      {/* Monaco Editor Container with LeetCode Theme */}
+      <div className="flex-1 w-full bg-[#0b0f19] relative">
         <Editor
           height="100%"
           language={currentLangConfig.monacoLang || 'javascript'}
@@ -340,18 +366,19 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
             if (!readOnly) setCode(val || '');
           }}
           onMount={handleEditorDidMount}
-          theme="vs-dark"
+          theme="leetcode-dark"
           options={{
             readOnly: readOnly,
             fontSize: fontSize,
-            fontFamily: "'Fira Code', 'JetBrains Mono', Consolas, monospace",
+            fontFamily: "'Fira Code', 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', monospace",
             fontLigatures: true,
-            lineHeight: 22,
+            lineHeight: 24,
+            letterSpacing: 0.3,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 4,
-            padding: { top: 12, bottom: 12 },
+            padding: { top: 14, bottom: 14 },
             smoothScrolling: true,
             cursorBlinking: readOnly ? 'solid' : 'smooth',
             cursorSmoothCaretAnimation: 'on',
