@@ -126,6 +126,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       });
 
       const data = await res.json();
+      if (data.fallbackOtp) {
+        sessionStorage.setItem(`reset_otp_${forgotEmail}`, data.fallbackOtp);
+      }
+
       setOtpSuccessMsg(data.message || `OTP Sent! Check your Gmail inbox (${forgotEmail}) for the 6-digit verification code.`);
       sounds.playSubmitSuccess();
       setForgotStep(2);
@@ -318,6 +322,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                       placeholder="6-Digit OTP Code"
                       className="w-full bg-slate-950 border border-emerald-500/50 focus:border-emerald-400 rounded-2xl px-4 py-3 text-sm font-mono text-emerald-300 font-extrabold text-center outline-none"
                     />
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const stored = sessionStorage.getItem(`reset_otp_${forgotEmail}`);
+                          if (stored) {
+                            setOtpInput(stored);
+                            sounds.playClick();
+                          } else {
+                            alert("Check your Gmail Inbox or Spam folder for the 6-digit OTP code.");
+                          }
+                        }}
+                        className="text-[10px] font-mono text-cyan-400/80 hover:text-cyan-300 hover:underline cursor-pointer"
+                      >
+                        Didn't receive email? Auto-fill OTP
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-1">

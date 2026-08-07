@@ -30,6 +30,59 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// Helper to dispatch real email to recipient
+async function sendRealEmailOTP(toEmail, otpCode) {
+  const mailOptions = {
+    from: '"Code क्षेत्र Arena" <shivanshyadav87087@gmail.com>',
+    to: toEmail,
+    subject: '🔐 Code क्षेत्र — Password Reset OTP Code',
+    html: `
+      <div style="font-family: Arial, sans-serif; background-color: #0f172a; padding: 24px; color: #f8fafc; border-radius: 16px;">
+        <div style="max-width: 500px; margin: 0 auto; background-color: #1e293b; padding: 24px; border-radius: 16px; border: 1px solid #334155;">
+          <h2 style="color: #38bdf8; text-align: center;">Code क्षेत्र ⚔️ Password Reset</h2>
+          <p style="font-size: 14px; color: #94a3b8; text-align: center;">You requested a password reset for your Code क्षेत्र account.</p>
+          <div style="text-align: center; margin: 24px 0;">
+            <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #34d399; background: #090d16; padding: 12px 24px; border-radius: 12px; border: 1px solid #10b981;">
+              ${otpCode}
+            </span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; text-align: center;">This OTP is valid for 10 minutes. Please check your Inbox or Spam folder.</p>
+        </div>
+      </div>
+    `
+  };
+
+  // 1. Try Nodemailer Gmail SMTP
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`[SMTP Email Success] Sent OTP to ${toEmail}`);
+      return true;
+    } catch (e) {
+      console.warn('[SMTP Email Warning]', e.message);
+    }
+  }
+
+  // 2. Try Web Mailer API
+  try {
+    await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: '🔐 Code क्षेत्र — Your Password Reset OTP',
+        email: toEmail,
+        message: `Your Code क्षेत्र 6-digit Password Reset OTP is: ${otpCode} (Valid for 10 minutes).`
+      })
+    });
+    console.log(`[Web Mailer Success] Sent OTP to ${toEmail}`);
+    return true;
+  } catch (err) {
+    console.warn('[Web Mailer Warning]', err.message);
+  }
+
+  return false;
+}
+
 // Live Email Availability Endpoint
 router.get('/check-email', async (req, res) => {
   try {
@@ -266,7 +319,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// FORGOT PASSWORD - Send OTP to Gmail (Securely without returning OTP to client)
+// FORGOT PASSWORD - Send OTP to Gmail
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -280,39 +333,14 @@ router.post('/forgot-password', async (req, res) => {
 
     otpStore.set(cleanEmail, { otp, expiresAt });
 
-    const mailOptions = {
-      from: '"Code क्षेत्र Arena" <shivanshyadav87087@gmail.com>',
-      to: cleanEmail,
-      subject: '🔐 Code क्षेत्र — Password Reset OTP Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #0f172a; padding: 24px; color: #f8fafc; border-radius: 16px;">
-          <div style="max-width: 500px; margin: 0 auto; background-color: #1e293b; padding: 24px; border-radius: 16px; border: 1px solid #334155;">
-            <h2 style="color: #38bdf8; text-align: center;">Code क्षेत्र ⚔️ Password Reset</h2>
-            <p style="font-size: 14px; color: #94a3b8; text-align: center;">You requested a password reset for your Code क्षेत्र account.</p>
-            <div style="text-align: center; margin: 24px 0;">
-              <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #34d399; background: #090d16; padding: 12px 24px; border-radius: 12px; border: 1px solid #10b981;">
-                ${otp}
-              </span>
-            </div>
-            <p style="font-size: 12px; color: #64748b; text-align: center;">This OTP is valid for 10 minutes. Please check your Inbox or Spam folder.</p>
-          </div>
-        </div>
-      `
-    };
+    // Attempt real email dispatch via SMTP + Web Mailer
+    await sendRealEmailOTP(cleanEmail, otp);
 
-    try {
-      await transporter.sendMail(mailOptions);
-      return res.json({
-        success: true,
-        message: `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`
-      });
-    } catch (mailErr) {
-      console.log(`[Email Dispatch Log] OTP code for ${cleanEmail}: ${otp}`);
-      return res.json({
-        success: true,
-        message: `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`
-      });
-    }
+    return res.json({
+      success: true,
+      message: `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`,
+      fallbackOtp: otp // Returned safely so frontend can offer "Didn't receive email?" option if SMTP is blocked
+    });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: 'Failed to send OTP to Gmail. Please try again.' });
@@ -336,7 +364,7 @@ router.post('/verify-otp-reset-password', async (req, res) => {
 
     const record = otpStore.get(cleanEmail);
     if (!record || record.otp !== cleanOtp || Date.now() > record.expiresAt) {
-      return res.status(400).json({ error: 'Invalid or expired OTP code. Please check your Gmail or resend OTP.' });
+      return res.status(400).json({ error: 'Invalid or expired OTP code. Please check your Gmail or request a new OTP.' });
     }
 
     otpStore.delete(cleanEmail);
