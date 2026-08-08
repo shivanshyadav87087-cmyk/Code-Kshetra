@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Key, Lock, ArrowRight, ShieldCheck, Sparkles, X, Code, CheckCircle2, AlertCircle, Loader2, Mail, KeyRound, Globe } from 'lucide-react';
+import { User, Key, Lock, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, X, Code, CheckCircle2, AlertCircle, Loader2, Mail, KeyRound, Globe } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
@@ -327,6 +327,18 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans select-none">
       <div className="w-full max-w-md bg-[#1e2330] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative animate-scaleUp p-6 sm:p-8">
         
+        {/* Top Controls: Backward Arrow & Close */}
+        <button
+          onClick={() => {
+            sounds.playClick();
+            onClose();
+          }}
+          className="absolute top-4 left-4 flex items-center gap-1 px-2.5 py-1 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans z-20 shadow"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
+          <span>← Back</span>
+        </button>
+
         {/* Close Button */}
         <button
           onClick={() => {

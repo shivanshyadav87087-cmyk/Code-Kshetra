@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Swords, Trophy, Sparkles, CheckCircle2, ChevronRight, Zap, Target, Award, Code, Play } from 'lucide-react';
+import { X, BookOpen, Swords, Trophy, Sparkles, CheckCircle2, ChevronRight, Zap, Target, Award, Code, Play, ArrowLeft } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 
 // 1. EXPLORE ROADMAP MODAL
@@ -45,13 +45,26 @@ export function ExploreModal({ isOpen, onClose, onStartPractice }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
       <div className="w-full max-w-2xl bg-[#1a1f2c] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 max-h-[90vh] overflow-y-auto text-left">
         
-        {/* Close Button */}
-        <button
-          onClick={() => { sounds.playClick(); onClose(); }}
-          className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer z-10"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Top Header Control Buttons: Backward Arrow & Close */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => { sounds.playClick(); onClose(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans shadow"
+          >
+            <ArrowLeft className="w-4 h-4 text-cyan-400" />
+            <span>← Back</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { sounds.playClick(); onClose(); }}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Modal Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -127,16 +140,29 @@ export function DuelsInfoModal({ isOpen, onClose, onStartDuel }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
       <div className="w-full max-w-xl bg-[#1a1f2c] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left">
         
-        {/* Close Button */}
-        <button
-          onClick={() => { sounds.playClick(); onClose(); }}
-          className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer z-10"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Top Header Control Buttons: Backward Arrow & Close */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => { sounds.playClick(); onClose(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans shadow z-20"
+          >
+            <ArrowLeft className="w-4 h-4 text-cyan-400" />
+            <span>← Back</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { sounds.playClick(); onClose(); }}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer z-20"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Banner Photo Header */}
-        <div className="relative h-40 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-5 overflow-hidden">
+        <div className="relative h-40 -mx-6 sm:-mx-8 mb-5 overflow-hidden">
           <img 
             src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80" 
             alt="1v1 Battle Arena" 
@@ -198,16 +224,29 @@ export function ContestArenaModal({ isOpen, onClose, onRegisterContest }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
       <div className="w-full max-w-xl bg-[#1a1f2c] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left">
         
-        {/* Close Button */}
-        <button
-          onClick={() => { sounds.playClick(); onClose(); }}
-          className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer z-10"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Top Header Control Buttons: Backward Arrow & Close */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => { sounds.playClick(); onClose(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans shadow z-20"
+          >
+            <ArrowLeft className="w-4 h-4 text-amber-400" />
+            <span>← Back</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { sounds.playClick(); onClose(); }}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer z-20"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Banner Photo Header */}
-        <div className="relative h-40 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-5 overflow-hidden">
+        <div className="relative h-40 -mx-6 sm:-mx-8 mb-5 overflow-hidden">
           <img 
             src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80" 
             alt="Contest Arena" 
@@ -257,3 +296,4 @@ export function ContestArenaModal({ isOpen, onClose, onRegisterContest }) {
     </div>
   );
 }
+
