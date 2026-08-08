@@ -88,7 +88,32 @@ async function sendRealEmailOTP(toEmail, otpCode) {
     }
   }
 
-  // 3. Try Web Mailer API
+  // 3. Try Resend API if key provided
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'Code क्षेत्र <onboarding@resend.dev>',
+          to: [toEmail],
+          subject: '🔐 Code क्षेत्र — Password Reset OTP Code',
+          html: mailOptions.html
+        })
+      });
+      if (resendRes.ok) {
+        console.log(`[Resend API Success] Sent OTP to ${toEmail}`);
+        return true;
+      }
+    } catch (e) {
+      console.warn('[Resend API Warning]', e.message);
+    }
+  }
+
+  // 4. Try Web Mailer API
   try {
     const webRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`, {
       method: 'POST',
