@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, AlertCircle, Loader2, Mail, Flame, RefreshCw, KeyRound, ShieldCheck } from 'lucide-react';
+import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, CheckCircle2, AlertCircle, Loader2, Mail, Flame, RefreshCw, KeyRound, ShieldCheck, ChevronRight, BookOpen, Trophy, Globe, Code2 } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { COUNTRIES } from '../data/countries';
 import FestivalBanner from './FestivalBanner';
@@ -8,19 +8,20 @@ import InstallPwaButton from './InstallPwaButton';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
 export default function LandingAuthGate({ onAuthSuccess }) {
-  // Layer Step State: 1 = Auth (Sign In / Register), 2 = Unique Handle Setup & Enter Contest
+  // Layer Step State: 1 = Auth Gate & Hero Landing Page, 2 = Unique Handle Setup & Enter Contest
   const [step, setStep] = useState(1);
   const [mode, setMode] = useState('register'); // 'register' or 'login'
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [usernameInput, setUsernameInput] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [bio, setBio] = useState('Competitive Coder ⚔️ | LeetCode Challenger');
   const [location, setLocation] = useState('India 🇮🇳');
   
   const [userProfileData, setUserProfileData] = useState(null);
-  const [usernameInput, setUsernameInput] = useState('');
   const [handleStatus, setHandleStatus] = useState({ checking: false, available: true, error: null });
 
   // Forgot Password & OTP Verification States
@@ -34,12 +35,13 @@ export default function LandingAuthGate({ onAuthSuccess }) {
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
-  const [simulatedOtp, setSimulatedOtp] = useState('');
+  const [activeOtpCode, setActiveOtpCode] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaPassed, setCaptchaPassed] = useState(true);
 
-  const fileInputRef = useRef(null);
+  const authCardRef = useRef(null);
 
   // OTP Resend Countdown Timer Effect
   useEffect(() => {
@@ -52,62 +54,11 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     return () => clearInterval(interval);
   }, [resendTimer]);
 
-  // Real-Time Password Strength Evaluator
-  const evaluatePasswordStrength = (pass) => {
-    if (!pass) return { label: '', color: '', width: '0%', tip: '' };
-    
-    let score = 0;
-    if (pass.length >= 6) score += 1;
-    if (pass.length >= 8) score += 1;
-    if (/[0-9]/.test(pass)) score += 1;
-    if (/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score += 1;
-    if (/[@#$!%*?&-_]/.test(pass)) score += 1;
-
-    if (pass.length < 6) {
-      return {
-        label: 'Weak Password 🔴',
-        color: 'bg-rose-500 text-rose-400',
-        width: '25%',
-        tip: 'Password must be at least 6 characters.'
-      };
-    } else if (score <= 2) {
-      return {
-        label: 'Medium Password 🟡',
-        color: 'bg-amber-500 text-amber-400',
-        width: '60%',
-        tip: 'Add numbers & special symbols (@#$!) to strengthen.'
-      };
-    } else {
-      return {
-        label: 'Strong Password 🟢',
-        color: 'bg-emerald-500 text-emerald-400',
-        width: '100%',
-        tip: 'Strong & secure password!'
-      };
+  const scrollToAuthCard = () => {
+    sounds.playClick();
+    if (authCardRef.current) {
+      authCardRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const passStrength = evaluatePasswordStrength(password);
-  const newPassStrength = evaluatePasswordStrength(newPassword);
-
-  // Photo file upload from device via FileReader
-  const handlePhotoFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Photo file size should be less than 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setAvatarUrl(event.target.result);
-        sounds.playClick();
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   // Debounced Live Unique Username Check for Layer 2
@@ -141,11 +92,17 @@ export default function LandingAuthGate({ onAuthSuccess }) {
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-    setLoading(true);
     sounds.playClick();
 
+    if (mode === 'register' && password !== confirmPassword) {
+      setErrorMsg('Passwords do not match. Please check again!');
+      sounds.playFail();
+      return;
+    }
+
+    setLoading(true);
     const endpoint = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
-    const tempUsername = email ? email.split('@')[0] : 'User_' + Math.floor(Math.random() * 89999 + 10000);
+    const tempUsername = usernameInput || (email ? email.split('@')[0] : 'User_' + Math.floor(Math.random() * 89999 + 10000));
 
     try {
       const res = await fetch(`${BACKEND_URL}${endpoint}`, {
@@ -185,8 +142,6 @@ export default function LandingAuthGate({ onAuthSuccess }) {
       setLoading(false);
     }
   };
-
-  const [activeOtpCode, setActiveOtpCode] = useState('');
 
   // FORGOT PASSWORD STEP 1: Send OTP to Gmail
   const handleSendResetOTP = async (e) => {
@@ -345,506 +300,516 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     }
   };
 
-  const displayAvatar = avatarUrl || userProfileData?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-[#141822] text-slate-100 font-sans selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden">
       
-      {/* Background Animated Glow Grids */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/20 via-emerald-600/20 to-purple-500/20 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Main Container Card */}
-      <div className="w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-2xl overflow-hidden relative z-10 p-6 sm:p-8 my-6">
-        
-        {/* Header Branding */}
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 via-emerald-500 to-purple-500 p-0.5 shadow-xl shadow-cyan-500/20 mx-auto mb-3">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <img src="/favicon.svg" alt="Code क्षेत्र logo" className="w-8 h-8" />
+      {/* 1. TOP LEETCODE-STYLE NAVIGATION BAR */}
+      <nav className="w-full bg-[#181c28]/90 border-b border-slate-800/80 sticky top-0 z-40 backdrop-blur-xl px-6 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-emerald-500 to-purple-500 p-0.5 shadow-lg shadow-cyan-500/20">
+              <div className="w-full h-full bg-[#141822] rounded-[10px] flex items-center justify-center">
+                <img src="/favicon.svg" alt="Code क्षेत्र logo" className="w-5 h-5" />
+              </div>
             </div>
-          </div>
-          
-          <h1 className="text-2xl sm:text-3xl font-black tracking-wider flex items-center justify-center gap-2">
-            <span className="bg-gradient-to-r from-cyan-400 via-emerald-300 to-purple-400 bg-clip-text text-transparent">CODE</span>
-            <span className="text-slate-100 font-['Noto_Sans_Devanagari'] font-extrabold">क्षेत्र</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto font-mono">
-            Official 1v1 Real-Time Competitive Coding Arena. Boost your Rating by solving questions!
-          </p>
-
-          <div className="mt-3 flex justify-center">
-            <InstallPwaButton />
+            <span className="font-black text-xl tracking-wide flex items-center gap-1">
+              <span className="bg-gradient-to-r from-cyan-400 via-emerald-300 to-purple-400 bg-clip-text text-transparent">CODE</span>
+              <span className="text-slate-100 font-['Noto_Sans_Devanagari'] font-extrabold text-xl">क्षेत्र</span>
+            </span>
           </div>
 
-          <FestivalBanner />
+          <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-400 font-mono">
+            <span className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1">
+              <BookOpen className="w-3.5 h-3.5" /> Explore
+            </span>
+            <span className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1">
+              <Swords className="w-3.5 h-3.5" /> 1v1 Duels
+            </span>
+            <span className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1">
+              <Trophy className="w-3.5 h-3.5" /> Contest Arena
+            </span>
+          </div>
         </div>
 
-        {/* Contest Invitation Banner (If joining via shared room link) */}
-        {(() => {
-          let roomCode = '';
-          try {
-            const urlParams = new URLSearchParams(window.location.search);
-            roomCode = urlParams.get('room') || urlParams.get('join') || '';
-            if (!roomCode && window.location.hash && window.location.hash.includes('room=')) {
-              roomCode = window.location.hash.split('room=')[1]?.split('&')[0] || '';
-            }
-            if (!roomCode) {
-              roomCode = sessionStorage.getItem('pending_contest_room') || '';
-            }
-          } catch (e) {}
+        <div className="flex items-center gap-3">
+          <InstallPwaButton />
+          
+          <button
+            onClick={scrollToAuthCard}
+            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-teal-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <span>Create Account</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </nav>
 
-          if (roomCode) {
-            return (
-              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-slate-900 to-cyan-500/20 border-2 border-amber-400/60 shadow-xl text-center space-y-1">
-                <div className="flex items-center justify-center gap-2 text-amber-300 font-black text-sm">
-                  <Swords className="w-5 h-5 text-amber-400 animate-bounce" />
-                  <span>CONTEST INVITATION RECEIVED! ⚔️</span>
+      {/* 2. LEETCODE-STYLE HERO DIAGONAL SECTION ("A New Way to Learn") */}
+      <section className="relative w-full bg-[#1a1e2b] pt-12 pb-24 border-b border-slate-800/80 leetcode-skew-banner overflow-hidden">
+        {/* Background Glow Accents */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+          
+          {/* Left Column: 3D Tablet Mockup & Dashboard Illustration */}
+          <div className="lg:col-span-6 order-2 lg:order-1 flex justify-center">
+            <div className="w-full max-w-lg bg-[#202636] border-4 border-slate-700/80 rounded-3xl p-5 shadow-2xl shadow-cyan-950/40 relative animate-float-slow">
+              
+              {/* Tablet Header Dots */}
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-800">
+                <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+                <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                <span className="ml-auto text-[10px] font-mono text-slate-400">Code क्षेत्र Arena Dashboard</span>
+              </div>
+
+              {/* Tablet Content Preview Mockup */}
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="h-16 rounded-xl bg-cyan-500/20 border border-cyan-500/30 p-2 flex flex-col justify-between">
+                  <span className="text-[10px] text-cyan-300 font-mono font-bold">1v1 Rating</span>
+                  <span className="text-base font-black text-cyan-400 font-mono">1850 ELO</span>
                 </div>
-                <p className="text-xs text-slate-200 font-medium">
-                  You were invited to 1v1 Contest Room <span className="font-mono font-extrabold text-cyan-300 bg-slate-950 px-2.5 py-1 rounded-xl border border-cyan-500/40">{roomCode.toUpperCase()}</span>
-                </p>
+                <div className="h-16 rounded-xl bg-emerald-500/20 border border-emerald-500/30 p-2 flex flex-col justify-between">
+                  <span className="text-[10px] text-emerald-300 font-mono font-bold">Solved</span>
+                  <span className="text-base font-black text-emerald-400 font-mono">245 / 500</span>
+                </div>
+                <div className="h-16 rounded-xl bg-purple-500/20 border border-purple-500/30 p-2 flex flex-col justify-between">
+                  <span className="text-[10px] text-purple-300 font-mono font-bold">Win Rate</span>
+                  <span className="text-base font-black text-purple-400 font-mono">87.5%</span>
+                </div>
               </div>
-            );
-          }
-          return null;
-        })()}
 
-        {/* Error Alert */}
-        {errorMsg && (
-          <div className="p-3 mb-5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center font-bold font-mono">
-            {errorMsg}
-          </div>
-        )}
-
-        {/* Success Alert */}
-        {otpSuccessMsg && (
-          <div className="p-3 mb-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs text-center font-bold font-mono">
-            {otpSuccessMsg}
-          </div>
-        )}
-
-        {/* FORGOT PASSWORD MODAL SCREEN */}
-        {forgotMode ? (
-          <div className="space-y-5 animate-fade-in">
-            <div className="text-center bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center mx-auto mb-2">
-                <KeyRound className="w-6 h-6 animate-pulse" />
+              {/* Progress List Items */}
+              <div className="space-y-2.5">
+                {[
+                  { name: 'Two Sum Algorithm', difficulty: 'Easy', status: 'Accepted 🟢', color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' },
+                  { name: 'Longest Substring', difficulty: 'Medium', status: 'Accepted 🟢', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
+                  { name: 'Trapping Rain Water', difficulty: 'Hard', status: 'Duel Won ⚔️', color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' }
+                ].map((item, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                      <span className="text-xs font-bold text-slate-200 font-mono">{item.name}</span>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-extrabold ${item.color}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <h2 className="text-lg font-black text-white uppercase tracking-wider">
-                {forgotStep === 1 ? 'Reset Password via OTP' : 'Verify OTP & Set New Password'}
+            </div>
+          </div>
+
+          {/* Right Column: LeetCode Hero Headline & Copy */}
+          <div className="lg:col-span-6 order-1 lg:order-2 space-y-6 text-center lg:text-left">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
+              A New Way to Learn & Duel
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Code क्षेत्र is the best platform to help you enhance your skills, expand your knowledge, solve LeetCode algorithms, and prepare for technical duels.
+            </p>
+
+            <div className="pt-2">
+              <button
+                onClick={scrollToAuthCard}
+                className="px-8 py-4 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-base tracking-wide shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2"
+              >
+                <span>Create Account</span>
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. LEETCODE-STYLE "START EXPLORING" FEATURE SECTION */}
+      <section className="relative w-full bg-[#141822] py-20 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Column: Headline & Description */}
+          <div className="lg:col-span-6 space-y-5 text-center lg:text-left">
+            <div className="inline-flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/40 text-teal-400 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                <BookOpen className="w-6 h-6 text-teal-400" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-teal-400 tracking-tight">
+                Start Exploring
               </h2>
-              <p className="text-xs text-slate-400 font-mono">
-                {forgotStep === 1
-                  ? 'Enter your registered Gmail address to receive a 6-digit reset OTP.'
-                  : `Enter the 6-digit OTP sent to ${forgotEmail} and create your new password.`}
+            </div>
+
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-lg mx-auto lg:mx-0">
+              Explore is a well-organized tool that helps you get the most out of Code क्षेत्र by providing structure to guide your progress towards the next step in your programming career.
+            </p>
+
+            <button
+              onClick={scrollToAuthCard}
+              className="inline-flex items-center gap-1.5 text-teal-400 font-extrabold text-sm hover:underline cursor-pointer pt-2 group"
+            >
+              <span>Get Started</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+
+          {/* Right Column: Floating Cards Feature Showcase */}
+          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl hover:border-cyan-500/40 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                <Swords className="w-5 h-5" />
+              </div>
+              <h3 className="font-extrabold text-base text-white">1v1 Real-Time Duels</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Race head-to-head against rival coders with live WebSocket code sync and real-time execution.
               </p>
             </div>
 
-            {/* FORGOT STEP 1: Enter Email */}
-            {forgotStep === 1 && (
-              <form onSubmit={handleSendResetOTP} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Registered Gmail Address</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="e.g. alex@example.com"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={otpSending}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-black text-sm tracking-wider uppercase shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer btn-glow-cyan disabled:opacity-50"
-                >
-                  {otpSending ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4 text-slate-950" />
-                      <span>Send OTP to Gmail 📧</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => { setForgotMode(false); setErrorMsg(''); setOtpSuccessMsg(''); }}
-                  className="w-full text-center text-xs font-mono text-slate-400 hover:text-slate-200 underline cursor-pointer pt-2"
-                >
-                  ← Back to Sign In
-                </button>
-              </form>
-            )}
-
-            {/* FORGOT STEP 2: Enter OTP & New Password */}
-            {forgotStep === 2 && (
-              <form onSubmit={handleResetPasswordWithOTP} className="space-y-4">
-                
-                {/* OTP Input */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold">
-                    <label className="text-slate-300 flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Enter 6-Digit OTP Code</span>
-                    </label>
-
-                    {resendTimer > 0 ? (
-                      <span className="text-amber-400 text-[11px]">Resend in {resendTimer}s</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendResetOTP}
-                        className="text-cyan-400 hover:underline cursor-pointer text-[11px]"
-                      >
-                        Resend OTP
-                      </button>
-                    )}
-                  </div>
-
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={otpInput}
-                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 6-digit OTP (e.g. 839215)"
-                    className="w-full bg-slate-950 border border-emerald-500/50 focus:border-emerald-400 rounded-2xl px-4 py-3.5 text-sm font-mono text-emerald-300 font-extrabold tracking-widest text-center placeholder:text-slate-600 outline-none transition-all"
-                  />
-
-                  {/* Email Dispatch & Instant Verification Helper Card */}
-                  <div className="p-3 mt-2 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2 text-xs font-mono">
-                    <div className="flex items-center justify-between text-slate-300">
-                      <span className="flex items-center gap-1.5 font-bold text-cyan-300">
-                        <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Gmail Dispatch Status:</span>
-                      </span>
-                      <span className="text-emerald-400 font-extrabold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Dispatched
-                      </span>
-                    </div>
-                    
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Check Primary inbox or Spam folder for email to <span className="text-slate-200 font-bold">{forgotEmail}</span>.
-                    </p>
-
-                    <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2">
-                      <span className="text-slate-400 text-[11px]">Didn't receive email in Gmail?</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const codeToFill = activeOtpCode || sessionStorage.getItem(`reset_otp_${forgotEmail}`);
-                          if (codeToFill) {
-                            setOtpInput(codeToFill);
-                            sounds.playClick();
-                          }
-                        }}
-                        className="w-full sm:w-auto px-3 py-1 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-extrabold text-[11px] hover:bg-cyan-500/30 active:scale-95 transition-all cursor-pointer shadow"
-                      >
-                        Click to Auto-Fill OTP ({activeOtpCode || '******'})
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* New Password Input */}
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300 font-bold flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>New Password</span>
-                    </span>
-                    {newPassStrength.label && (
-                      <span className={`text-[10px] font-bold ${newPassStrength.color.split(' ')[1]}`}>
-                        {newPassStrength.label}
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 6 characters"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-                  />
-                </div>
-
-                {/* Confirm New Password Input */}
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Confirm New Password</span>
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={confirmNewPassword}
-                    onChange={(e) => setConfirmNewPassword(e.target.value)}
-                    placeholder="Re-enter new password"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={otpVerifying}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-sm tracking-wider uppercase shadow-xl shadow-emerald-500/20 hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer btn-glow-emerald disabled:opacity-50"
-                >
-                  {otpVerifying ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
-                  ) : (
-                    <>
-                      <KeyRound className="w-4 h-4 text-slate-950" />
-                      <span>Reset Password & Sign In 🔐</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => { setForgotStep(1); setErrorMsg(''); setOtpSuccessMsg(''); }}
-                  className="w-full text-center text-xs font-mono text-slate-400 hover:text-slate-200 underline cursor-pointer pt-1"
-                >
-                  ← Change Email Address
-                </button>
-              </form>
-            )}
+            <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl hover:border-emerald-500/40 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <Code2 className="w-5 h-5" />
+              </div>
+              <h3 className="font-extrabold text-base text-white">LeetCode Editor</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Monaco Editor with LeetCode theme, line ligatures, Big-O complexity analyzer, and testcase judge.
+              </p>
+            </div>
           </div>
-        ) : (
-          <>
-            {/* LAYER 1: SIGN IN / REGISTER FORM */}
-            {step === 1 && (
-              <div className="space-y-4">
-                {/* Auth Mode Tabs: Register vs Sign In */}
-                <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6 font-bold text-xs">
-                  <button
-                    type="button"
-                    onClick={() => { setMode('register'); setErrorMsg(''); sounds.playClick(); }}
-                    className={`flex-1 py-2.5 rounded-xl btn-glow transition-all ${
-                      mode === 'register'
-                        ? 'bg-gradient-to-r from-cyan-500 to-emerald-600 text-slate-950 font-extrabold shadow-lg shadow-cyan-500/20'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    1. New User (Register)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setMode('login'); setErrorMsg(''); sounds.playClick(); }}
-                    className={`flex-1 py-2.5 rounded-xl btn-glow transition-all ${
-                      mode === 'login'
-                        ? 'bg-gradient-to-r from-emerald-600 to-purple-600 text-white font-extrabold shadow-lg shadow-purple-500/20'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    1. Existing User (Sign In)
-                  </button>
-                </div>
 
-                <form onSubmit={handleAuthSubmit} className="space-y-4">
-                  {/* Photo Upload */}
-                  {mode === 'register' && (
-                    <div className="flex flex-col items-center justify-center space-y-2 pb-2">
-                      <div className="relative group">
-                        <img
-                          src={displayAvatar}
-                          alt="Profile Avatar"
-                          className="w-20 h-20 rounded-3xl object-cover border-2 border-cyan-500/50 shadow-xl group-hover:opacity-80 transition-all"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="absolute inset-0 bg-slate-950/70 rounded-3xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-cyan-300 text-[10px] font-bold transition-all cursor-pointer"
-                        >
-                          <Camera className="w-5 h-5 mb-0.5" />
-                          <span>Upload</span>
-                        </button>
-                      </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoFileUpload}
-                        className="hidden"
-                      />
-                    </div>
-                  )}
+        </div>
+      </section>
 
-                  {/* Email Input */}
+      {/* 4. LEETCODE-STYLE AUTH CARD CONTAINER */}
+      <section ref={authCardRef} className="relative w-full py-20 px-4 bg-[#0d1017] flex items-center justify-center border-t border-slate-800">
+        
+        {/* Background Radial Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="w-full max-w-md bg-[#1e2330] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative z-10 p-7 sm:p-8">
+          
+          {/* LeetCode Logo Emblem */}
+          <div className="text-center mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 via-emerald-500 to-purple-500 p-0.5 shadow-xl shadow-cyan-500/20 mx-auto mb-3">
+              <div className="w-full h-full bg-[#141822] rounded-[14px] flex items-center justify-center">
+                <img src="/favicon.svg" alt="Code क्षेत्र logo" className="w-8 h-8" />
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-black text-white tracking-wide">
+              <span className="bg-gradient-to-r from-cyan-400 via-emerald-300 to-purple-400 bg-clip-text text-transparent">CODE</span>
+              <span className="text-slate-100 font-['Noto_Sans_Devanagari'] font-extrabold"> क्षेत्र</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-1 font-mono">
+              {forgotMode
+                ? 'Reset your password via 6-digit Gmail OTP'
+                : (mode === 'register' ? 'Create your Coder Account' : 'Sign In to your Arena Account')}
+            </p>
+
+            <FestivalBanner />
+          </div>
+
+          {/* Error Alert */}
+          {errorMsg && (
+            <div className="p-3 mb-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono font-bold text-center">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* Success Alert */}
+          {otpSuccessMsg && (
+            <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold text-center">
+              {otpSuccessMsg}
+            </div>
+          )}
+
+          {/* FORGOT PASSWORD FORM */}
+          {forgotMode ? (
+            <div>
+              {forgotStep === 1 ? (
+                <form onSubmit={handleSendResetOTP} className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Email Address</span>
+                      <span>E-mail address</span>
                     </label>
                     <input
                       type="email"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. alex@example.com"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="E-mail address"
+                      className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-500 outline-none"
                     />
                   </div>
 
-                  {/* Password Input */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-mono font-bold">
-                      <label className="text-slate-300 flex items-center gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>Password</span>
-                      </label>
-                      {mode === 'register' && passStrength.label && (
-                        <span className={`text-[10px] font-bold ${passStrength.color.split(' ')[1]}`}>
-                          {passStrength.label}
-                        </span>
-                      )}
-                      {mode === 'login' && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setForgotMode(true);
-                            setForgotStep(1);
-                            setForgotEmail(email || '');
-                            setErrorMsg('');
-                            sounds.playClick();
-                          }}
-                          className="text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer text-[11px]"
-                        >
-                          Forgot Password?
-                        </button>
-                      )}
-                    </div>
-                    
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-                    />
-                  </div>
-
-                  {/* Next Step Button */}
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-purple-600 text-slate-950 font-black text-sm tracking-wider uppercase shadow-xl shadow-cyan-500/20 hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+                    disabled={otpSending}
+                    className="w-full py-3.5 rounded-xl bg-white text-slate-950 font-black text-sm hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-4"
                   >
-                    {loading ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
-                    ) : (
-                      <>
-                        <span>Continue ➔</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* LAYER 2: CHOOSE UNIQUE USERNAME & ENTER CONTEST */}
-            {step === 2 && (
-              <div className="space-y-5 animate-fade-in">
-                <div className="text-center bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto mb-2">
-                    <User className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <h2 className="text-lg font-black text-white uppercase tracking-wider">
-                    2. Choose Unique Arena Handle
-                  </h2>
-                  <p className="text-xs text-slate-400 font-mono mt-1">
-                    This handle will represent you in all 1v1 duels, leaderboards & chats!
-                  </p>
-                </div>
-
-                <form onSubmit={handleEnterContestSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-mono text-slate-200 font-bold flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-emerald-400" />
-                      <span>Unique Display Handle (Username)</span>
-                    </label>
-
-                    <div className="relative">
-                      <input
-                        type="text"
-                        required
-                        minLength={3}
-                        maxLength={20}
-                        value={usernameInput}
-                        onChange={(e) => setUsernameInput(e.target.value)}
-                        placeholder="e.g. CodeMaster99"
-                        className={`w-full bg-slate-950 border ${
-                          handleStatus.error
-                            ? 'border-rose-500/80 focus:border-rose-500'
-                            : 'border-emerald-500/50 focus:border-emerald-400'
-                        } rounded-2xl px-4 py-3.5 text-sm font-mono text-emerald-300 font-bold placeholder:text-slate-600 outline-none transition-all`}
-                      />
-
-                      {handleStatus.checking && (
-                        <Loader2 className="w-4 h-4 text-cyan-400 animate-spin absolute right-4 top-4" />
-                      )}
-                    </div>
-
-                    {/* Handle Availability Feedback */}
-                    {!handleStatus.checking && usernameInput.trim().length >= 3 && (
-                      <div className="text-xs font-mono font-bold mt-1">
-                        {handleStatus.available ? (
-                          <p className="text-emerald-400 flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>✓ Handle "{usernameInput.trim()}" is AVAILABLE!</span>
-                          </p>
-                        ) : (
-                          <p className="text-rose-400 flex items-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            <span>{handleStatus.error || 'Handle taken.'}</span>
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* BUTTON UNDERNEATH USERNAME: ENTER CONTEST */}
-                  <button
-                    type="submit"
-                    disabled={loading || usernameInput.trim().length < 3}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-500 to-cyan-500 text-slate-950 font-black text-sm tracking-widest uppercase shadow-2xl shadow-amber-500/30 hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 btn-glow"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
-                    ) : (
-                      <>
-                        <Swords className="w-5 h-5 text-slate-950 animate-bounce" />
-                        <span>Enter Contest Arena ⚔️</span>
-                      </>
-                    )}
+                    {otpSending ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : <span>Send Reset OTP 📧</span>}
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
-                    className="w-full text-center text-xs font-mono text-slate-400 hover:text-slate-200 underline cursor-pointer"
+                    onClick={() => { setForgotMode(false); setErrorMsg(''); setOtpSuccessMsg(''); }}
+                    className="w-full text-center text-xs font-mono text-slate-400 hover:text-slate-200 underline cursor-pointer pt-2"
                   >
-                    ← Back to Sign In / Register
+                    ← Back to Sign In
                   </button>
                 </form>
-              </div>
-            )}
-          </>
-        )}
+              ) : (
+                <form onSubmit={handleResetPasswordWithOTP} className="space-y-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-mono font-bold">
+                      <label className="text-slate-300 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Enter 6-Digit OTP</span>
+                      </label>
+                      {resendTimer > 0 ? (
+                        <span className="text-amber-400 text-[10px]">Resend in {resendTimer}s</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSendResetOTP}
+                          className="text-cyan-400 hover:underline cursor-pointer text-[10px]"
+                        >
+                          Resend OTP
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={otpInput}
+                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                      placeholder="6-Digit OTP Code"
+                      className="w-full bg-[#141822] border border-emerald-500/50 focus:border-emerald-400 rounded-xl px-4 py-3 text-sm font-mono text-emerald-300 font-extrabold text-center outline-none"
+                    />
 
-      </div>
+                    {/* Email Dispatch Status Helper Card */}
+                    <div className="p-3 mt-2 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2 text-xs font-mono">
+                      <div className="flex items-center justify-between text-slate-300">
+                        <span className="flex items-center gap-1.5 font-bold text-cyan-300">
+                          <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Gmail Dispatch Status:</span>
+                        </span>
+                        <span className="text-emerald-400 font-extrabold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Dispatched
+                        </span>
+                      </div>
+                      
+                      <p className="text-[10px] text-slate-400 leading-relaxed">
+                        Check Primary inbox or Spam folder for email to <span className="text-slate-200 font-bold">{forgotEmail}</span>.
+                      </p>
+
+                      <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2">
+                        <span className="text-slate-400 text-[11px]">Didn't receive email?</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const codeToFill = activeOtpCode || sessionStorage.getItem(`reset_otp_${forgotEmail}`);
+                            if (codeToFill) {
+                              setOtpInput(codeToFill);
+                              sounds.playClick();
+                            }
+                          }}
+                          className="w-full sm:w-auto px-3 py-1 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-extrabold text-[11px] hover:bg-cyan-500/30 active:scale-95 transition-all cursor-pointer shadow"
+                        >
+                          Click to Auto-Fill OTP ({activeOtpCode || '******'})
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>New Password</span>
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Confirm New Password</span>
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      placeholder="Re-enter new password"
+                      className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={otpVerifying}
+                    className="w-full py-3.5 rounded-xl bg-white text-slate-950 font-black text-sm hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-4"
+                  >
+                    {otpVerifying ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : <span>Reset Password & Sign In ➔</span>}
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : (
+            /* MAIN SIGN UP / SIGN IN FORM MATCHING LEETCODE SCREENSHOT 2 */
+            <form onSubmit={handleAuthSubmit} className="space-y-4">
+              
+              {/* Username Input */}
+              <div className="space-y-1">
+                <input
+                  type="text"
+                  required={mode === 'register'}
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  placeholder="Username"
+                  className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="space-y-1">
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+                />
+              </div>
+
+              {/* Confirm Password Input (Only for Sign Up) */}
+              {mode === 'register' && (
+                <div className="space-y-1">
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm password"
+                    className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+                  />
+                </div>
+              )}
+
+              {/* E-mail Address Input */}
+              <div className="space-y-1">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="E-mail address"
+                  className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+                />
+              </div>
+
+              {/* Cloudflare-style Security Badge */}
+              <div className="p-3.5 rounded-xl bg-[#141822] border border-slate-700/80 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4 font-black" />
+                  </div>
+                  <span className="text-xs font-extrabold text-white">Success!</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-amber-500 block uppercase">CLOUDFLARE</span>
+                  <span className="text-[9px] text-slate-500 font-mono">Privacy • Help</span>
+                </div>
+              </div>
+
+              {/* Solid White Action Button matching LeetCode */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl bg-white text-slate-950 font-extrabold text-sm hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-4"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
+                ) : (
+                  <span>{mode === 'register' ? 'Sign Up' : 'Sign In'}</span>
+                )}
+              </button>
+
+              {/* Terms & Privacy Policy Note */}
+              <p className="text-[11px] text-slate-400 text-center font-sans mt-3">
+                By continuing, you agree to <span className="text-cyan-400 hover:underline cursor-pointer">Terms</span> & <span className="text-cyan-400 hover:underline cursor-pointer">Privacy Policy</span>.
+              </p>
+
+              {/* Toggle Mode & Forgot Password */}
+              <div className="text-center pt-2 space-y-1.5 font-mono text-xs text-slate-400">
+                <p>
+                  {mode === 'register' ? 'Have an account? ' : "Don't have an account? "}
+                  <button
+                    type="button"
+                    onClick={() => { setMode(mode === 'register' ? 'login' : 'register'); setErrorMsg(''); }}
+                    className="text-white hover:text-cyan-400 font-bold underline cursor-pointer"
+                  >
+                    {mode === 'register' ? 'Sign In' : 'Sign Up'}
+                  </button>
+                </p>
+
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => { setForgotMode(true); setErrorMsg(''); setForgotEmail(email); }}
+                    className="text-cyan-400 hover:underline cursor-pointer text-[11px] block mx-auto pt-1"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+
+              {/* Social Sign-In Options */}
+              <div className="pt-4 border-t border-slate-800 text-center space-y-3">
+                <span className="text-[11px] font-mono text-slate-400">or you can sign in with</span>
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => alert('Google Sign-In ready! Sign up above to enter the arena.')}
+                    className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-sm font-black border border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer"
+                    title="Sign in with Google"
+                  >
+                    G
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => alert('GitHub Sign-In ready! Sign up above to enter the arena.')}
+                    className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-sm font-black border border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer"
+                    title="Sign in with GitHub"
+                  >
+                    🐙
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => alert('Apple Sign-In ready! Sign up above to enter the arena.')}
+                    className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-sm font-black border border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer"
+                    title="Sign in with Apple"
+                  >
+                    🍎
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          )}
+
+        </div>
+      </section>
+
     </div>
   );
 }

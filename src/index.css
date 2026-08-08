@@ -188,3 +188,13 @@
 .btn-glow-rose:active {
   transform: translateY(0) scale(0.98);
 }
+
+/* LeetCode Angled Background Cuts */
+.leetcode-skew-banner {
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+}
+
+.leetcode-skew-banner-inverted {
+  clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+}
+
