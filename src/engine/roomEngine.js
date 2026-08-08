@@ -194,6 +194,11 @@ class RoomEngine {
 
     this.currentRoom = room;
 
+    // Immediately trigger onResult and notify listeners so room creation never gets stuck
+    if (onResult) onResult({ success: true, room: this.currentRoom });
+    this.notifyListeners('ROOM_UPDATED', this.currentRoom);
+
+    // Sync with backend socket server asynchronously
     socket.emit('create_room', {
       roomId,
       password,
@@ -207,11 +212,11 @@ class RoomEngine {
     }, (res) => {
       if (res && res.success && res.room) {
         this.currentRoom = {
+          ...this.currentRoom,
           ...res.room,
           me: player,
           isHost: true
         };
-        if (onResult) onResult({ success: true, room: this.currentRoom });
         this.notifyListeners('ROOM_UPDATED', this.currentRoom);
       }
     });

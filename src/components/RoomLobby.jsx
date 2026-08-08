@@ -150,9 +150,13 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
-    if (!userName || userName.length < 3) {
-      setShowHandleSetupModal(true);
-      return;
+    let nameToUse = (userName || '').trim();
+    if (!nameToUse || nameToUse.length < 3) {
+      nameToUse = player?.email ? player.email.split('@')[0] : 'Coder_' + Math.floor(Math.random() * 899 + 100);
+      setUserName(nameToUse);
+      if (typeof setPlayer === 'function') {
+        setPlayer(prev => ({ ...prev, name: nameToUse }));
+      }
     }
 
     // Pre-check combined problem pool availability if specific question is not picked
@@ -174,7 +178,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     sounds.playClick();
 
     onCreateRoom({
-      userName: userName,
+      userName: nameToUse,
       topic: selectedProblem ? selectedProblem.topic : selectedTopic,
       difficulty: selectedProblem ? selectedProblem.difficulty : selectedDifficulty,
       timeLimit: Number(timeLimit),
@@ -186,9 +190,13 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
 
   const handleJoinSubmit = (e, asSpectator = false) => {
     e.preventDefault();
-    if (!userName || userName.length < 3) {
-      setShowHandleSetupModal(true);
-      return;
+    let nameToUse = (userName || '').trim();
+    if (!nameToUse || nameToUse.length < 3) {
+      nameToUse = player?.email ? player.email.split('@')[0] : 'Coder_' + Math.floor(Math.random() * 899 + 100);
+      setUserName(nameToUse);
+      if (typeof setPlayer === 'function') {
+        setPlayer(prev => ({ ...prev, name: nameToUse }));
+      }
     }
 
     if (!joinRoomId.trim()) {
