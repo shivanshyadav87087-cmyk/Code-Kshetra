@@ -1,4 +1,4 @@
-import { analyzeCodeComplexity, calculatePercentiles } from './complexityAnalyzer';
+import { analyzeCodeComplexity, calculatePercentiles } from './complexityAnalyzer.js';
 
 /**
  * LeetCode-Grade Multi-Language Code Execution Judge Engine
