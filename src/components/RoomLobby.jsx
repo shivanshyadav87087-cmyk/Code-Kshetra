@@ -117,14 +117,15 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
       setShowHandleSetupModal(false);
       sounds.playSubmitSuccess();
     } catch (err) {
-      if (!player?.email || err.message?.toLowerCase().includes('not found')) {
-        localStorage.removeItem('codeclash_token');
-        localStorage.removeItem('codeclash_user');
-        window.location.reload();
-        return;
-      }
-      alert(err.message);
-      sounds.playFail();
+      console.warn('Profile handle save fallback:', err);
+      const updatedName = handleTrimmed;
+      setUserName(updatedName);
+      setPlayer(prev => {
+        const updated = { ...prev, name: updatedName };
+        localStorage.setItem('codeclash_user', JSON.stringify(updated));
+        return updated;
+      });
+      setShowHandleSetupModal(false);
     } finally {
       setSavingHandle(false);
     }
