@@ -33,7 +33,7 @@ function isValidEmail(email) {
 // Helper to dispatch real email to recipient
 async function sendRealEmailOTP(toEmail, otpCode) {
   const mailOptions = {
-    from: '"Code क्षेत्र Arena" <shivanshyadav87087@gmail.com>',
+    from: `"Code क्षेत्र Arena" <${process.env.GMAIL_USER || 'shivanshyadav87087@gmail.com'}>`,
     to: toEmail,
     subject: '🔐 Code क्षेत्र — Password Reset OTP Code',
     html: `
@@ -52,7 +52,7 @@ async function sendRealEmailOTP(toEmail, otpCode) {
     `
   };
 
-  // 1. Try Nodemailer Gmail SMTP
+  // 1. Try Nodemailer Gmail SMTP if credentials provided
   if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
     try {
       await transporter.sendMail(mailOptions);
@@ -63,9 +63,34 @@ async function sendRealEmailOTP(toEmail, otpCode) {
     }
   }
 
-  // 2. Try Web Mailer API
+  // 2. Try Brevo API if key provided
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': process.env.BREVO_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Code क्षेत्र Arena', email: process.env.GMAIL_USER || 'shivanshyadav87087@gmail.com' },
+          to: [{ email: toEmail }],
+          subject: '🔐 Code क्षेत्र — Password Reset OTP Code',
+          htmlContent: mailOptions.html
+        })
+      });
+      if (brevoRes.ok) {
+        console.log(`[Brevo API Success] Sent OTP to ${toEmail}`);
+        return true;
+      }
+    } catch (e) {
+      console.warn('[Brevo API Warning]', e.message);
+    }
+  }
+
+  // 3. Try Web Mailer API
   try {
-    await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`, {
+    const webRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(toEmail)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
@@ -74,8 +99,10 @@ async function sendRealEmailOTP(toEmail, otpCode) {
         message: `Your Code क्षेत्र 6-digit Password Reset OTP is: ${otpCode} (Valid for 10 minutes).`
       })
     });
-    console.log(`[Web Mailer Success] Sent OTP to ${toEmail}`);
-    return true;
+    if (webRes.ok) {
+      console.log(`[Web Mailer Success] Dispatched OTP to ${toEmail}`);
+      return true;
+    }
   } catch (err) {
     console.warn('[Web Mailer Warning]', err.message);
   }
@@ -332,14 +359,18 @@ router.post('/forgot-password', async (req, res) => {
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     otpStore.set(cleanEmail, { otp, expiresAt });
+    console.log(`[FORGOT PASSWORD OTP GENERATED] Target Email: ${cleanEmail} | OTP: ${otp} | Expires: ${new Date(expiresAt).toISOString()}`);
 
     // Attempt real email dispatch via SMTP + Web Mailer
-    await sendRealEmailOTP(cleanEmail, otp);
+    const delivered = await sendRealEmailOTP(cleanEmail, otp);
 
     return res.json({
       success: true,
-      message: `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`,
-      fallbackOtp: otp // Returned safely so frontend can offer "Didn't receive email?" option if SMTP is blocked
+      delivered,
+      message: delivered 
+        ? `OTP sent to ${cleanEmail}. Please check your Gmail inbox (or Spam folder).`
+        : `OTP generated for ${cleanEmail}. Check your Gmail inbox or use the instant Auto-fill OTP button.`,
+      fallbackOtp: otp
     });
   } catch (err) {
     console.error('Forgot password error:', err);
