@@ -165,17 +165,22 @@ export default function App() {
               leetcodeUsername: data.user.leetcodeUsername || prev.leetcodeUsername
             }));
             localStorage.setItem('codeclash_user', JSON.stringify(data.user));
-          } else if (data && (data.error || !data.user)) {
-            // Profile not found on backend -> sign out to prompt Register/Sign-In
-            handleSignOut();
+          } else {
+            // Missing profile on server -> auto-register guest instance on backend, NEVER call handleSignOut()!
+            fetch(`${BACKEND_URL}/api/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                username: queryKey,
+                email: player.email || `${queryKey.toLowerCase()}@codekshetra.com`,
+                password: 'GuestPassword123!'
+              })
+            }).catch(() => {});
           }
         })
         .catch(() => {});
-    } else if (isAuthenticated && !player.email) {
-      // Unregistered session token -> sign out to prompt Register/Sign-In
-      handleSignOut();
     }
-  }, [isAuthenticated, player.email, player.name]);
+  }, [isAuthenticated]);
 
   // Helper to persist rating delta & match result to server & localStorage
   const syncPlayerStats = async (ratingDelta, result) => {
@@ -643,34 +648,42 @@ export default function App() {
   const ambientThemeGlow = activeFest?.theme?.ambientGlow || 'from-cyan-500/20 via-emerald-600/20 to-purple-500/20';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#0A0B0F] text-[#F8FAFC] flex flex-col font-sans selection:bg-[#14B8A6]/30 selection:text-[#14B8A6] overflow-x-hidden relative">
       
-      {/* Dynamic Ambient Festival Background Mesh (Transforms on Active Festival) */}
+      {/* Dynamic Ambient Background Mesh */}
       <div className={`fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr ${ambientThemeGlow} rounded-full blur-[140px] pointer-events-none -z-10 animate-float-slow`} />
 
-      {/* Top Navbar */}
-      <Navbar
-        player={player}
-        room={room}
-        onOpenLeaderboard={() => setShowLeaderboardModal(true)}
-        onOpenProfile={() => setShowProfileModal(true)}
-        onSignOut={handleSignOut}
-        onLeaveRoom={handleLeaveRoom}
-      />
-
-      {/* Main Container */}
-      <main className="flex-1 flex flex-col p-2 sm:p-4 gap-3 max-w-[1920px] mx-auto w-full overflow-hidden">
-        {!isAuthenticated ? (
-          <LandingAuthGate onAuthSuccess={handleAuthSuccess} />
-        ) : !room ? (
-          /* Lobby State */
-          <RoomLobby
-            onCreateRoom={handleCreateRoom}
-            onJoinRoom={handleJoinRoom}
+      {!isAuthenticated ? (
+        <LandingAuthGate
+          isAuthenticated={isAuthenticated}
+          player={player}
+          onAuthSuccess={handleAuthSuccess}
+          onSignOut={handleSignOut}
+        />
+      ) : (
+        <>
+          {/* Single Unified Navbar */}
+          <Navbar
+            isAuthenticated={isAuthenticated}
             player={player}
-            setPlayer={setPlayer}
+            room={room}
+            onOpenLeaderboard={() => setShowLeaderboardModal(true)}
+            onOpenProfile={() => setShowProfileModal(true)}
+            onSignOut={handleSignOut}
+            onLeaveRoom={handleLeaveRoom}
           />
-        ) : (
+
+          {/* Main Container */}
+          <main className="flex-1 flex flex-col p-2 sm:p-4 gap-3 max-w-[1920px] mx-auto w-full overflow-hidden">
+            {!room ? (
+              /* Lobby State */
+              <RoomLobby
+                onCreateRoom={handleCreateRoom}
+                onJoinRoom={handleJoinRoom}
+                player={player}
+                setPlayer={setPlayer}
+              />
+            ) : (
           /* Active Arena State (100% Responsive Fitted Height) */
           <div className="flex-1 flex flex-col gap-3 lg:h-[calc(100vh-76px)] overflow-y-auto lg:overflow-hidden">
             
@@ -881,6 +894,9 @@ export default function App() {
           room={room}
           onComplete={() => setShowMatchStartOverlay(false)}
         />
+      )}
+
+        </>
       )}
 
     </div>
