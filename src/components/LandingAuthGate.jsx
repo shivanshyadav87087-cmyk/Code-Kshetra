@@ -466,10 +466,10 @@ export default function LandingAuthGate({ onAuthSuccess }) {
 
             <div className="pt-2">
               <button
-                onClick={handleDirectEnterArena}
-                className="px-8 py-4 rounded-full bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-black text-base tracking-wide shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2 font-sans"
+                onClick={handleOpenSignUp}
+                className="px-8 py-4 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-base tracking-wide shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2 font-sans"
               >
-                <span>Enter Contest & Battle Arena ⚔️</span>
+                <span>Create Account</span>
                 <ChevronRight className="w-5 h-5 text-slate-950" />
               </button>
             </div>
