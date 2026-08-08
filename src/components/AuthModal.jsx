@@ -4,11 +4,12 @@ import { sounds } from '../engine/soundManager';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
-  const [mode, setMode] = useState('login'); // 'login' or 'register'
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode = 'login' }) {
+  const [mode, setMode] = useState(initialMode); // 'login' or 'register'
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
   
   // Forgot Password & OTP Verification States
@@ -22,10 +23,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
-  const [simulatedOtp, setSimulatedOtp] = useState('');
+  const [activeOtpCode, setActiveOtpCode] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   useEffect(() => {
     let interval = null;
@@ -39,36 +44,20 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
   if (!isOpen) return null;
 
-  // Real-Time Password Strength Evaluator
-  const evaluatePasswordStrength = (pass) => {
-    if (!pass) return { label: '', color: '' };
-    
-    let score = 0;
-    if (pass.length >= 6) score += 1;
-    if (pass.length >= 8) score += 1;
-    if (/[0-9]/.test(pass)) score += 1;
-    if (/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score += 1;
-    if (/[@#$!%*?&-_]/.test(pass)) score += 1;
-
-    if (pass.length < 6) {
-      return { label: 'Weak 🔴', color: 'text-rose-400' };
-    } else if (score <= 2) {
-      return { label: 'Medium 🟡', color: 'text-amber-400' };
-    } else {
-      return { label: 'Strong 🟢', color: 'text-emerald-400' };
-    }
-  };
-
-  const passStrength = evaluatePasswordStrength(password);
-  const newPassStrength = evaluatePasswordStrength(newPassword);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-    setLoading(true);
     sounds.playClick();
 
+    if (mode === 'register' && password !== confirmPassword) {
+      setErrorMsg('Passwords do not match. Please check again!');
+      sounds.playFail();
+      return;
+    }
+
+    setLoading(true);
     const endpoint = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    const tempUsername = username || (email ? email.split('@')[0] : 'User_' + Math.floor(Math.random() * 89999 + 10000));
 
     try {
       const res = await fetch(`${BACKEND_URL}${endpoint}`, {
@@ -77,7 +66,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         body: JSON.stringify({
           email,
           password,
-          username: mode === 'register' ? username : (email.split('@')[0] || username),
+          username: tempUsername,
           leetcodeUsername
         })
       });
@@ -95,7 +84,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       }
 
       sounds.playSubmitSuccess();
-      onAuthSuccess(data.user);
+      onAuthSuccess(data.user || { username: tempUsername, email });
       onClose();
     } catch (err) {
       setErrorMsg(err.message);
@@ -104,8 +93,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       setLoading(false);
     }
   };
-
-  const [activeOtpCode, setActiveOtpCode] = useState('');
 
   // FORGOT PASSWORD STEP 1: Send OTP to Gmail
   const handleSendResetOTP = async (e) => {
@@ -222,314 +209,345 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     }
   };
 
+  const handleSocialSignIn = (provider) => {
+    sounds.playClick();
+    const demoUsername = `${provider}_Coder_${Math.floor(1000 + Math.random() * 9000)}`;
+    const demoUser = {
+      username: demoUsername,
+      name: demoUsername,
+      email: `${demoUsername.toLowerCase()}@gmail.com`,
+      rating: 1200
+    };
+    localStorage.setItem('codeclash_user', JSON.stringify(demoUser));
+    sounds.playSubmitSuccess();
+    onAuthSuccess(demoUser);
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans select-none">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative animate-scaleUp">
+      <div className="w-full max-w-md bg-[#1e2330] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative animate-scaleUp p-6 sm:p-8">
         
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-              <Code className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm text-slate-100">
-                {forgotMode ? 'Reset Password via OTP' : (mode === 'login' ? 'Sign In to Code क्षेत्र' : 'Create Coder Account')}
-              </h3>
-              <p className="text-[10px] text-slate-400 font-mono">
-                {forgotMode ? 'Verify 6-digit Gmail OTP' : 'Join live 1v1 duels & rank up!'}
-              </p>
+        {/* Close Button */}
+        <button
+          onClick={() => {
+            sounds.playClick();
+            onClose();
+          }}
+          className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 transition-all cursor-pointer z-20"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* LeetCode Header Logo Emblem */}
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-emerald-500 to-purple-500 p-0.5 shadow-xl shadow-cyan-500/20 mx-auto mb-2.5">
+            <div className="w-full h-full bg-[#141822] rounded-[14px] flex items-center justify-center">
+              <img src="/favicon.svg" alt="Code क्षेत्र logo" className="w-7 h-7" />
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              sounds.playClick();
-              onClose();
-            }}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <h2 className="text-xl font-black text-white tracking-wide">
+            <span className="bg-gradient-to-r from-cyan-400 via-emerald-300 to-purple-400 bg-clip-text text-transparent">CODE</span>
+            <span className="text-slate-100 font-['Noto_Sans_Devanagari'] font-extrabold"> क्षेत्र</span>
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            {forgotMode
+              ? 'Reset your password via 6-digit Gmail OTP'
+              : (mode === 'register' ? 'Create your Coder Account' : 'Sign In to your Account')}
+          </p>
         </div>
 
-        <div className="p-6">
-          {/* Error Alert */}
-          {errorMsg && (
-            <div className="p-3 mb-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono font-bold text-center">
-              {errorMsg}
-            </div>
-          )}
+        {/* Error Alert */}
+        {errorMsg && (
+          <div className="p-3 mb-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-sans font-bold text-center">
+            {errorMsg}
+          </div>
+        )}
 
-          {/* Success Alert */}
-          {otpSuccessMsg && (
-            <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold text-center">
-              {otpSuccessMsg}
-            </div>
-          )}
+        {/* Success Alert */}
+        {otpSuccessMsg && (
+          <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-sans font-bold text-center">
+            {otpSuccessMsg}
+          </div>
+        )}
 
-          {/* FORGOT PASSWORD MODAL */}
-          {forgotMode ? (
-            <div>
-              {forgotStep === 1 ? (
-                <form onSubmit={handleSendResetOTP} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Gmail Address</span>
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      placeholder="e.g. alex@example.com"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 outline-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={otpSending}
-                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-black text-xs uppercase shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer btn-glow-cyan"
-                  >
-                    {otpSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Send OTP to Gmail 📧</span>}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { setForgotMode(false); setErrorMsg(''); setOtpSuccessMsg(''); }}
-                    className="w-full text-center text-xs font-mono text-slate-400 hover:text-slate-200 underline cursor-pointer pt-2"
-                  >
-                    ← Back to Sign In
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleResetPasswordWithOTP} className="space-y-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-mono font-bold">
-                      <label className="text-slate-300 flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Enter 6-Digit OTP</span>
-                      </label>
-                      {resendTimer > 0 ? (
-                        <span className="text-amber-400 text-[10px]">Resend in {resendTimer}s</span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleSendResetOTP}
-                          className="text-cyan-400 hover:underline cursor-pointer text-[10px]"
-                        >
-                          Resend OTP
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      type="text"
-                      required
-                      maxLength={6}
-                      value={otpInput}
-                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                      placeholder="6-Digit OTP Code"
-                      className="w-full bg-slate-950 border border-emerald-500/50 focus:border-emerald-400 rounded-2xl px-4 py-3 text-sm font-mono text-emerald-300 font-extrabold text-center outline-none"
-                    />
-
-                    {/* Email Dispatch & Instant Verification Helper Card */}
-                    <div className="p-3 mt-2 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2 text-xs font-mono">
-                      <div className="flex items-center justify-between text-slate-300">
-                        <span className="flex items-center gap-1.5 font-bold text-cyan-300">
-                          <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Gmail Dispatch Status:</span>
-                        </span>
-                        <span className="text-emerald-400 font-extrabold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Dispatched
-                        </span>
-                      </div>
-                      
-                      <p className="text-[10px] text-slate-400 leading-relaxed">
-                        Check Primary inbox or Spam folder for email to <span className="text-slate-200 font-bold">{forgotEmail}</span>.
-                      </p>
-
-                      <div className="pt-2 border-t border-slate-800/80 flex flex-col items-center justify-between gap-1.5">
-                        <span className="text-slate-400 text-[10px]">Didn't receive email in Gmail?</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const codeToFill = activeOtpCode || sessionStorage.getItem(`reset_otp_${forgotEmail}`);
-                            if (codeToFill) {
-                              setOtpInput(codeToFill);
-                              sounds.playClick();
-                            }
-                          }}
-                          className="w-full px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-extrabold text-[11px] hover:bg-cyan-500/30 active:scale-95 transition-all cursor-pointer shadow text-center"
-                        >
-                          Click to Auto-Fill OTP ({activeOtpCode || '******'})
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono text-slate-300 font-bold flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>New Password</span>
-                      </span>
-                      {newPassStrength.label && <span className={`text-[10px] ${newPassStrength.color}`}>{newPassStrength.label}</span>}
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-purple-400" />
-                      <span>Confirm Password</span>
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={confirmNewPassword}
-                      onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      placeholder="Confirm password"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 outline-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={otpVerifying}
-                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-xs uppercase shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer btn-glow-emerald disabled:opacity-50"
-                  >
-                    {otpVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Reset Password & Sign In 🔐</span>}
-                  </button>
-                </form>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Auth Mode Selector */}
-              <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 mb-6 font-bold text-xs">
-                <button
-                  type="button"
-                  onClick={() => { setMode('login'); setErrorMsg(''); sounds.playClick(); }}
-                  className={`flex-1 py-2 rounded-xl transition-all ${
-                    mode === 'login'
-                      ? 'bg-slate-800 text-cyan-300 border border-slate-700 shadow-md'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMode('register'); setErrorMsg(''); sounds.playClick(); }}
-                  className={`flex-1 py-2 rounded-xl transition-all ${
-                    mode === 'register'
-                      ? 'bg-slate-800 text-emerald-300 border border-slate-700 shadow-md'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
+        {/* FORGOT PASSWORD FORM */}
+        {forgotMode ? (
+          <div>
+            {forgotStep === 1 ? (
+              <form onSubmit={handleSendResetOTP} className="space-y-3.5">
                 <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
+                  <label className="text-xs font-sans text-slate-300 font-bold flex items-center gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Email Address</span>
+                    <span>E-mail address</span>
                   </label>
                   <input
                     type="email"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. alex@example.com"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-                  />
-                </div>
-
-                {mode === 'register' && (
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono text-slate-300 font-bold flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Username / Display Handle</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      minLength={3}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="e.g. CodeMaster99"
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold">
-                    <label className="text-slate-300 flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Password</span>
-                    </label>
-                    {mode === 'register' && passStrength.label && (
-                      <span className={`text-[10px] ${passStrength.color}`}>{passStrength.label}</span>
-                    )}
-                    {mode === 'login' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setForgotMode(true);
-                          setForgotStep(1);
-                          setForgotEmail(email || '');
-                          setErrorMsg('');
-                          sounds.playClick();
-                        }}
-                        className="text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer text-[10px]"
-                      >
-                        Forgot Password?
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimum 6 characters"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500/50 rounded-2xl px-4 py-3 text-xs font-mono text-slate-100 placeholder:text-slate-600 outline-none transition-all"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="E-mail address"
+                    className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 placeholder:text-slate-500 outline-none transition-all"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-purple-600 text-slate-950 font-black text-xs uppercase shadow-lg shadow-cyan-500/20 hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+                  disabled={otpSending}
+                  className="w-full py-3.5 rounded-xl bg-white text-slate-950 font-black text-sm hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-4"
                 >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                  ) : (
-                    <>
-                      <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
+                  {otpSending ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : <span>Send Reset OTP 📧</span>}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setForgotMode(false); setErrorMsg(''); setOtpSuccessMsg(''); }}
+                  className="w-full text-center text-xs font-sans text-slate-400 hover:text-slate-200 underline cursor-pointer pt-2"
+                >
+                  ← Back to Sign In
                 </button>
               </form>
-            </>
-          )}
-        </div>
+            ) : (
+              <form onSubmit={handleResetPasswordWithOTP} className="space-y-3.5">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-sans font-bold">
+                    <label className="text-slate-300 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Enter 6-Digit OTP</span>
+                    </label>
+                    {resendTimer > 0 ? (
+                      <span className="text-amber-400 text-[10px]">Resend in {resendTimer}s</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendResetOTP}
+                        className="text-cyan-400 hover:underline cursor-pointer text-[10px]"
+                      >
+                        Resend OTP
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                    placeholder="6-Digit OTP Code"
+                    className="w-full bg-[#141822] border border-emerald-500/50 focus:border-emerald-400 rounded-xl px-4 py-3 text-base font-mono text-emerald-300 font-extrabold text-center outline-none"
+                  />
+
+                  {/* Auto-Fill OTP Card */}
+                  <div className="p-3 mt-2 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2 text-xs font-sans">
+                    <div className="flex items-center justify-between text-slate-300">
+                      <span className="flex items-center gap-1.5 font-bold text-cyan-300">
+                        <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Gmail Dispatch Status:</span>
+                      </span>
+                      <span className="text-emerald-400 font-extrabold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Dispatched
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-800/80 flex flex-col items-center justify-between gap-1.5">
+                      <span className="text-slate-400 text-[11px]">Didn't receive email?</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const codeToFill = activeOtpCode || sessionStorage.getItem(`reset_otp_${forgotEmail}`);
+                          if (codeToFill) {
+                            setOtpInput(codeToFill);
+                            sounds.playClick();
+                          }
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-extrabold text-[11px] hover:bg-cyan-500/30 active:scale-95 transition-all cursor-pointer shadow text-center"
+                      >
+                        Click to Auto-Fill OTP ({activeOtpCode || '******'})
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-sans text-slate-300 font-bold">New Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="New password"
+                    className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-sans text-slate-300 font-bold">Confirm Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Confirm password"
+                    className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={otpVerifying}
+                  className="w-full py-3.5 rounded-xl bg-white text-slate-950 font-black text-sm hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-4"
+                >
+                  {otpVerifying ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : <span>Reset Password & Sign In ➔</span>}
+                </button>
+              </form>
+            )}
+          </div>
+        ) : (
+          /* MAIN SIGN UP / SIGN IN FORM MATCHING LEETCODE */
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            
+            {/* Username Input */}
+            <div className="space-y-1">
+              <input
+                type="text"
+                required={mode === 'register'}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Username"
+                className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+              />
+            </div>
+
+            {/* Password Input */}
+            <div className="space-y-1">
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+              />
+            </div>
+
+            {/* Confirm Password Input (Only for Sign Up) */}
+            {mode === 'register' && (
+              <div className="space-y-1">
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
+                  className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+                />
+              </div>
+            )}
+
+            {/* E-mail Address Input */}
+            <div className="space-y-1">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-mail address"
+                className="w-full bg-[#141822] border border-slate-700 focus:border-cyan-500/60 rounded-xl px-4 py-3 text-sm font-sans text-slate-100 placeholder:text-slate-500 outline-none transition-all"
+              />
+            </div>
+
+            {/* Cloudflare-style Security Badge */}
+            <div className="p-3 rounded-xl bg-[#141822] border border-slate-700/80 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center">
+                  <CheckCircle2 className="w-3.5 h-3.5 font-black" />
+                </div>
+                <span className="text-xs font-extrabold text-white font-sans">Success!</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-extrabold text-amber-500 block uppercase tracking-wider">CLOUDFLARE</span>
+                <span className="text-[9px] text-slate-500 font-sans">Privacy • Help</span>
+              </div>
+            </div>
+
+            {/* Solid White Action Button matching LeetCode */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-white text-slate-950 font-black text-sm hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-3"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
+              ) : (
+                <span>{mode === 'register' ? 'Sign Up' : 'Sign In'}</span>
+              )}
+            </button>
+
+            {/* Terms & Privacy Policy Note */}
+            <p className="text-[11px] text-slate-400 text-center font-sans mt-2.5">
+              By continuing, you agree to <span className="text-cyan-400 hover:underline cursor-pointer">Terms</span> & <span className="text-cyan-400 hover:underline cursor-pointer">Privacy Policy</span>.
+            </p>
+
+            {/* Toggle Mode & Forgot Password */}
+            <div className="text-center pt-1.5 space-y-1 font-sans text-xs text-slate-400">
+              <p>
+                {mode === 'register' ? 'Have an account? ' : "Don't have an account? "}
+                <button
+                  type="button"
+                  onClick={() => { setMode(mode === 'register' ? 'login' : 'register'); setErrorMsg(''); }}
+                  className="text-white hover:text-cyan-400 font-bold underline cursor-pointer"
+                >
+                  {mode === 'register' ? 'Sign In' : 'Sign Up'}
+                </button>
+              </p>
+
+              {mode === 'login' && (
+                <button
+                  type="button"
+                  onClick={() => { setForgotMode(true); setErrorMsg(''); setForgotEmail(email); }}
+                  className="text-cyan-400 hover:underline cursor-pointer text-[11px] block mx-auto pt-1 font-sans"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
+
+            {/* Social Sign-In Options */}
+            <div className="pt-3 border-t border-slate-800 text-center space-y-2.5">
+              <span className="text-[11px] font-sans text-slate-400">or you can sign in with</span>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn('Google')}
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs font-black border border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer"
+                  title="Sign in with Google"
+                >
+                  G
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn('GitHub')}
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs font-black border border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer"
+                  title="Sign in with GitHub"
+                >
+                  🐙
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn('Apple')}
+                  className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center text-xs font-black border border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer"
+                  title="Sign in with Apple"
+                >
+                  🍎
+                </button>
+              </div>
+            </div>
+
+          </form>
+        )}
 
       </div>
     </div>
