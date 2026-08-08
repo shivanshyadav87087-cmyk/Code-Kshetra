@@ -59,6 +59,34 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     setAuthModalOpen(true);
   };
 
+  // Direct Contest & Duel Entry (Instant Launch)
+  const handleDirectEnterArena = () => {
+    sounds.playClick();
+    sounds.playSubmitSuccess();
+
+    let savedUser = null;
+    try {
+      savedUser = JSON.parse(localStorage.getItem('codeclash_user') || 'null');
+    } catch (e) {}
+
+    const guestHandle = savedUser?.username || savedUser?.name || 'Coder_' + Math.floor(Math.random() * 899 + 100);
+    const userObj = {
+      id: savedUser?.id || savedUser?._id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
+      email: savedUser?.email || '',
+      username: guestHandle,
+      name: guestHandle,
+      rating: savedUser?.rating !== undefined ? savedUser.rating : 1200,
+      avatarUrl: savedUser?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+    };
+
+    localStorage.setItem('codeclash_token', savedUser?.token || 'guest_token_' + Date.now());
+    localStorage.setItem('codeclash_user', JSON.stringify(userObj));
+
+    if (typeof onAuthSuccess === 'function') {
+      onAuthSuccess(userObj);
+    }
+  };
+
   // Open Auth Modal in Sign In Mode
   const handleOpenSignIn = () => {
     sounds.playClick();
@@ -74,7 +102,16 @@ export default function LandingAuthGate({ onAuthSuccess }) {
     } else if (userObj && userObj.email) {
       setUsernameInput(userObj.email.split('@')[0]);
     }
-    setStep(2); // Advance to Layer 2 handle setup & avatar selection
+    // Direct entry into arena
+    const finalUser = {
+      ...userObj,
+      name: userObj.username || (userObj.email ? userObj.email.split('@')[0] : 'Coder_' + Math.floor(Math.random() * 899 + 100))
+    };
+    localStorage.setItem('codeclash_token', userObj.token || 'token_' + Date.now());
+    localStorage.setItem('codeclash_user', JSON.stringify(finalUser));
+    if (typeof onAuthSuccess === 'function') {
+      onAuthSuccess(finalUser);
+    }
   };
 
   // Debounced Live Unique Username Check for Layer 2
@@ -284,19 +321,19 @@ export default function LandingAuthGate({ onAuthSuccess }) {
       <ExploreModal
         isOpen={exploreModalOpen}
         onClose={() => setExploreModalOpen(false)}
-        onStartPractice={handleOpenSignUp}
+        onStartPractice={handleDirectEnterArena}
       />
 
       <DuelsInfoModal
         isOpen={duelsModalOpen}
         onClose={() => setDuelsModalOpen(false)}
-        onStartDuel={handleOpenSignUp}
+        onStartDuel={handleDirectEnterArena}
       />
 
       <ContestArenaModal
         isOpen={contestModalOpen}
         onClose={() => setContestModalOpen(false)}
-        onRegisterContest={handleOpenSignUp}
+        onRegisterContest={handleDirectEnterArena}
       />
 
       {/* 1. TOP LEETCODE NAVIGATION BAR */}
@@ -429,11 +466,11 @@ export default function LandingAuthGate({ onAuthSuccess }) {
 
             <div className="pt-2">
               <button
-                onClick={handleOpenSignUp}
-                className="px-8 py-4 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-base tracking-wide shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2 font-sans"
+                onClick={handleDirectEnterArena}
+                className="px-8 py-4 rounded-full bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-black text-base tracking-wide shadow-xl shadow-teal-500/30 hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2 font-sans"
               >
-                <span>Create Account</span>
-                <ChevronRight className="w-5 h-5" />
+                <span>Enter Contest & Battle Arena ⚔️</span>
+                <ChevronRight className="w-5 h-5 text-slate-950" />
               </button>
             </div>
           </div>
