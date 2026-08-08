@@ -3,6 +3,7 @@ import { Swords, Lock, User, Key, ArrowRight, Camera, Code, Sparkles, Upload, Ch
 import { sounds } from '../engine/soundManager';
 import { COUNTRIES } from '../data/countries';
 import FestivalBanner from './FestivalBanner';
+import InstallPwaButton from './InstallPwaButton';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
@@ -370,6 +371,10 @@ export default function LandingAuthGate({ onAuthSuccess }) {
           <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto font-mono">
             Official 1v1 Real-Time Competitive Coding Arena. Boost your Rating by solving questions!
           </p>
+
+          <div className="mt-3 flex justify-center">
+            <InstallPwaButton />
+          </div>
 
           <FestivalBanner />
         </div>

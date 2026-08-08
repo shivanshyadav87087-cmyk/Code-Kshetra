@@ -2,6 +2,7 @@ import React from 'react';
 import { Swords, Trophy, User, Shield, Volume2, VolumeX, LogOut, Code, ExternalLink, Settings } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { getRatingTier } from '../engine/eloEngine';
+import InstallPwaButton from './InstallPwaButton';
 
 export default function Navbar({ player, setPlayer, room, onLeaveRoom, onOpenAuth, onOpenLeaderboard, onOpenProfile, onSignOut }) {
   const [soundEnabled, setSoundEnabled] = React.useState(false);
@@ -59,6 +60,9 @@ export default function Navbar({ player, setPlayer, room, onLeaveRoom, onOpenAut
         {/* Right Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
           
+          {/* PWA App Install Button */}
+          <InstallPwaButton />
+
           {/* Sound Mute Toggle */}
           <button
             onClick={toggleSound}
