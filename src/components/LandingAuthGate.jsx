@@ -5,6 +5,7 @@ import { COUNTRIES } from '../data/countries';
 import FestivalBanner from './FestivalBanner';
 import InstallPwaButton from './InstallPwaButton';
 import AuthModal from './AuthModal';
+import { ExploreModal, DuelsInfoModal, ContestArenaModal } from './ExploreModals';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
@@ -13,6 +14,11 @@ export default function LandingAuthGate({ onAuthSuccess }) {
   const [step, setStep] = useState(1);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState('register'); // 'register' or 'login'
+
+  // Interactive Feature Modals State
+  const [exploreModalOpen, setExploreModalOpen] = useState(false);
+  const [duelsModalOpen, setDuelsModalOpen] = useState(false);
+  const [contestModalOpen, setContestModalOpen] = useState(false);
 
   const [email, setEmail] = useState('');
   const [userProfileData, setUserProfileData] = useState(null);
@@ -274,6 +280,25 @@ export default function LandingAuthGate({ onAuthSuccess }) {
         initialMode={authModalInitialMode}
       />
 
+      {/* Feature Modals */}
+      <ExploreModal
+        isOpen={exploreModalOpen}
+        onClose={() => setExploreModalOpen(false)}
+        onStartPractice={handleOpenSignUp}
+      />
+
+      <DuelsInfoModal
+        isOpen={duelsModalOpen}
+        onClose={() => setDuelsModalOpen(false)}
+        onStartDuel={handleOpenSignUp}
+      />
+
+      <ContestArenaModal
+        isOpen={contestModalOpen}
+        onClose={() => setContestModalOpen(false)}
+        onRegisterContest={handleOpenSignUp}
+      />
+
       {/* 1. TOP LEETCODE NAVIGATION BAR */}
       <nav className="w-full bg-[#181c28]/90 border-b border-slate-800/80 sticky top-0 z-40 backdrop-blur-xl px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -290,15 +315,24 @@ export default function LandingAuthGate({ onAuthSuccess }) {
           </div>
 
           <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-400 font-sans">
-            <span className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1">
+            <button
+              onClick={() => { sounds.playClick(); setExploreModalOpen(true); }}
+              className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1 bg-transparent border-none p-0"
+            >
               <BookOpen className="w-3.5 h-3.5" /> Explore
-            </span>
-            <span className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => { sounds.playClick(); setDuelsModalOpen(true); }}
+              className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1 bg-transparent border-none p-0"
+            >
               <Swords className="w-3.5 h-3.5" /> 1v1 Duels
-            </span>
-            <span className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1">
+            </button>
+            <button
+              onClick={() => { sounds.playClick(); setContestModalOpen(true); }}
+              className="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1 bg-transparent border-none p-0"
+            >
               <Trophy className="w-3.5 h-3.5" /> Contest Arena
-            </span>
+            </button>
           </div>
         </div>
 
@@ -427,31 +461,37 @@ export default function LandingAuthGate({ onAuthSuccess }) {
             </p>
 
             <button
-              onClick={handleOpenSignUp}
+              onClick={() => { sounds.playClick(); setExploreModalOpen(true); }}
               className="inline-flex items-center gap-1.5 text-teal-400 font-extrabold text-sm hover:underline cursor-pointer pt-2 group font-sans"
             >
-              <span>Get Started</span>
+              <span>Get Started & Explore Tracks</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
           {/* Right Column: Floating Cards Feature Showcase */}
           <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl hover:border-cyan-500/40 transition-all font-sans">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <div 
+              onClick={() => { sounds.playClick(); setDuelsModalOpen(true); }}
+              className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl hover:border-cyan-500/40 transition-all font-sans cursor-pointer group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Swords className="w-5 h-5" />
               </div>
-              <h3 className="font-extrabold text-base text-white">1v1 Real-Time Duels</h3>
+              <h3 className="font-extrabold text-base text-white group-hover:text-cyan-300">1v1 Real-Time Duels</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Race head-to-head against rival coders with live WebSocket code sync and real-time execution.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl hover:border-emerald-500/40 transition-all font-sans">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <div 
+              onClick={() => { sounds.playClick(); setExploreModalOpen(true); }}
+              className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 shadow-xl hover:border-emerald-500/40 transition-all font-sans cursor-pointer group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Code2 className="w-5 h-5" />
               </div>
-              <h3 className="font-extrabold text-base text-white">LeetCode Editor</h3>
+              <h3 className="font-extrabold text-base text-white group-hover:text-emerald-300">LeetCode Editor</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Monaco Editor with LeetCode theme, line ligatures, Big-O complexity analyzer, and testcase judge.
               </p>

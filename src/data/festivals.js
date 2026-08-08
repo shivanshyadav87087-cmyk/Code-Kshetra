@@ -48,7 +48,7 @@ export const FESTIVALS = [
     icon: '💖',
     imageUrl: 'https://images.pexels.com/photos/12975984/pexels-photo-12975984.jpeg?auto=compress&cs=tinysrgb&w=800',
     month: 8, // August
-    day: 9,
+    day: 28,
     title: 'Happy Raksha Bandhan! 🧵✨',
     wishingText: 'Celebrating the sacred bond of love, protection, and companionship. Happy Raksha Bandhan from Code क्षेत्र!',
     bgGradient: 'from-rose-600/30 via-slate-950 to-purple-600/30',
