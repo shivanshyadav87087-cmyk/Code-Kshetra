@@ -28,7 +28,12 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.on
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return Boolean(localStorage.getItem('codeclash_token'));
+    const hasToken = Boolean(localStorage.getItem('codeclash_token'));
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('room') || urlParams.get('join') || urlParams.get('code');
+    const hash = window.location.hash;
+    const hasRoomInHash = hash && (hash.includes('room=') || hash.includes('join='));
+    return hasToken || Boolean(roomParam) || Boolean(hasRoomInHash);
   });
 
   const [player, setPlayer] = useState(() => {
@@ -36,11 +41,12 @@ export default function App() {
       const savedUser = localStorage.getItem('codeclash_user');
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
+        const nameToUse = parsed.username || parsed.name || ('Coder_' + Math.floor(Math.random() * 899 + 100));
         return {
           id: parsed._id || parsed.id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
           email: parsed.email || '',
-          name: parsed.username || parsed.name || '',
-          rating: parsed.rating !== undefined ? parsed.rating : 0,
+          name: nameToUse,
+          rating: parsed.rating !== undefined ? parsed.rating : 1200,
           wins: parsed.wins || 0,
           losses: parsed.losses || 0,
           draws: parsed.draws || 0,
@@ -53,11 +59,12 @@ export default function App() {
       }
     } catch (e) {}
 
+    const defaultName = 'Coder_' + Math.floor(Math.random() * 899 + 100);
     return {
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
       email: '',
-      name: '',
-      rating: 0,
+      name: defaultName,
+      rating: 1200,
       wins: 0,
       losses: 0,
       draws: 0,
@@ -92,14 +99,14 @@ export default function App() {
   const [pendingRoomId, setPendingRoomId] = useState(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const roomParam = urlParams.get('room') || urlParams.get('join');
+      const roomParam = urlParams.get('room') || urlParams.get('join') || urlParams.get('code');
       if (roomParam) {
         sessionStorage.setItem('pending_contest_room', roomParam.toUpperCase());
         return roomParam.toUpperCase();
       }
       const hash = window.location.hash;
-      if (hash && hash.includes('room=')) {
-        const extracted = hash.split('room=')[1]?.split('&')[0]?.toUpperCase();
+      if (hash && (hash.includes('room=') || hash.includes('join='))) {
+        const extracted = hash.split(/room=|join=/)[1]?.split('&')[0]?.toUpperCase();
         if (extracted) {
           sessionStorage.setItem('pending_contest_room', extracted);
           return extracted;
@@ -128,8 +135,8 @@ export default function App() {
       } catch (e) {}
 
       handleJoinRoom({ roomId: targetRoom, userName: player.name }, (res) => {
-        if (!res.success) {
-          setJoinNotification({ username: 'Contest Room', text: res.error || `Room ${targetRoom} not found.` });
+        if (!res || !res.success) {
+          handleCreateRoom({ userName: player.name });
         }
       });
     }
@@ -154,7 +161,8 @@ export default function App() {
               totalMatches: data.user.totalMatches || prev.totalMatches,
               avatarUrl: data.user.avatarUrl || prev.avatarUrl,
               bio: data.user.bio || prev.bio,
-              location: data.user.location || prev.location
+              location: data.user.location || prev.location,
+              leetcodeUsername: data.user.leetcodeUsername || prev.leetcodeUsername
             }));
             localStorage.setItem('codeclash_user', JSON.stringify(data.user));
           } else if (data && (data.error || !data.user)) {
@@ -508,6 +516,9 @@ export default function App() {
           handleCreateRoom({ userName: updated.name });
         }
       });
+    } else {
+      // Direct duel/contest entry: automatically create & launch 1v1 Arena!
+      handleCreateRoom({ userName: updated.name || 'Coder_' + Math.floor(Math.random() * 899 + 100) });
     }
   };
 
@@ -535,8 +546,9 @@ export default function App() {
     roomEngine.stop();
   };
 
-  const handleCreateRoom = ({ userName, topic, difficulty, maxPlayers = 2, timeLimit, password, isBot, customProblem }) => {
-    const p = { ...player, name: userName || player.name };
+  const handleCreateRoom = ({ userName, topic, difficulty, maxPlayers = 2, timeLimit, password, isBot, customProblem } = {}) => {
+    const validName = userName || player.name || ('Coder_' + Math.floor(Math.random() * 899 + 100));
+    const p = { ...player, name: validName };
     setPlayer(p);
     setIsSpectator(false);
     
@@ -552,27 +564,24 @@ export default function App() {
     }, (res) => {
       if (res && res.success && res.room) {
         setRoom(res.room);
-        if (isBot) {
-          setShowMatchStartOverlay(true);
-        }
+        setShowMatchStartOverlay(true);
         const template = res.room.problem?.starterTemplates?.[selectedLanguage] || res.room.problem?.starterTemplates?.javascript || '';
         setCode(template);
         setMyProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: 'Coding...' });
-        setOpponentProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: isBot ? 'Coding...' : 'Waiting...' });
+        setOpponentProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: isBot ? 'Coding...' : 'Waiting for opponent...' });
       }
     });
   };
 
   const handleJoinRoom = ({ roomId, password, userName, asSpectator = false }, cb) => {
-    const p = { ...player, name: userName || player.name };
+    const validName = userName || player.name || ('Coder_' + Math.floor(Math.random() * 899 + 100));
+    const p = { ...player, name: validName };
     setPlayer(p);
     
     roomEngine.joinRoom({ roomId, password, player: p, asSpectator }, (res) => {
-      if (res.success) {
+      if (res && res.success && res.room) {
         setRoom(res.room);
-        if (res.room.status === 'in-progress') {
-          setShowMatchStartOverlay(true);
-        }
+        setShowMatchStartOverlay(true);
         setIsSpectator(Boolean(res.isSpectator));
         if (res.isSpectator) {
           setSpectateTarget('host');
@@ -581,8 +590,8 @@ export default function App() {
           const template = res.room.problem?.starterTemplates?.[selectedLanguage] || res.room.problem?.starterTemplates?.javascript || '';
           setCode(template);
         }
-        setMyProgress({ passed: 0, total: res.room.problem.testCases.length, status: 'Coding...' });
-        setOpponentProgress({ passed: 0, total: res.room.problem.testCases.length, status: 'Coding...' });
+        setMyProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: 'Coding...' });
+        setOpponentProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: 'Coding...' });
       }
       
       if (typeof cb === 'function') cb(res);
