@@ -274,6 +274,16 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                             </div>
                           </div>
                         </div>
+                      ) : testResults.verdict === 'Compile Error' ? (
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-7 h-7 text-rose-500 animate-bounce" />
+                          <div>
+                            <div className="text-rose-500 font-black text-xl tracking-wider">Compile Error</div>
+                            <div className="text-xs text-rose-300/80 font-mono font-bold">
+                              Syntax or Compilation Failed (0/{testResults.totalCount} testcases run)
+                            </div>
+                          </div>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <XCircle className="w-7 h-7 text-rose-400" />
@@ -288,68 +298,88 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                     </div>
 
                     {/* Diff View Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => setDiffMode(!diffMode)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
-                        diffMode
-                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
-                      }`}
-                    >
-                      <Diff className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Diff Mode</span>
-                    </button>
+                    {testResults.verdict !== 'Compile Error' && (
+                      <button
+                        type="button"
+                        onClick={() => setDiffMode(!diffMode)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
+                          diffMode
+                            ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
+                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                        }`}
+                      >
+                        <Diff className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Diff Mode</span>
+                      </button>
+                    )}
                   </div>
 
-                  {/* LeetCode Runtime & Memory Percentile Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Runtime Card */}
-                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-slate-400 font-bold flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Runtime</span>
-                        </span>
-                        <span className="text-emerald-400 font-black text-sm">{testResults.runtimeMs || 0} ms</span>
+                  {/* PROMINENT RED WARNING BANNER FOR COMPILE / SYNTAX ERRORS */}
+                  {testResults.verdict === 'Compile Error' || testResults.error?.includes('Compile Error') ? (
+                    <div className="bg-rose-950/60 border-2 border-rose-500/80 p-4 rounded-xl space-y-2 text-left shadow-lg shadow-rose-950/50">
+                      <div className="flex items-center gap-2 text-rose-400 font-extrabold text-sm font-mono">
+                        <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+                        <span>{selectedLanguage.toUpperCase()} Syntax & Compilation Warning</span>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] font-mono">
-                        <span className="text-slate-400">Beats</span>
-                        <span className="text-emerald-300 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30">
-                          {testResults.runtimePercentile || 87.5}% of users
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
-                          style={{ width: `${testResults.runtimePercentile || 87.5}%` }}
-                        />
+                      <p className="text-xs text-rose-200 font-mono">
+                        Your code contains a syntax error or invalid statement. Please fix the code before running tests:
+                      </p>
+                      <div className="bg-slate-950 border border-rose-500/40 rounded-lg p-3 text-rose-300 font-mono text-xs overflow-x-auto whitespace-pre-wrap select-all leading-relaxed">
+                        {testResults.error || 'SyntaxError: Unexpected identifier or missing bracket/semicolon.'}
                       </div>
                     </div>
+                  ) : (
+                    <>
+                      {/* LeetCode Runtime & Memory Percentile Cards */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Runtime Card */}
+                        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-mono">
+                            <span className="text-slate-400 font-bold flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Runtime</span>
+                            </span>
+                            <span className="text-emerald-400 font-black text-sm">{testResults.runtimeMs || 0} ms</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] font-mono">
+                            <span className="text-slate-400">Beats</span>
+                            <span className="text-emerald-300 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                              {testResults.runtimePercentile || 87.5}% of users
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                              style={{ width: `${testResults.runtimePercentile || 87.5}%` }}
+                            />
+                          </div>
+                        </div>
 
-                    {/* Memory Card */}
-                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-slate-400 font-bold flex items-center gap-1">
-                          <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Memory</span>
-                        </span>
-                        <span className="text-cyan-400 font-black text-sm">{testResults.memoryMb || 41.2} MB</span>
+                        {/* Memory Card */}
+                        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-mono">
+                            <span className="text-slate-400 font-bold flex items-center gap-1">
+                              <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>Memory</span>
+                            </span>
+                            <span className="text-cyan-400 font-black text-sm">{testResults.memoryMb || 41.2} MB</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] font-mono">
+                            <span className="text-slate-400">Beats</span>
+                            <span className="text-cyan-300 font-extrabold bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/30">
+                              {testResults.memoryPercentile || 91.2}% of users
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-cyan-500 to-blue-400 rounded-full transition-all duration-500"
+                              style={{ width: `${testResults.memoryPercentile || 91.2}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] font-mono">
-                        <span className="text-slate-400">Beats</span>
-                        <span className="text-cyan-300 font-extrabold bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/30">
-                          {testResults.memoryPercentile || 91.2}% of users
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-400 rounded-full transition-all duration-500"
-                          style={{ width: `${testResults.memoryPercentile || 91.2}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                   {/* Big-O Complexity Analysis Cards */}
                   {testResults.complexity && (
