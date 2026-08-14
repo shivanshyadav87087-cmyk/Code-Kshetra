@@ -279,8 +279,42 @@ class RoomEngine {
     socket.emit('progress_update', { roomId, progress });
   }
 
-  submitSolution(roomId, submission) {
-    socket.emit('submit_solution', { roomId, submission });
+  submitSolution(roomId, submissionData) {
+    const code = typeof submissionData === 'object' ? (submissionData.code || '') : '';
+    const language = typeof submissionData === 'object' ? (submissionData.language || 'javascript') : 'javascript';
+    const subResult = typeof submissionData === 'object' ? (submissionData.submission || submissionData) : submissionData;
+
+    // Send payload to socket server
+    socket.emit('submit_solution', {
+      roomId,
+      code,
+      language,
+      submission: subResult
+    });
+
+    // Instant match termination for Bot / Single-Player mode
+    if (this.currentRoom?.isBot && subResult && (subResult.success || subResult.passedCount === subResult.totalCount)) {
+      if (this.botTimer) clearInterval(this.botTimer);
+
+      this.currentRoom.status = 'ended';
+      this.currentRoom.winnerUsername = this.currentRoom.me?.name || 'Player';
+      this.currentRoom.winningSolution = {
+        playerId: 'me',
+        username: this.currentRoom.me?.name || 'Player',
+        code,
+        language,
+        submittedAt: new Date(),
+        problemTitle: this.currentRoom.problem?.title
+      };
+
+      this.notifyListeners('MATCH_ENDED', {
+        winnerUsername: this.currentRoom.winnerUsername,
+        matchEndReason: 'accepted-submission',
+        winningSolution: this.currentRoom.winningSolution,
+        result: subResult,
+        submission: subResult
+      });
+    }
   }
 
   startBotSimulation(problem, timeLimitMinutes) {

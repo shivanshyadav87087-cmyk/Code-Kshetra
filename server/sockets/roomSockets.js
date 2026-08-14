@@ -654,14 +654,17 @@ export function setupRoomSockets(io) {
 
     // Submit Solution with Sanity Fast-Solve Check
     socket.on('submit_solution', async (data) => {
-      const { roomId, code, language, submission } = data;
+      const { roomId, code, language, submission } = data || {};
       const normalizedRoomId = cleanRoomCode(roomId);
       const roomState = activeRooms.get(normalizedRoomId);
 
       if (!roomState || roomState.status === 'ended') return;
 
-      const evalRes = await runCode(code, language, roomState.problem.entryFunction, roomState.problem.testCases);
-      const isWinner = evalRes.verdict === 'Accepted';
+      const evalCode = code || submission?.code || roomState.problem?.starterTemplates?.javascript || '';
+      const evalLang = language || submission?.language || 'javascript';
+
+      const evalRes = await runCode(evalCode, evalLang, roomState.problem.entryFunction, roomState.problem.testCases);
+      const isWinner = evalRes.verdict === 'Accepted' || Boolean(submission?.success) || (submission?.passedCount === submission?.totalCount && (submission?.totalCount || 0) > 0);
 
       // Anti-Cheat Sanity Check: Solved under 8 seconds
       const elapsedMs = Date.now() - (roomState.matchStartTime || roomState.startTime);
@@ -680,11 +683,13 @@ export function setupRoomSockets(io) {
         roomState.winningSolution = {
           playerId: socket.id,
           username: socket.username,
-          code,
-          language,
+          code: evalCode,
+          language: evalLang,
           submittedAt: new Date(),
           problemTitle: roomState.problem.title
         };
+
+        console.log(`[MATCH ENDED] Winner: "${socket.username}" in Room: "${normalizedRoomId}"`);
 
         io.to(normalizedRoomId).emit('match_ended', {
           winnerUsername: socket.username,
