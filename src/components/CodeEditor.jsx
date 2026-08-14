@@ -16,20 +16,26 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
 
-  // Load starter template or saved draft from localStorage
+  // Load starter template for new matches or saved draft for offline practice
   useEffect(() => {
     if (!readOnly && problem) {
+      const template = problem.starterTemplates
+        ? (problem.starterTemplates[selectedLanguage] || problem.starterTemplates.javascript || '// Write solution here')
+        : '// Write solution here';
+
       const draftKey = `codeclash_draft_${problem.id}_${selectedLanguage}`;
       const savedDraft = localStorage.getItem(draftKey);
 
-      if (savedDraft) {
+      // If room is in active duel match, ALWAYS use fresh clean starter template!
+      if (room && room.status === 'in-progress') {
+        setCode(template);
+      } else if (savedDraft) {
         setCode(savedDraft);
-      } else if (problem.starterTemplates) {
-        const template = problem.starterTemplates[selectedLanguage] || problem.starterTemplates.javascript || '// Write solution here';
+      } else {
         setCode(template);
       }
     }
-  }, [problem?.id, problem?.number, selectedLanguage, readOnly]);
+  }, [problem?.id, problem?.number, selectedLanguage, readOnly, room?.roomId, room?.status]);
 
   // Anti-Cheat Tab-Switch & Blur Detection
   useEffect(() => {

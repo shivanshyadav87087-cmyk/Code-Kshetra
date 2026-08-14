@@ -39,10 +39,10 @@ export const PROBLEM_BANK = [
     constraints: ['1 <= nums.length <= 10^5'],
     entryFunction: 'reverseArray',
     starterTemplates: {
-      javascript: `function reverseArray(nums) {\n    return nums.reverse();\n};`,
-      python: `class Solution:\n    def reverseArray(self, nums: list[int]) -> list[int]:\n        return nums[::-1]`,
-      cpp: `class Solution {\npublic:\n    vector<int> reverseArray(vector<int>& nums) {\n        reverse(nums.begin(), nums.end());\n        return nums;\n    }\n};`,
-      java: `class Solution {\n    public int[] reverseArray(int[] nums) {\n        int i = 0, j = nums.length - 1;\n        while (i < j) { int t = nums[i]; nums[i++] = nums[j]; nums[j--] = t; }\n        return nums;\n    }\n}`
+      javascript: `function reverseArray(nums) {\n    \n};`,
+      python: `class Solution:\n    def reverseArray(self, nums: list[int]) -> list[int]:\n        pass`,
+      cpp: `class Solution {\npublic:\n    vector<int> reverseArray(vector<int>& nums) {\n        \n    }\n};`,
+      java: `class Solution {\n    public int[] reverseArray(int[] nums) {\n        \n    }\n}`
     },
     testCases: [
       { input: [[1, 2, 3, 4, 5]], expectedOutput: [5, 4, 3, 2, 1], isSecret: false },
@@ -63,10 +63,10 @@ export const PROBLEM_BANK = [
     constraints: ['n == nums.length', '1 <= n <= 300'],
     entryFunction: 'sortColors',
     starterTemplates: {
-      javascript: `function sortColors(nums) {\n    return nums.sort((a,b) => a-b);\n};`,
-      python: `class Solution:\n    def sortColors(self, nums: list[int]) -> list[int]:\n        nums.sort()\n        return nums`,
-      cpp: `class Solution {\npublic:\n    vector<int> sortColors(vector<int>& nums) {\n        sort(nums.begin(), nums.end());\n        return nums;\n    }\n};`,
-      java: `class Solution {\n    public int[] sortColors(int[] nums) {\n        Arrays.sort(nums);\n        return nums;\n    }\n}`
+      javascript: `function sortColors(nums) {\n    \n};`,
+      python: `class Solution:\n    def sortColors(self, nums: list[int]) -> list[int]:\n        pass`,
+      cpp: `class Solution {\npublic:\n    vector<int> sortColors(vector<int>& nums) {\n        \n    }\n};`,
+      java: `class Solution {\n    public int[] sortColors(int[] nums) {\n        \n    }\n}`
     },
     testCases: [
       { input: [[2, 0, 2, 1, 1, 0]], expectedOutput: [0, 0, 1, 1, 2, 2], isSecret: false },
@@ -521,10 +521,10 @@ export const PROBLEM_BANK = [
     constraints: ['1 <= k <= nums.length <= 10^5'],
     entryFunction: 'findKthLargest',
     starterTemplates: {
-      javascript: `function findKthLargest(nums, k) {\n    return nums.sort((a,b) => b-a)[k-1];\n};`,
-      python: `class Solution:\n    def findKthLargest(self, nums: list[int], k: int) -> int:\n        nums.sort(reverse=True)\n        return nums[k-1]`,
-      cpp: `class Solution {\npublic:\n    int findKthLargest(vector<int>& nums, int k) {\n        sort(nums.rbegin(), nums.rend());\n        return nums[k-1];\n    }\n};`,
-      java: `class Solution {\n    public int findKthLargest(int[] nums, int k) {\n        Arrays.sort(nums);\n        return nums[nums.length - k];\n    }\n}`
+      javascript: `function findKthLargest(nums, k) {\n    \n};`,
+      python: `class Solution:\n    def findKthLargest(self, nums: list[int], k: int) -> int:\n        pass`,
+      cpp: `class Solution {\npublic:\n    int findKthLargest(vector<int>& nums, int k) {\n        \n    }\n};`,
+      java: `class Solution {\n    public int findKthLargest(int[] nums, int k) {\n        \n    }\n}`
     },
     testCases: [
       { input: [[3, 2, 1, 5, 6, 4], 2], expectedOutput: 5, isSecret: false },
@@ -650,10 +650,10 @@ export const PROBLEM_BANK = [
     constraints: ['1 <= n <= 2^31 - 1'],
     entryFunction: 'hammingWeight',
     starterTemplates: {
-      javascript: `function hammingWeight(n) {\n    return n.toString(2).split('1').length - 1;\n};`,
-      python: `class Solution:\n    def hammingWeight(self, n: int) -> int:\n        return bin(n).count('1')`,
-      cpp: `class Solution {\npublic:\n    int hammingWeight(uint32_t n) {\n        return __builtin_popcount(n);\n    }\n};`,
-      java: `class Solution {\n    public int hammingWeight(int n) {\n        return Integer.bitCount(n);\n    }\n}`
+      javascript: `function hammingWeight(n) {\n    \n};`,
+      python: `class Solution:\n    def hammingWeight(self, n: int) -> int:\n        pass`,
+      cpp: `class Solution {\npublic:\n    int hammingWeight(uint32_t n) {\n        \n    }\n};`,
+      java: `class Solution {\n    public int hammingWeight(int n) {\n        \n    }\n}`
     },
     testCases: [
       { input: [11], expectedOutput: 3, isSecret: false },
