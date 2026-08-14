@@ -179,7 +179,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Username or Email"
+            label={mode === 'login' ? 'Username or Email' : 'Choose Permanent Username / Handle'}
             type="text"
             required
             icon={User}
