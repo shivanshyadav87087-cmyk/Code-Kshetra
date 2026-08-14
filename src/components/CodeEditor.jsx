@@ -117,14 +117,14 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
         { token: 'variable', foreground: '9CDCFE' },
       ],
       colors: {
-        'editor.background': '#14151C',
-        'editor.foreground': '#F8FAFC',
-        'editor.lineHighlightBackground': '#1E202C',
-        'editorCursor.foreground': '#A78BFA',
-        'editorLineNumber.foreground': '#4B5563',
-        'editorLineNumber.activeForeground': '#A78BFA',
-        'editorIndentGuide.background': '#272A3830',
-        'editorIndentGuide.activeBackground': '#A78BFA80',
+        'editor.background': '#0b0f19',
+        'editor.foreground': '#f8fafc',
+        'editor.lineHighlightBackground': '#1e293b60',
+        'editorCursor.foreground': '#38bdf8',
+        'editorLineNumber.foreground': '#475569',
+        'editorLineNumber.activeForeground': '#38bdf8',
+        'editorIndentGuide.background': '#33415530',
+        'editorIndentGuide.activeBackground': '#38bdf880',
       }
     });
     monaco.editor.setTheme('leetcode-dark');
@@ -357,15 +357,7 @@ export default function CodeEditor({ problem, selectedLanguage, onLanguageChange
       </div>
 
       {/* Monaco Editor Container with LeetCode Theme */}
-      <div className="flex-1 w-full bg-[#14151C] relative">
-        {/* Floating Player Cursor Tag Badge (LeetRival Theme) */}
-        {!readOnly && (
-          <div className="absolute top-2 left-16 z-20 pointer-events-none flex items-center">
-            <span className="bg-[#EF4444] text-white text-[10px] font-mono font-extrabold px-1.5 py-0.5 rounded-[4px] shadow-md animate-pulse">
-              {room?.me?.name || 'shivansh'}
-            </span>
-          </div>
-        )}
+      <div className="flex-1 w-full bg-[#0b0f19] relative">
         <Editor
           height="100%"
           language={currentLangConfig.monacoLang || 'javascript'}

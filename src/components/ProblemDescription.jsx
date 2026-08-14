@@ -60,80 +60,61 @@ export default function ProblemDescription({ problem }) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6 text-[#E2E8F0] text-sm sm:text-base leading-relaxed custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-5 space-y-6 text-slate-200 text-sm sm:text-base leading-relaxed custom-scrollbar">
         {activeTab === 'description' ? (
           <>
-            {/* Title & LeetRival Pill Badges */}
-            <div className="space-y-3.5">
-              <h1 className="text-2xl sm:text-3xl font-black text-[#F8FAFC] tracking-tight font-sans">
-                {problem.title}
-              </h1>
+            {/* Title & Badges */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-100 flex items-center gap-2">
+                  {problem.title}
+                </h2>
+              </div>
 
-              <div className="flex flex-wrap items-center gap-2 font-mono">
-                {/* Difficulty Pill */}
-                <span className={`px-2.5 py-1 rounded-[6px] text-xs font-extrabold border ${
-                  problem.difficulty.toLowerCase() === 'easy'
-                    ? 'bg-[#12281D] text-[#22C55E] border-[#1D4A33]'
-                    : problem.difficulty.toLowerCase() === 'hard'
-                    ? 'bg-[#2D1619] text-[#EF4444] border-[#592227]'
-                    : 'bg-[#282312] text-[#EAB308] border-[#4D4018]'
-                }`}>
-                  {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
+              <div className="flex flex-wrap items-center gap-2">
+                {problem.number && (
+                  <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                    <Hash className="w-3.5 h-3.5" />
+                    LeetCode #{problem.number}
+                  </span>
+                )}
+                <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${diffObj.badgeClass}`}>
+                  {problem.difficulty}
                 </span>
-
-                {/* Test Cases Count Pill */}
-                <span className="px-2.5 py-1 rounded-[6px] text-xs font-bold bg-[#1A1C24] text-[#94A3B8] border border-[#272A38]">
-                  {problem.testCases?.length || 4} tests
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
+                  <Tag className="w-3.5 h-3.5" />
+                  {problem.topic.toUpperCase()}
                 </span>
-
-                {/* Topic Tag Pill */}
-                <span className="px-2.5 py-1 rounded-[6px] text-xs font-bold bg-[#211B30] text-[#A78BFA] border border-[#3D2E5E]">
-                  {problem.topic.toLowerCase()}
-                </span>
-
-                {/* Share Link Pill */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      navigator.clipboard.writeText(window.location.href);
-                      alert('Share link copied to clipboard!');
-                    } catch (e) {}
-                  }}
-                  className="px-3 py-1 rounded-[6px] text-xs font-bold bg-[#1A1C24] text-[#94A3B8] hover:text-[#F8FAFC] border border-[#272A38] transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Share link</span>
-                </button>
               </div>
             </div>
 
-            {/* Problem Description Text */}
-            <div className="text-[#D1D5DB] leading-relaxed text-sm sm:text-base font-normal whitespace-pre-line bg-[#0E0F14] p-4 rounded-xl border border-[#1E202A]">
+            {/* Problem Statement Description */}
+            <div className="prose prose-invert max-w-none text-slate-200 leading-relaxed text-sm sm:text-base font-normal whitespace-pre-line bg-slate-950/40 p-4 rounded-2xl border border-slate-800/60">
               {problem.description}
             </div>
 
             {/* Examples */}
             <div className="space-y-4">
+              <h3 className="font-extrabold text-slate-200 text-xs sm:text-sm uppercase tracking-wider font-mono">
+                Examples & Test Cases
+              </h3>
               {problem.examples.map((ex, idx) => (
                 <div
                   key={idx}
-                  className="bg-[#12131A] border border-[#1F222E] rounded-xl p-4 space-y-2 font-mono text-xs sm:text-sm"
+                  className="bg-slate-950/90 border border-slate-800/90 rounded-2xl p-4 space-y-2.5 font-mono text-xs sm:text-sm"
                 >
-                  <div className="text-[#A78BFA] font-extrabold tracking-wider uppercase text-[11px]">
-                    EXAMPLE {idx + 1}
+                  <div className="text-slate-400 font-extrabold">Example {idx + 1}:</div>
+                  <div>
+                    <span className="text-slate-400 font-bold">Input: </span>
+                    <span className="text-cyan-300 font-semibold">{ex.input}</span>
                   </div>
                   <div>
-                    <span className="text-[#94A3B8] font-bold">Input: </span>
-                    <span className="text-[#F472B6] font-mono">{ex.input}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#94A3B8] font-bold">Output: </span>
-                    <span className="text-[#38BDF8] font-extrabold">{ex.output}</span>
+                    <span className="text-slate-400 font-bold">Output: </span>
+                    <span className="text-emerald-400 font-extrabold">{ex.output}</span>
                   </div>
                   {ex.explanation && (
-                    <div className="text-[#94A3B8] text-xs font-sans border-t border-[#1F222E] pt-2 mt-1">
-                      <span className="font-bold text-[#CBD5E1]">Explanation: </span>
+                    <div className="text-slate-300 text-xs font-sans border-t border-slate-800/80 pt-2.5 mt-1">
+                      <span className="font-bold text-slate-200">Explanation: </span>
                       {ex.explanation}
                     </div>
                   )}

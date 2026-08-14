@@ -261,36 +261,43 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                 {/* LeetCode Post-Submit Verdict Banner & Metrics Grid */}
                 <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-4">
                   
-                  {/* LeetRival Style Testcase Result Banner */}
+                  {/* Status Banner */}
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-                    <div className="flex items-center gap-3 font-mono">
+                    <div className="flex items-center gap-3">
                       {testResults.verdict === 'Accepted' ? (
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-5 h-5 text-[#22C55E]" />
-                          <span className="text-[#22C55E] font-black text-sm tracking-wide">
-                            ✓ {testResults.passedCount}/{testResults.totalCount} sample tests passed
-                          </span>
+                          <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                          <div>
+                            <div className="text-emerald-400 font-black text-xl tracking-wider">Accepted</div>
+                            <div className="text-xs text-emerald-300/80 font-mono font-bold">
+                              {testResults.passedCount} / {testResults.totalCount} testcases passed
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <XCircle className="w-5 h-5 text-[#EF4444]" />
-                          <span className="text-[#EF4444] font-black text-sm tracking-wide">
-                            ✕ {testResults.passedCount}/{testResults.totalCount} sample tests passed
-                          </span>
+                          <XCircle className="w-7 h-7 text-rose-400" />
+                          <div>
+                            <div className="text-rose-400 font-black text-xl tracking-wider">{testResults.verdict}</div>
+                            <div className="text-xs text-rose-300/80 font-mono font-bold">
+                              {testResults.passedCount} / {testResults.totalCount} testcases passed
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
 
+                    {/* Diff View Toggle */}
                     <button
                       type="button"
                       onClick={() => setDiffMode(!diffMode)}
-                      className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
                         diffMode
-                          ? 'bg-[#8B5CF6]/20 text-[#C4B5FD] border-[#8B5CF6]/40'
-                          : 'bg-[#14151D] text-[#94A3B8] border-[#272A38] hover:text-white'
+                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
+                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
                       }`}
                     >
-                      <Diff className="w-3.5 h-3.5 text-[#A78BFA]" />
+                      <Diff className="w-3.5 h-3.5 text-cyan-400" />
                       <span>Diff Mode</span>
                     </button>
                   </div>
