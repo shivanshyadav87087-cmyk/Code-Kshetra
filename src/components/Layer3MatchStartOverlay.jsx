@@ -6,8 +6,8 @@ export default function Layer3MatchStartOverlay({ room, onComplete }) {
   const [count, setCount] = useState(3);
   const [isDone, setIsDone] = useState(false);
 
-  const host = room?.host || room?.me || { name: 'Host Coder', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', rating: 0 };
-  const guest = room?.guest || (room?.isBot ? { name: 'DevBot AI 🤖', avatarUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80', rating: 1450 } : { name: 'Opponent', avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80', rating: 0 });
+  const host = room?.host || room?.me || { name: 'Host Coder', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', rating: 1200 };
+  const guest = room?.guest || (room?.isBot ? { name: 'DevBot AI 🤖', avatarUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80', rating: 1450 } : { name: 'Opponent', avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80', rating: 1200 });
 
   useEffect(() => {
     sounds.playTick();
@@ -69,7 +69,7 @@ export default function Layer3MatchStartOverlay({ room, onComplete }) {
           <h2 className="text-lg font-black text-white truncate">{host.name || 'Host'}</h2>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 font-bold mt-2">
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
-            <span>{host.rating !== undefined ? host.rating : 0} Rating</span>
+            <span>{host.rating !== undefined ? host.rating : 1200} Rating</span>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export default function Layer3MatchStartOverlay({ room, onComplete }) {
           <h2 className="text-lg font-black text-white truncate">{guest.name || 'Challenger'}</h2>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-xs font-mono text-purple-300 font-bold mt-2">
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
-            <span>{guest.rating !== undefined ? guest.rating : 0} Rating</span>
+            <span>{guest.rating !== undefined ? guest.rating : 1200} Rating</span>
           </div>
         </div>
 

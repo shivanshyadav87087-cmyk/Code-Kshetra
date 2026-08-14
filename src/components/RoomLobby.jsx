@@ -273,20 +273,14 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
     sounds.playClick();
 
     if (typeof onAutoMatch === 'function') {
-      onAutoMatch({ userName: nameToUse, rating: player?.rating || 0 });
+      onAutoMatch({ userName: nameToUse, rating: player?.rating || 1200 });
     }
   };
 
-  const handleDirectNameChange = (e) => {
-    const val = e.target.value;
-    setUserName(val);
-    if (typeof setPlayer === 'function') {
-      setPlayer(prev => {
-        const updated = { ...prev, name: val, username: val };
-        localStorage.setItem('codeclash_user', JSON.stringify(updated));
-        return updated;
-      });
-    }
+  const handleResetTopicDifficulty = () => {
+    setSelectedTopic('all');
+    setSelectedDifficulty('all');
+    sounds.playClick();
   };
 
   return (
@@ -317,31 +311,21 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
       {/* Main Lobby Card */}
       <div className="w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
         
-        {/* Permanent Player Handle Input Card */}
-        <div className="bg-slate-950/80 border border-slate-800/80 p-4 sm:p-5 rounded-2xl space-y-2.5 text-left">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-mono text-cyan-300 font-extrabold flex items-center gap-2">
-              <Shield className="w-4 h-4 text-cyan-400" />
-              <span>Select Permanent Username (Your Arena Handle)</span>
-            </label>
-            <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-lg font-bold">
-              {userName && !userName.startsWith('Coder_') ? 'Custom Handle Saved 🔒' : 'Setup Your Permanent Username ✏️'}
-            </span>
+        {/* Permanent Player Handle Badge */}
+        <div className="flex items-center justify-between bg-slate-950/80 border border-slate-800/80 px-5 py-3.5 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-cyan-400" />
+            <div>
+              <div className="text-xs text-slate-400 font-mono">Permanent Arena Handle</div>
+              <div className="text-base font-extrabold text-slate-100 font-mono flex items-center gap-2">
+                <span>{userName || 'Anonymous Coder'}</span>
+                <Lock className="w-3.5 h-3.5 text-emerald-400 inline" />
+              </div>
+            </div>
           </div>
-          <div className="relative flex items-center">
-            <User className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
-            <input
-              type="text"
-              value={userName}
-              onChange={handleDirectNameChange}
-              placeholder="Enter your permanent handle (e.g. CodeMaster99)..."
-              maxLength={20}
-              className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm font-mono font-bold text-slate-100 placeholder:text-slate-500 outline-none focus:border-cyan-400 focus:bg-slate-950 transition-all"
-            />
+          <div className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
+            Saved & Locked 🔒
           </div>
-          <p className="text-[11px] text-slate-400 font-mono">
-            This handle will be your permanent name shown on 1v1 duels, contest leaderboards, and arena matches.
-          </p>
         </div>
 
         {/* Tab Navigation (Create Room vs Auto Match vs Join Room) */}
@@ -474,7 +458,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
                     <div>
                       <div className="text-xs font-mono text-slate-400 uppercase tracking-wider">Your Duel Rating</div>
                       <div className="text-2xl font-black font-mono text-slate-100 flex items-center gap-2">
-                        <span>{player?.rating !== undefined ? player.rating : 0} ELO</span>
+                        <span>{player?.rating !== undefined ? player.rating : 1200} ELO</span>
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">
                           Ranked ⚔️
                         </span>

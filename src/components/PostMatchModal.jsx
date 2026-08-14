@@ -33,7 +33,7 @@ export default function PostMatchModal({ room, mySubmission, opponentSubmission,
     isWinner = room.winnerUsername === room.me?.name || room.winnerUsername === room.me?.username;
   }
 
-  const currentRating = room.me?.rating !== undefined ? room.me.rating : 0;
+  const currentRating = room.me?.rating || 1200;
   const tier = getRatingTier(currentRating);
 
   useEffect(() => {

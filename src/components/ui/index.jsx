@@ -76,7 +76,7 @@ export function Badge({ variant = 'default', className = '', children }) {
 }
 
 // 4. ELO BADGE
-export function EloBadge({ rating = 0, className = '' }) {
+export function EloBadge({ rating = 1200, className = '' }) {
   let tier = 'Newbie';
   let colorClass = 'bg-slate-800 text-slate-300 border-slate-700';
 

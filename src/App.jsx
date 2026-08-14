@@ -46,7 +46,7 @@ export default function App() {
           id: parsed._id || parsed.id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
           email: parsed.email || '',
           name: nameToUse,
-          rating: parsed.rating !== undefined ? parsed.rating : 0,
+          rating: parsed.rating !== undefined ? parsed.rating : 1200,
           wins: parsed.wins || 0,
           losses: parsed.losses || 0,
           draws: parsed.draws || 0,
@@ -64,7 +64,7 @@ export default function App() {
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
       email: '',
       name: defaultName,
-      rating: 0,
+      rating: 1200,
       wins: 0,
       losses: 0,
       draws: 0,
@@ -123,15 +123,23 @@ export default function App() {
   // Fullscreen State
   const [isFullscreenActive, setIsFullscreenActive] = useState(() => Boolean(document.fullscreenElement));
 
-  // Clear pending room parameters so user always lands cleanly on the Lobby Selection Screen
+  // Auto-join contest room on initial load if user is already authenticated and has a contest link
   useEffect(() => {
-    if (pendingRoomId) {
+    if (isAuthenticated && pendingRoomId && !room) {
+      const targetRoom = pendingRoomId;
+      sessionStorage.removeItem('pending_contest_room');
       setPendingRoomId('');
       try {
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (e) {}
+
+      handleJoinRoom({ roomId: targetRoom, userName: player.name }, (res) => {
+        if (!res || !res.success) {
+          alert(res?.error || `Room code "${targetRoom}" not found or expired.`);
+        }
+      });
     }
-  }, [pendingRoomId]);
+  }, [isAuthenticated, pendingRoomId, room]);
 
   // Sync player profile with server on load if authenticated
   useEffect(() => {
@@ -501,6 +509,21 @@ export default function App() {
 
     setRoom(null);
     setIsSpectator(false);
+
+    // Auto-join contest room ONLY if URL contains explicit room link parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetRoom = urlParams.get('room') || urlParams.get('join') || urlParams.get('code');
+    if (targetRoom) {
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {}
+
+      handleJoinRoom({ roomId: targetRoom.toUpperCase(), userName: updated.name }, (res) => {
+        if (!res || !res.success) {
+          alert(res?.error || `Room code "${targetRoom}" not found or expired.`);
+        }
+      });
+    }
   };
 
   const handleSignOut = () => {
