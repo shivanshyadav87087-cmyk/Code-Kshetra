@@ -8,6 +8,8 @@ import { calculateEloChange } from '../../src/engine/eloEngine.js';
 const activeRooms = new Map();
 const socketRoomMap = new Map();
 const rematchTimeoutMap = new Map();
+const matchmakingQueue = new Map();
+let matchmakingInterval = null;
 
 function cleanRoomCode(raw) {
   if (!raw) return '';
@@ -84,9 +86,191 @@ function selectFreshProblem(roomState) {
   return newProblem;
 }
 
+function removeFromMatchmakingQueue(socketId) {
+  if (matchmakingQueue.has(socketId)) {
+    matchmakingQueue.delete(socketId);
+    console.log(`[Matchmaking] Removed socket ${socketId} from queue. Queue size: ${matchmakingQueue.size}`);
+  }
+}
+
+function checkMatchmakingQueue(io) {
+  if (matchmakingQueue.size < 2) return;
+
+  const now = Date.now();
+  const candidates = Array.from(matchmakingQueue.values());
+
+  const players = candidates.map(p => {
+    const timeInSec = (now - p.joinedAt) / 1000;
+    const effectiveWindow = 100 + Math.floor(timeInSec / 5) * 50;
+    return { ...p, effectiveWindow };
+  });
+
+  const matchedSocketIds = new Set();
+
+  for (let i = 0; i < players.length; i++) {
+    const p1 = players[i];
+    if (matchedSocketIds.has(p1.socketId)) continue;
+
+    let bestMatch = null;
+    let smallestEloDiff = Infinity;
+
+    for (let j = i + 1; j < players.length; j++) {
+      const p2 = players[j];
+      if (matchedSocketIds.has(p2.socketId)) continue;
+
+      const eloDiff = Math.abs(p1.elo - p2.elo);
+      if (eloDiff <= p1.effectiveWindow && eloDiff <= p2.effectiveWindow) {
+        if (eloDiff < smallestEloDiff) {
+          smallestEloDiff = eloDiff;
+          bestMatch = p2;
+        }
+      }
+    }
+
+    if (bestMatch) {
+      const p2 = bestMatch;
+      matchedSocketIds.add(p1.socketId);
+      matchedSocketIds.add(p2.socketId);
+
+      matchmakingQueue.delete(p1.socketId);
+      matchmakingQueue.delete(p2.socketId);
+
+      const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const normalizedRoomId = cleanRoomCode(roomId);
+      const targetProblem = PROBLEM_BANK[Math.floor(Math.random() * PROBLEM_BANK.length)];
+
+      const roomState = {
+        roomId: normalizedRoomId,
+        password: '',
+        topic: targetProblem.topic || 'all',
+        difficulty: targetProblem.difficulty || 'all',
+        maxPlayers: 2,
+        timeLimit: 10,
+        host: { id: p1.socketId, username: p1.username, rating: p1.elo },
+        guest: { id: p2.socketId, username: p2.username, rating: p2.elo },
+        spectators: [],
+        isBot: false,
+        problem: targetProblem,
+        status: 'in-progress',
+        matchStartTime: now,
+        startTime: now,
+        matchEndReason: null,
+        winningSolution: null,
+        antiCheat: { hostTabSwitches: 0, guestTabSwitches: 0, hostLargePastes: 0, guestLargePastes: 0, flags: [] },
+        myProgress: { passed: 0, total: targetProblem.testCases.length, status: 'Coding...' },
+        opponentProgress: { passed: 0, total: targetProblem.testCases.length, status: 'Coding...' },
+        hostCode: targetProblem.starterTemplates?.javascript || '',
+        guestCode: targetProblem.starterTemplates?.javascript || ''
+      };
+
+      activeRooms.set(normalizedRoomId, roomState);
+      socketRoomMap.set(p1.socketId, normalizedRoomId);
+      socketRoomMap.set(p2.socketId, normalizedRoomId);
+
+      p1.socket.username = p1.username;
+      p2.socket.username = p2.username;
+
+      p1.socket.join(normalizedRoomId);
+      p2.socket.join(normalizedRoomId);
+
+      console.log(`[Auto-Match Found] Room: "${normalizedRoomId}" | Host: "${p1.username}" (${p1.elo}) vs Guest: "${p2.username}" (${p2.elo}) | ELO diff: ${smallestEloDiff}`);
+
+      Room.create({
+        roomId: normalizedRoomId,
+        password: '',
+        topic: roomState.topic,
+        difficulty: roomState.difficulty,
+        timeLimit: roomState.timeLimit,
+        host: roomState.host,
+        problemId: targetProblem.id
+      }).catch(() => {});
+
+      const matchPayload = {
+        roomId: normalizedRoomId,
+        room: roomState
+      };
+
+      p1.socket.emit('matchFound', { ...matchPayload, isHost: true });
+      p1.socket.emit('match_found', { ...matchPayload, isHost: true });
+
+      p2.socket.emit('matchFound', { ...matchPayload, isHost: false });
+      p2.socket.emit('match_found', { ...matchPayload, isHost: false });
+
+      io.to(normalizedRoomId).emit('match_started', {
+        room: roomState,
+        matchStartTime: roomState.matchStartTime
+      });
+    }
+  }
+}
+
 export function setupRoomSockets(io) {
+  if (!matchmakingInterval) {
+    matchmakingInterval = setInterval(() => {
+      checkMatchmakingQueue(io);
+    }, 2000);
+  }
+
   io.on('connection', (socket) => {
     console.log(`[Socket Connected] ID: ${socket.id}`);
+
+    // Auto Matchmaking Handlers
+    const handleFindMatch = (data = {}, callback) => {
+      try {
+        const existingRoomId = socketRoomMap.get(socket.id);
+        if (existingRoomId) {
+          const activeRoom = activeRooms.get(existingRoomId);
+          if (activeRoom && activeRoom.status === 'in-progress') {
+            if (typeof callback === 'function') {
+              callback({ success: false, error: 'You are already in an active duel.' });
+            }
+            return;
+          }
+        }
+
+        const rawName = data.username || data.name || socket.username || 'Coder';
+        const nameVal = validateDisplayName(rawName);
+        const validUsername = nameVal.valid ? nameVal.name : (rawName.slice(0, 20) || 'Coder');
+        socket.username = validUsername;
+
+        const rawElo = data.elo !== undefined ? data.elo : data.rating;
+        const elo = Number(rawElo);
+
+        matchmakingQueue.set(socket.id, {
+          socketId: socket.id,
+          socket: socket,
+          userId: data.userId || data.id || socket.id,
+          username: validUsername,
+          elo: isNaN(elo) ? 1200 : elo,
+          joinedAt: Date.now()
+        });
+
+        console.log(`[Matchmaking Queued] Socket: ${socket.id} | User: "${validUsername}" | ELO: ${elo} | Queue Size: ${matchmakingQueue.size}`);
+
+        if (typeof callback === 'function') {
+          callback({ success: true, status: 'queued' });
+        }
+
+        checkMatchmakingQueue(io);
+      } catch (err) {
+        if (typeof callback === 'function') {
+          callback({ success: false, error: err.message });
+        }
+      }
+    };
+
+    const handleCancelMatch = (data, callback) => {
+      removeFromMatchmakingQueue(socket.id);
+      console.log(`[Matchmaking Cancelled] Socket: ${socket.id}`);
+      if (typeof callback === 'function') {
+        callback({ success: true, status: 'cancelled' });
+      }
+    };
+
+    socket.on('findMatch', handleFindMatch);
+    socket.on('find_match', handleFindMatch);
+    socket.on('cancelMatch', handleCancelMatch);
+    socket.on('cancel_match', handleCancelMatch);
 
     // Anti-Cheat Event Tracking (Tab Switches, Blocked Pastes, & Fullscreen Exits)
     socket.on('anti_cheat_event', (data) => {
@@ -151,6 +335,7 @@ export function setupRoomSockets(io) {
     // Create 1v1 Room
     socket.on('create_room', (data, callback) => {
       try {
+        removeFromMatchmakingQueue(socket.id);
         const { roomId, password, topic, difficulty, timeLimit, player, problem, isBot } = data;
         const normalizedRoomId = cleanRoomCode(roomId);
         
@@ -235,6 +420,7 @@ export function setupRoomSockets(io) {
     // Join Room
     socket.on('join_room', async (data, callback) => {
       try {
+        removeFromMatchmakingQueue(socket.id);
         const normalizedRoomId = cleanRoomCode(data.roomId);
         let roomState = activeRooms.get(normalizedRoomId);
 
@@ -518,6 +704,7 @@ export function setupRoomSockets(io) {
 
     // Leave Room
     socket.on('leave_room', (data) => {
+      removeFromMatchmakingQueue(socket.id);
       const roomId = data?.roomId || socketRoomMap.get(socket.id);
       if (!roomId) return;
       handlePlayerDeparture(socket, cleanRoomCode(roomId), 'left the match');
@@ -656,6 +843,7 @@ export function setupRoomSockets(io) {
     // Disconnect
     socket.on('disconnect', (reason) => {
       console.log(`[Socket Disconnected] ${socket.id} (${reason})`);
+      removeFromMatchmakingQueue(socket.id);
       const roomId = socketRoomMap.get(socket.id);
       if (roomId) {
         handlePlayerDeparture(socket, roomId, 'disconnected');

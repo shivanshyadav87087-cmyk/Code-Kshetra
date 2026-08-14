@@ -88,9 +88,10 @@ export default function App() {
   const [showPostMatch, setShowPostMatch] = useState(false);
   const [showMatchStartOverlay, setShowMatchStartOverlay] = useState(false);
 
-  // Solution Viewer State
+  // Solution Viewer & Auto Matchmaking State
   const [showSolutionViewerModal, setShowSolutionViewerModal] = useState(false);
   const [winningSolutionData, setWinningSolutionData] = useState(null);
+  const [isSearchingMatch, setIsSearchingMatch] = useState(false);
 
   // SPECTATOR MODE STATE
   const [isSpectator, setIsSpectator] = useState(false);
@@ -101,18 +102,16 @@ export default function App() {
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room') || urlParams.get('join') || urlParams.get('code');
       if (roomParam) {
-        sessionStorage.setItem('pending_contest_room', roomParam.toUpperCase());
         return roomParam.toUpperCase();
       }
       const hash = window.location.hash;
       if (hash && (hash.includes('room=') || hash.includes('join='))) {
         const extracted = hash.split(/room=|join=/)[1]?.split('&')[0]?.toUpperCase();
         if (extracted) {
-          sessionStorage.setItem('pending_contest_room', extracted);
           return extracted;
         }
       }
-      return sessionStorage.getItem('pending_contest_room') || '';
+      return '';
     } catch (e) {
       return '';
     }
@@ -136,7 +135,7 @@ export default function App() {
 
       handleJoinRoom({ roomId: targetRoom, userName: player.name }, (res) => {
         if (!res || !res.success) {
-          handleCreateRoom({ userName: player.name });
+          alert(res?.error || `Room code "${targetRoom}" not found or expired.`);
         }
       });
     }
@@ -420,6 +419,7 @@ export default function App() {
       } else if (eventType === 'ROOM_UPDATED') {
         setRoom({ ...payload });
       } else if (eventType === 'MATCH_START') {
+        setIsSearchingMatch(false);
         sounds.playSubmitSuccess();
         
         const freshRoom = JSON.parse(JSON.stringify(payload));
@@ -507,23 +507,22 @@ export default function App() {
     setPlayer(updated);
     localStorage.setItem('codeclash_user', JSON.stringify(updated));
 
-    // Auto-join contest room if user opened a contest room link
-    const targetRoom = pendingRoomId || sessionStorage.getItem('pending_contest_room');
+    setRoom(null);
+    setIsSpectator(false);
+
+    // Auto-join contest room ONLY if URL contains explicit room link parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetRoom = urlParams.get('room') || urlParams.get('join') || urlParams.get('code');
     if (targetRoom) {
-      sessionStorage.removeItem('pending_contest_room');
-      setPendingRoomId('');
       try {
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (e) {}
 
-      handleJoinRoom({ roomId: targetRoom, userName: updated.name }, (res) => {
+      handleJoinRoom({ roomId: targetRoom.toUpperCase(), userName: updated.name }, (res) => {
         if (!res || !res.success) {
-          handleCreateRoom({ userName: updated.name });
+          alert(res?.error || `Room code "${targetRoom}" not found or expired.`);
         }
       });
-    } else {
-      // Direct duel/contest entry: automatically create & launch 1v1 Arena!
-      handleCreateRoom({ userName: updated.name || 'Coder_' + Math.floor(Math.random() * 899 + 100) });
     }
   };
 
@@ -569,7 +568,7 @@ export default function App() {
     }, (res) => {
       if (res && res.success && res.room) {
         setRoom(res.room);
-        setShowMatchStartOverlay(true);
+        setShowMatchStartOverlay(Boolean(isBot));
         const template = res.room.problem?.starterTemplates?.[selectedLanguage] || res.room.problem?.starterTemplates?.javascript || '';
         setCode(template);
         setMyProgress({ passed: 0, total: res.room.problem?.testCases?.length || 4, status: 'Coding...' });
@@ -602,6 +601,41 @@ export default function App() {
       if (typeof cb === 'function') cb(res);
     });
   };
+
+  const handleAutoMatch = ({ userName, rating }) => {
+    const validName = userName || player.name || ('Coder_' + Math.floor(Math.random() * 899 + 100));
+    const p = { ...player, name: validName, rating: rating !== undefined ? rating : player.rating };
+    setPlayer(p);
+    setIsSpectator(false);
+    setIsSearchingMatch(true);
+
+    roomEngine.findMatch({ player: p }, (res) => {
+      if (res && !res.success) {
+        setIsSearchingMatch(false);
+        sounds.playFail();
+        alert(res.error || 'Failed to enter matchmaking queue.');
+      }
+    });
+  };
+
+  const handleCancelAutoMatch = () => {
+    roomEngine.cancelMatch();
+    setIsSearchingMatch(false);
+  };
+
+  useEffect(() => {
+    const handleDisconnect = () => {
+      if (isSearchingMatch) {
+        setIsSearchingMatch(false);
+        setJoinNotification({
+          username: 'Matchmaking Error',
+          text: 'Disconnected from server while searching for match.'
+        });
+      }
+    };
+    socket.on('disconnect', handleDisconnect);
+    return () => socket.off('disconnect', handleDisconnect);
+  }, [isSearchingMatch]);
 
   const handleLeaveRoom = () => {
     if (room && room.status === 'in-progress' && !isSpectator) {
@@ -680,6 +714,9 @@ export default function App() {
               <RoomLobby
                 onCreateRoom={handleCreateRoom}
                 onJoinRoom={handleJoinRoom}
+                onAutoMatch={handleAutoMatch}
+                onCancelAutoMatch={handleCancelAutoMatch}
+                isSearchingMatch={isSearchingMatch}
                 player={player}
                 setPlayer={setPlayer}
               />

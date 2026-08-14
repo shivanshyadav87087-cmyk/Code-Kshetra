@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkles, Hash, CheckCircle2, Eye, AlertCircle, Lock, Loader2, Info, RotateCcw, Heart, UserCheck } from 'lucide-react';
+import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkles, Hash, CheckCircle2, Eye, AlertCircle, Lock, Loader2, Info, RotateCcw, Heart, UserCheck, Zap, XCircle, Target, Radio } from 'lucide-react';
 import { TOPICS, DIFFICULTIES } from '../data/topics';
 import { PROBLEM_BANK } from '../data/problemBank';
 import { sounds } from '../engine/soundManager';
@@ -7,8 +7,9 @@ import FestivalBanner from './FestivalBanner';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
-export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer }) {
-  const [activeTab, setActiveTab] = useState('create');
+export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCancelAutoMatch, isSearchingMatch, player, setPlayer }) {
+  const [activeTab, setActiveTab] = useState(isSearchingMatch ? 'automatch' : 'create');
+  const [queueTimeSeconds, setQueueTimeSeconds] = useState(0);
   
   const [userName, setUserName] = useState(player?.name || '');
   const [selectedTopic, setSelectedTopic] = useState('all');
@@ -50,6 +51,35 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
       }
     } catch (e) {}
   }, []);
+
+  useEffect(() => {
+    if (isSearchingMatch) {
+      setActiveTab('automatch');
+    }
+  }, [isSearchingMatch]);
+
+  useEffect(() => {
+    let timer = null;
+    if (isSearchingMatch) {
+      setQueueTimeSeconds(0);
+      timer = setInterval(() => {
+        setQueueTimeSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      setQueueTimeSeconds(0);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isSearchingMatch]);
+
+  const formatQueueTime = (totalSeconds) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  const currentEloRange = 100 + Math.floor(queueTimeSeconds / 5) * 50;
 
   const handleTrimmed = (showHandleSetupModal ? newHandleInput : userName).replace(/<[^>]*>?/gm, '').trim();
   const isNameTooShort = handleTrimmed.length > 0 && handleTrimmed.length < 3;
@@ -228,6 +258,25 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
     });
   };
 
+  const handleAutoMatchSubmit = (e) => {
+    if (e) e.preventDefault();
+    let nameToUse = (userName || '').trim();
+    if (!nameToUse || nameToUse.length < 3) {
+      nameToUse = player?.email ? player.email.split('@')[0] : 'Coder_' + Math.floor(Math.random() * 899 + 100);
+      setUserName(nameToUse);
+      if (typeof setPlayer === 'function') {
+        setPlayer(prev => ({ ...prev, name: nameToUse }));
+      }
+    }
+
+    triggerFullscreen();
+    sounds.playClick();
+
+    if (typeof onAutoMatch === 'function') {
+      onAutoMatch({ userName: nameToUse, rating: player?.rating || 1200 });
+    }
+  };
+
   const handleResetTopicDifficulty = () => {
     setSelectedTopic('all');
     setSelectedDifficulty('all');
@@ -279,9 +328,10 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
           </div>
         </div>
 
-        {/* Tab Navigation (Create Room vs Join Room) */}
+        {/* Tab Navigation (Create Room vs Auto Match vs Join Room) */}
         <div className="flex border-b border-slate-800">
           <button
+            type="button"
             onClick={() => {
               setActiveTab('create');
               sounds.playClick();
@@ -293,10 +343,27 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
             }`}
           >
             <PlusCircle className="w-4.5 h-4.5 text-cyan-400" />
-            <span>Create 1v1 Duel Room</span>
+            <span>Create 1v1 Room</span>
           </button>
 
           <button
+            type="button"
+            onClick={() => {
+              setActiveTab('automatch');
+              sounds.playClick();
+            }}
+            className={`flex-1 py-3.5 text-sm sm:text-base font-bold flex items-center justify-center gap-2 border-b-2 btn-glow transition-all ${
+              activeTab === 'automatch'
+                ? 'border-purple-400 text-purple-300 bg-slate-800/40'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Zap className="w-4.5 h-4.5 text-purple-400 animate-pulse" />
+            <span>Auto Match ⚡</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => {
               setActiveTab('join');
               sounds.playClick();
@@ -308,9 +375,141 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, player, setPlayer 
             }`}
           >
             <LogIn className="w-4.5 h-4.5 text-emerald-400" />
-            <span>Join Existing Room</span>
+            <span>Join Room</span>
           </button>
         </div>
+
+        {/* AUTO MATCH PANEL */}
+        {activeTab === 'automatch' && (
+          <div className="space-y-6">
+            {isSearchingMatch ? (
+              /* SEARCHING MATCH WAITING SCREEN */
+              <div className="bg-slate-950/90 border border-purple-500/40 rounded-3xl p-8 text-center space-y-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-purple-500/10 rounded-3xl blur-2xl pointer-events-none" />
+
+                <div className="relative flex items-center justify-center py-4">
+                  <div className="absolute w-32 h-32 rounded-full border-2 border-purple-500/30 animate-ping" />
+                  <div className="absolute w-24 h-24 rounded-full border border-cyan-400/40 animate-pulse" />
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-purple-500/30 relative z-10">
+                    <Swords className="w-8 h-8 text-white animate-bounce" />
+                  </div>
+                </div>
+
+                <div className="space-y-2 relative z-10">
+                  <h3 className="text-2xl font-black text-slate-100 font-mono tracking-wide flex items-center justify-center gap-2">
+                    <Radio className="w-5 h-5 text-purple-400 animate-pulse" />
+                    Finding an Opponent...
+                  </h3>
+                  <p className="text-sm text-slate-400 font-mono">
+                    Searching global duel pool for a fair 1v1 match
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto relative z-10">
+                  <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl">
+                    <div className="text-xs font-mono text-slate-400 mb-1 flex items-center justify-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Time in Queue</span>
+                    </div>
+                    <div className="text-2xl font-black font-mono text-cyan-300">
+                      {formatQueueTime(queueTimeSeconds)}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl">
+                    <div className="text-xs font-mono text-slate-400 mb-1 flex items-center justify-center gap-1.5">
+                      <Target className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Search ELO Range</span>
+                    </div>
+                    <div className="text-2xl font-black font-mono text-purple-300">
+                      ±{currentEloRange} <span className="text-xs font-normal text-slate-400">ELO</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-purple-950/50 border border-purple-500/30 px-4 py-3 rounded-2xl text-xs font-mono text-purple-200 flex items-center justify-center gap-2 max-w-lg mx-auto relative z-10">
+                  <Sparkles className="w-4 h-4 text-purple-400 animate-spin" />
+                  <span>
+                    Current range: <strong className="text-white">±{currentEloRange} ELO</strong> (Widening +50 ELO every 5s for fast pairing)
+                  </span>
+                </div>
+
+                <div className="pt-2 relative z-10">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sounds.playClick();
+                      if (typeof onCancelAutoMatch === 'function') onCancelAutoMatch();
+                    }}
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300 font-mono font-bold text-sm flex items-center justify-center gap-2 mx-auto btn-glow-rose transition-all cursor-pointer"
+                  >
+                    <XCircle className="w-4 h-4 text-rose-400" />
+                    <span>Cancel Matchmaking</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-purple-950/50 via-slate-900 to-cyan-950/50 border border-purple-500/30 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+                      <Zap className="w-7 h-7 text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-mono text-slate-400 uppercase tracking-wider">Your Duel Rating</div>
+                      <div className="text-2xl font-black font-mono text-slate-100 flex items-center gap-2">
+                        <span>{player?.rating !== undefined ? player.rating : 1200} ELO</span>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          Ranked ⚔️
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right font-mono text-xs text-slate-400 space-y-1">
+                    <div className="text-emerald-400 font-bold">⚡ Instant Pairing</div>
+                    <div>Fair match guaranteed</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+                  <div className="bg-slate-950/60 border border-slate-800 p-4 rounded-2xl space-y-1">
+                    <div className="text-slate-400 font-bold flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5 text-purple-400" />
+                      <span>ELO Closeness</span>
+                    </div>
+                    <p className="text-slate-300">Starts ±100 ELO, expands +50 every 5s if queue is small.</p>
+                  </div>
+
+                  <div className="bg-slate-950/60 border border-slate-800 p-4 rounded-2xl space-y-1">
+                    <div className="text-slate-400 font-bold flex items-center gap-1.5">
+                      <Swords className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Problem Selection</span>
+                    </div>
+                    <p className="text-slate-300">Random LeetCode algorithm from global problem bank.</p>
+                  </div>
+
+                  <div className="bg-slate-950/60 border border-slate-800 p-4 rounded-2xl space-y-1">
+                    <div className="text-slate-400 font-bold flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Zero Setup</span>
+                    </div>
+                    <p className="text-slate-300">No room codes required. Matched & dropped directly into duel!</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAutoMatchSubmit}
+                  className="w-full py-5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:via-indigo-500 hover:to-cyan-500 text-white font-mono font-black text-lg shadow-xl shadow-purple-500/25 btn-glow flex items-center justify-center gap-3 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <Zap className="w-6 h-6 text-yellow-300 fill-yellow-300 animate-pulse" />
+                  <span>FIND OPPONENT NOW ⚡</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* CREATE ROOM FORM */}
         {activeTab === 'create' && (

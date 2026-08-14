@@ -14,7 +14,7 @@ class RoomEngine {
       this.notifyListeners('PLAYER_JOINED_TOAST', data);
     });
 
-    socket.on('match_started', (data) => {
+    const handleMatchStart = (data) => {
       if (data && data.room) {
         const isHost = this.currentRoom?.isHost ?? (socket.id === data.room.host?.id);
         const myPlayer = isHost ? data.room.host : data.room.guest;
@@ -26,7 +26,11 @@ class RoomEngine {
         };
         this.notifyListeners('MATCH_START', JSON.parse(JSON.stringify(this.currentRoom)));
       }
-    });
+    };
+
+    socket.on('match_started', handleMatchStart);
+    socket.on('matchFound', handleMatchStart);
+    socket.on('match_found', handleMatchStart);
 
     socket.on('match_ended', (data) => {
       if (this.currentRoom) {
@@ -237,18 +241,6 @@ class RoomEngine {
 
     const mePlayer = player || { id: 'user_' + Math.floor(Math.random() * 89999 + 10000), name: 'Opponent_' + Math.floor(Math.random() * 899 + 100), rating: 1200 };
 
-    let hasResolved = false;
-
-    const resolveSuccess = (roomObj, isSpec) => {
-      if (hasResolved) return;
-      hasResolved = true;
-      this.currentRoom = roomObj;
-      if (typeof onResult === 'function') {
-        onResult({ success: true, isSpectator: isSpec, room: roomObj });
-      }
-      this.notifyListeners('ROOM_UPDATED', roomObj);
-    };
-
     socket.emit('join_room', {
       roomId: cleanCode,
       password,
@@ -262,63 +254,17 @@ class RoomEngine {
           isHost: false,
           isSpectator: Boolean(res.isSpectator)
         };
-        resolveSuccess(fullRoom, Boolean(res.isSpectator));
+        this.currentRoom = fullRoom;
+        if (typeof onResult === 'function') {
+          onResult({ success: true, isSpectator: Boolean(res.isSpectator), room: fullRoom });
+        }
+        this.notifyListeners('ROOM_UPDATED', fullRoom);
       } else {
-        // Fallback Join: Build instant duel match room if socket lookup is delayed
-        const fallbackProblem = PROBLEM_BANK[Math.floor(Math.random() * PROBLEM_BANK.length)];
-        const fallbackRoom = {
-          roomId: cleanCode,
-          password: password,
-          topic: 'all',
-          difficulty: 'all',
-          maxPlayers: 2,
-          timeLimit: 10,
-          host: { id: 'host_player', name: 'Rival Coder ⚔️', rating: 1350 },
-          guest: mePlayer,
-          me: mePlayer,
-          isHost: false,
-          isSpectator: Boolean(asSpectator),
-          problem: fallbackProblem,
-          status: 'in-progress',
-          matchStartTime: Date.now(),
-          startTime: Date.now(),
-          winningSolution: null,
-          myProgress: { passed: 0, total: fallbackProblem.testCases.length, status: 'Coding...' },
-          opponentProgress: { passed: 0, total: fallbackProblem.testCases.length, status: 'Coding...' }
-        };
-
-        resolveSuccess(fallbackRoom, Boolean(asSpectator));
+        if (typeof onResult === 'function') {
+          onResult({ success: false, error: res?.error || `Room "${cleanCode}" not found or expired.` });
+        }
       }
     });
-
-    // Safety Timeout (1.5s): Ensure player enters match even if socket server callback is delayed
-    setTimeout(() => {
-      if (!hasResolved) {
-        const fallbackProblem = PROBLEM_BANK[Math.floor(Math.random() * PROBLEM_BANK.length)];
-        const fallbackRoom = {
-          roomId: cleanCode,
-          password: password,
-          topic: 'all',
-          difficulty: 'all',
-          maxPlayers: 2,
-          timeLimit: 10,
-          host: { id: 'host_player', name: 'Rival Coder ⚔️', rating: 1350 },
-          guest: mePlayer,
-          me: mePlayer,
-          isHost: false,
-          isSpectator: Boolean(asSpectator),
-          problem: fallbackProblem,
-          status: 'in-progress',
-          matchStartTime: Date.now(),
-          startTime: Date.now(),
-          winningSolution: null,
-          myProgress: { passed: 0, total: fallbackProblem.testCases.length, status: 'Coding...' },
-          opponentProgress: { passed: 0, total: fallbackProblem.testCases.length, status: 'Coding...' }
-        };
-
-        resolveSuccess(fallbackRoom, Boolean(asSpectator));
-      }
-    }, 1500);
   }
 
   leaveRoom(roomId) {
@@ -369,6 +315,28 @@ class RoomEngine {
         this.notifyListeners('OPPONENT_SUBMITTED', botSubmission);
       }
     }, 9000);
+  }
+
+  findMatch({ player }, callback) {
+    const p = player || {
+      id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
+      name: 'Coder_' + Math.floor(Math.random() * 899 + 100),
+      rating: 1200
+    };
+
+    socket.emit('findMatch', {
+      userId: p.id,
+      username: p.name,
+      elo: p.rating !== undefined ? p.rating : 1200
+    }, (res) => {
+      if (typeof callback === 'function') callback(res);
+    });
+  }
+
+  cancelMatch(callback) {
+    socket.emit('cancelMatch', {}, (res) => {
+      if (typeof callback === 'function') callback(res);
+    });
   }
 
   stop() {

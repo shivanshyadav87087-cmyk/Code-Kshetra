@@ -178,20 +178,20 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
               <Button
                 variant="primary"
                 size="lg"
-                onClick={handleDirectEnterArena}
+                onClick={() => handleOpenAuth('register')}
                 icon={Swords}
                 className="w-full sm:w-auto"
               >
-                Enter Battle Arena ⚔️
+                Create Free Account 🚀
               </Button>
 
               <Button
                 variant="secondary"
                 size="lg"
-                onClick={() => setExploreModalOpen(true)}
+                onClick={handleDirectEnterArena}
                 className="w-full sm:w-auto"
               >
-                Explore Tracks
+                Guest Quick Play ⚔️
               </Button>
             </div>
 
