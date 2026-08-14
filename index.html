@@ -30,13 +30,23 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- PWA Service Worker Registration Script -->
+    <!-- PWA Service Worker Registration & Cache Purge Script -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('[PWA Service Worker] Registered:', reg.scope))
+            .then(reg => {
+              console.log('[PWA Service Worker] Registered:', reg.scope);
+              reg.update();
+            })
             .catch(err => console.warn('[PWA Service Worker] Registration failed:', err));
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(keys => {
+          keys.forEach(k => {
+            if (k !== 'code-kshetra-v5') caches.delete(k);
+          });
         });
       }
     </script>

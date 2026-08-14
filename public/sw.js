@@ -1,51 +1,42 @@
-const CACHE_NAME = 'code-kshetra-v1';
+const CACHE_NAME = 'code-kshetra-v5';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
   '/favicon.svg',
   '/manifest.json'
 ];
 
-// Install Event - Pre-cache core shell
+// Install Event - Skip waiting immediately
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// Activate Event - Clean old caches
+// Activate Event - Purge all old caches and claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
+          return caches.delete(cache);
         })
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Fetch Event - Network First with Cache Fallback for instant load
+// Fetch Event - Strict Network First strategy for all navigation & JS/CSS requests
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET and Socket.IO API requests
   if (event.request.method !== 'GET' || event.request.url.includes('/socket.io/')) {
     return;
   }
 
+  // Always fetch fresh network assets for HTML, JS, CSS to prevent stale cache blank screens
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
         return networkResponse;
       })
       .catch(() => {
