@@ -37,7 +37,7 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
       email: savedUser?.email || '',
       username: guestHandle,
       name: guestHandle,
-      rating: savedUser?.rating !== undefined ? savedUser.rating : 1200,
+      rating: savedUser?.rating !== undefined ? savedUser.rating : 0,
       avatarUrl: savedUser?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
     };
 

@@ -273,7 +273,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
     sounds.playClick();
 
     if (typeof onAutoMatch === 'function') {
-      onAutoMatch({ userName: nameToUse, rating: player?.rating || 1200 });
+      onAutoMatch({ userName: nameToUse, rating: player?.rating || 0 });
     }
   };
 
@@ -474,7 +474,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
                     <div>
                       <div className="text-xs font-mono text-slate-400 uppercase tracking-wider">Your Duel Rating</div>
                       <div className="text-2xl font-black font-mono text-slate-100 flex items-center gap-2">
-                        <span>{player?.rating !== undefined ? player.rating : 1200} ELO</span>
+                        <span>{player?.rating !== undefined ? player.rating : 0} ELO</span>
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30">
                           Ranked ⚔️
                         </span>

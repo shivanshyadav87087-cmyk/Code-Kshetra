@@ -239,7 +239,7 @@ class RoomEngine {
       return;
     }
 
-    const mePlayer = player || { id: 'user_' + Math.floor(Math.random() * 89999 + 10000), name: 'Opponent_' + Math.floor(Math.random() * 899 + 100), rating: 1200 };
+    const mePlayer = player || { id: 'user_' + Math.floor(Math.random() * 89999 + 10000), name: 'Opponent_' + Math.floor(Math.random() * 899 + 100), rating: 0 };
 
     socket.emit('join_room', {
       roomId: cleanCode,
@@ -321,13 +321,13 @@ class RoomEngine {
     const p = player || {
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
       name: 'Coder_' + Math.floor(Math.random() * 899 + 100),
-      rating: 1200
+      rating: 0
     };
 
     socket.emit('findMatch', {
       userId: p.id,
       username: p.name,
-      elo: p.rating !== undefined ? p.rating : 1200
+      elo: p.rating !== undefined ? p.rating : 0
     }, (res) => {
       if (typeof callback === 'function') callback(res);
     });

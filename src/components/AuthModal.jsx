@@ -80,7 +80,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
         id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
         username: tempUsername,
         name: tempUsername,
-        rating: 1200,
+        rating: 0,
         email: email || `${tempUsername.toLowerCase()}@codekshetra.com`
       };
       localStorage.setItem('codeclash_token', 'guest_token_' + Date.now());

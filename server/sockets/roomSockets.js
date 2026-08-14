@@ -241,7 +241,7 @@ export function setupRoomSockets(io) {
           socket: socket,
           userId: data.userId || data.id || socket.id,
           username: validUsername,
-          elo: isNaN(elo) ? 1200 : elo,
+          elo: isNaN(elo) ? 0 : elo,
           joinedAt: Date.now()
         });
 
