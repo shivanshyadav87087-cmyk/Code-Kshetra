@@ -152,15 +152,15 @@ export default function Navbar({
                 </div>
               </button>
 
-              {/* Leave Room Button (Shown when in active match room) */}
+              {/* Leave Room Button (Shown when in active match room - ONLY button shown) */}
               {room ? (
                 <button
                   onClick={() => { sounds.playClick(); if (onLeaveRoom) onLeaveRoom(); }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/30 text-[#EF4444] text-xs font-bold transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#EF4444]/15 hover:bg-[#EF4444]/25 border border-[#EF4444]/40 text-[#EF4444] text-xs font-bold transition-all cursor-pointer shadow-sm"
                   title="Leave Current Room"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden md:inline">Leave Room</span>
+                  <LogOut className="w-4 h-4 text-[#EF4444]" />
+                  <span className="font-sans font-bold">Leave Room</span>
                 </button>
               ) : (
                 /* Sign Out Button (Shown ONLY when outside active match room) */
