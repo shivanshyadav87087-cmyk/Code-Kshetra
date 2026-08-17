@@ -63,6 +63,18 @@ export default function OpponentPanel({
   const guestName = room?.isBot ? 'DevBot AI 🤖' : (room?.guest?.username || room?.guest?.name || 'Player 2 (Guest)');
   const spectatorCount = room?.spectators?.length || 0;
 
+  const myName = room?.me?.name || room?.me?.username || 'You';
+  const isHost = Boolean(room?.host?.username === myName || room?.host?.name === myName || (room?.me?.id && room?.host?.id === room?.me?.id));
+
+  let opponentName = 'Waiting for Opponent...';
+  if (room?.isBot) {
+    opponentName = 'DevBot AI 🤖';
+  } else if (isHost) {
+    opponentName = room?.guest?.username || room?.guest?.name || 'Player 2 (Guest)';
+  } else {
+    opponentName = room?.host?.username || room?.host?.name || 'Player 1 (Host)';
+  }
+
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 shadow-xl backdrop-blur-md font-sans">
       
@@ -158,7 +170,7 @@ export default function OpponentPanel({
               </div>
               <div className="overflow-hidden">
                 <div className="text-xs font-bold text-slate-100 truncate">
-                  {guestName}
+                  {opponentName}
                 </div>
                 <div className={`text-[10px] font-mono ${isWaitingForOpponent ? 'text-amber-400 animate-pulse font-bold' : 'text-fuchsia-400'}`}>
                   {isWaitingForOpponent ? '⌛ Opponent Joining...' : (opponentProgress?.status || 'Coding...')}
