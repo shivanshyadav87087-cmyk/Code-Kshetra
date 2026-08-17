@@ -87,3 +87,56 @@ export function getRatingTier(rating = 0) {
     pct: Math.min(100, Math.round((r / 500) * 100))
   };
 }
+
+/**
+ * Level EXP & EXP Badge Progression Calculator
+ */
+export function calculateExpLevel(totalMatches = 0, wins = 0) {
+  const exp = (totalMatches * 25) + (wins * 100);
+  const level = Math.floor(exp / 300) + 1;
+  const currentExpInLevel = exp % 300;
+  const levelProgressPct = Math.round((currentExpInLevel / 300) * 100);
+
+  let title = 'Novice Coder';
+  let badgeIcon = '🌱';
+
+  if (level >= 15) { title = 'Grandmaster Legend'; badgeIcon = '👑'; }
+  else if (level >= 10) { title = 'Algorithm Master'; badgeIcon = '⚡'; }
+  else if (level >= 7) { title = 'Code Knight'; badgeIcon = '⚔️'; }
+  else if (level >= 4) { title = 'Byte Warrior'; badgeIcon = '🛡️'; }
+  else if (level >= 2) { title = 'Syntax Specialist'; badgeIcon = '💡'; }
+
+  return { exp, level, currentExpInLevel, levelProgressPct, title, badgeIcon };
+}
+
+/**
+ * Daily Login Streak Tracker
+ */
+export function updateDailyStreak() {
+  if (typeof window === 'undefined') return 1;
+  
+  const lastActiveStr = localStorage.getItem('codeclash_last_active_date');
+  const streakStr = localStorage.getItem('codeclash_daily_streak') || '0';
+  let streak = parseInt(streakStr, 10);
+  if (isNaN(streak)) streak = 0;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  if (!lastActiveStr) {
+    streak = 1;
+  } else {
+    const lastDate = new Date(lastActiveStr);
+    const todayDate = new Date(todayStr);
+    const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      streak += 1;
+    } else if (diffDays > 1) {
+      streak = 1;
+    }
+  }
+
+  localStorage.setItem('codeclash_last_active_date', todayStr);
+  localStorage.setItem('codeclash_daily_streak', String(streak));
+  return streak;
+}

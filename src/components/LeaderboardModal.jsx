@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Crown, X, User, Code, ExternalLink, Sparkles, ArrowLeft } from 'lucide-react';
+import { Trophy, Medal, Crown, X, User, Code, ExternalLink, Sparkles, ArrowLeft, Flame, Zap } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
-import { getRatingTier } from '../engine/eloEngine';
+import { getRatingTier, calculateExpLevel } from '../engine/eloEngine';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
@@ -30,9 +30,9 @@ export default function LeaderboardModal({ isOpen, onClose }) {
       .catch(() => {
         // Fallback sample data sorted by rating descending
         setLeaderboard([
-          { username: 'GrandmasterNinja', rating: 2250, wins: 45, losses: 5, leetcodeUsername: 'gmninja' },
-          { username: 'MasterCoder', rating: 1850, wins: 32, losses: 8, leetcodeUsername: 'mastercoder' },
-          { username: 'ExpertByte', rating: 1420, wins: 22, losses: 10, leetcodeUsername: 'expertbyte' }
+          { username: 'GrandmasterNinja', rating: 2250, wins: 45, losses: 5, totalMatches: 50, streak: 7, leetcodeUsername: 'gmninja' },
+          { username: 'MasterCoder', rating: 1850, wins: 32, losses: 8, totalMatches: 40, streak: 4, leetcodeUsername: 'mastercoder' },
+          { username: 'ExpertByte', rating: 1420, wins: 22, losses: 10, totalMatches: 32, streak: 3, leetcodeUsername: 'expertbyte' }
         ]);
       })
       .finally(() => setLoading(false));
@@ -42,7 +42,7 @@ export default function LeaderboardModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md font-sans">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh]">
+      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh]">
         
         {/* Header Bar */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800">
@@ -59,17 +59,17 @@ export default function LeaderboardModal({ isOpen, onClose }) {
               <Trophy className="w-5 h-5 text-amber-400 animate-bounce" />
               <div>
                 <h2 className="text-base font-black text-slate-100 flex items-center gap-1.5">
-                  <span>Code क्षेत्र Leaderboard</span>
+                  <span>Code क्षेत्र Hall of Fame</span>
                   <Sparkles className="w-4 h-4 text-cyan-400" />
                 </h2>
-                <p className="text-[10px] text-slate-400 font-mono">Ranked by ELO Points</p>
+                <p className="text-[10px] text-slate-400 font-mono">Ranked by ELO Points, EXP Levels & Daily Streaks</p>
               </div>
             </div>
           </div>
 
           <button
             onClick={() => { onClose(); sounds.playClick(); }}
-            className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-slate-200 transition-all btn-glow"
+            className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -87,7 +87,8 @@ export default function LeaderboardModal({ isOpen, onClose }) {
           ) : (
             leaderboard.map((user, idx) => {
               const tier = getRatingTier(user.rating || 0);
-              const isTop3 = idx < 3;
+              const expLevel = calculateExpLevel(user.totalMatches || 0, user.wins || 0);
+              const streak = user.streak || 1;
 
               return (
                 <div
@@ -127,22 +128,29 @@ export default function LeaderboardModal({ isOpen, onClose }) {
                     <div>
                       <div className="font-extrabold text-slate-100 flex items-center gap-2">
                         <span>{user.username}</span>
+
+                        {/* Level EXP Badge */}
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center gap-1">
+                          <span>{expLevel.badgeIcon}</span>
+                          <span>Lvl {expLevel.level}</span>
+                        </span>
+
                         {/* Rank Tier Pill */}
                         <span className={`text-[9px] font-mono font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 ${tier.bg} ${tier.color}`}>
                           <span>{tier.badge}</span>
                           <span>{tier.name}</span>
                         </span>
                       </div>
+
                       <div className="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-2">
                         <span>{user.wins || 0} Wins</span>
                         <span className="text-slate-600">•</span>
                         <span>{user.losses || 0} Losses</span>
-                        {user.location && (
-                          <>
-                            <span className="text-slate-600">•</span>
-                            <span className="text-slate-300">{user.location}</span>
-                          </>
-                        )}
+                        <span className="text-slate-600">•</span>
+                        <span className="text-amber-400 font-bold flex items-center gap-0.5">
+                          <Flame className="w-3 h-3 text-amber-400 inline" />
+                          <span>{streak}d Streak</span>
+                        </span>
                       </div>
                     </div>
                   </div>
