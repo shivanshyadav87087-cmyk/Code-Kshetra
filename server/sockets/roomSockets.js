@@ -241,7 +241,7 @@ export function setupRoomSockets(io) {
           socket: socket,
           userId: data.userId || data.id || socket.id,
           username: validUsername,
-          elo: isNaN(elo) ? 1200 : elo,
+          elo: isNaN(elo) ? 0 : elo,
           joinedAt: Date.now()
         });
 
@@ -379,7 +379,7 @@ export function setupRoomSockets(io) {
           maxPlayers: 2,
           timeLimit: timeLimit || 10,
           host: { id: socket.id, username: nameVal.name, rating: player.rating || 0 },
-          guest: isBot ? { id: 'devbot_ai', username: 'DevBot AI 🤖', rating: 1200, isBot: true } : null,
+          guest: isBot ? { id: 'devbot_ai', username: 'DevBot AI 🤖', rating: 0, isBot: true } : null,
           spectators: [],
           isBot,
           problem: targetProblem,
