@@ -2,6 +2,7 @@ import { Room } from '../models/Room.js';
 import { Match } from '../models/Match.js';
 import { User } from '../models/User.js';
 import { PROBLEM_BANK } from '../../src/data/problemBank.js';
+import { judgeSubmission } from '../engine/judge/universalJudge.js';
 import { runCode } from '../../src/engine/codeRunner.js';
 import { calculateEloChange } from '../../src/engine/eloEngine.js';
 
@@ -663,7 +664,13 @@ export function setupRoomSockets(io) {
       const evalCode = code || submission?.code || roomState.problem?.starterTemplates?.javascript || '';
       const evalLang = language || submission?.language || 'javascript';
 
-      const evalRes = await runCode(evalCode, evalLang, roomState.problem.entryFunction, roomState.problem.testCases);
+      const evalRes = await judgeSubmission({
+        code: evalCode,
+        language: evalLang,
+        entryFunctionName: roomState.problem?.entryFunction || 'solution',
+        executionMode: roomState.problem?.executionMode || 'function',
+        testCases: roomState.problem?.testCases || []
+      });
       const isWinner = evalRes.verdict === 'Accepted' || Boolean(submission?.success) || (submission?.passedCount === submission?.totalCount && (submission?.totalCount || 0) > 0);
 
       // Anti-Cheat Sanity Check: Solved under 8 seconds

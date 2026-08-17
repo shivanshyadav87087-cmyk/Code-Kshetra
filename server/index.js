@@ -5,6 +5,7 @@ import cors from 'cors';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
+import judgeRoutes from './routes/judgeRoutes.js';
 import { setupRoomSockets } from './sockets/roomSockets.js';
 
 const app = express();
@@ -23,6 +24,7 @@ connectDB();
 // REST API Endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/judge', judgeRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({

@@ -396,10 +396,35 @@ function transpileToJs(code, language, entryFunctionName) {
   return jsCode;
 }
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
+
 /**
- * Execute User Code against Test Cases with LeetCode Verdict Classification & TLE Sandboxing
+ * Execute User Code against Test Cases via Server Judge Engine (or sandboxed fallback)
  */
-export async function runCode(code, language, entryFunctionName, testCases) {
+export async function runCode(code, language, entryFunctionName, testCases, problemConfig = {}) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/judge/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        language: language || 'javascript',
+        entryFunction: entryFunctionName || 'solution',
+        executionMode: problemConfig.executionMode || 'function',
+        testCases
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.verdict) {
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('[Online Judge API Fallback]', err.message);
+  }
+
   const startTime = performance.now();
   const results = [];
   let passedCount = 0;
