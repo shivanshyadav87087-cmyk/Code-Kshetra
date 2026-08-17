@@ -18,6 +18,7 @@ import ProfileModal from './components/ProfileModal';
 import LandingAuthGate from './components/LandingAuthGate';
 import Layer3MatchStartOverlay from './components/Layer3MatchStartOverlay';
 import HandleConfirmationModal from './components/HandleConfirmationModal';
+import BackgroundWatermark from './components/BackgroundWatermark';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
 import { roomEngine } from './engine/roomEngine';
@@ -694,6 +695,9 @@ export default function App() {
       
       {/* Dynamic Ambient Background Mesh */}
       <div className={`fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr ${ambientThemeGlow} rounded-full blur-[140px] pointer-events-none -z-10 animate-float-slow`} />
+
+      {/* Animated Background Watermark Thoughts & Emblem */}
+      <BackgroundWatermark />
 
       {!isAuthenticated ? (
         <LandingAuthGate
