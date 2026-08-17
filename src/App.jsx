@@ -17,6 +17,7 @@ import RematchModal from './components/RematchModal';
 import ProfileModal from './components/ProfileModal';
 import LandingAuthGate from './components/LandingAuthGate';
 import Layer3MatchStartOverlay from './components/Layer3MatchStartOverlay';
+import HandleConfirmationModal from './components/HandleConfirmationModal';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
 import { roomEngine } from './engine/roomEngine';
@@ -243,6 +244,7 @@ export default function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(false);
+  const [showHandleConfirmationModal, setShowHandleConfirmationModal] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   // Global Chat, Rematch Timeout & Anti-Cheat Socket Handler
@@ -510,6 +512,11 @@ export default function App() {
 
     setRoom(null);
     setIsSpectator(false);
+
+    // Prompt user ONCE after login to confirm or customize their handle
+    if (localStorage.getItem('codeclash_handle_prompted') !== 'true') {
+      setShowHandleConfirmationModal(true);
+    }
 
     // Auto-join contest room ONLY if URL contains explicit room link parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -921,6 +928,21 @@ export default function App() {
           winningSolution={winningSolutionData}
         />
       )}
+
+      {/* One-Time Post-Login Handle Confirmation Modal */}
+      <HandleConfirmationModal
+        isOpen={showHandleConfirmationModal}
+        initialName={player.name}
+        email={player.email}
+        onConfirm={(confirmedHandle) => {
+          setPlayer(prev => {
+            const updated = { ...prev, name: confirmedHandle };
+            localStorage.setItem('codeclash_user', JSON.stringify(updated));
+            return updated;
+          });
+          setShowHandleConfirmationModal(false);
+        }}
+      />
 
       {joinNotification && (
         <JoinToast
