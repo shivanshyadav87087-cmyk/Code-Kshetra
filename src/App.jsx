@@ -21,6 +21,7 @@ import HandleConfirmationModal from './components/HandleConfirmationModal';
 import BackgroundWatermark from './components/BackgroundWatermark';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
+import { getNextGuestHandle, getLocalGuestHandle } from './engine/guestEngine';
 import { roomEngine } from './engine/roomEngine';
 import { socket } from './engine/socketClient';
 import { sounds } from './engine/soundManager';
@@ -44,7 +45,7 @@ export default function App() {
       const savedUser = localStorage.getItem('codeclash_user');
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
-        const nameToUse = parsed.username || parsed.name || ('Coder_' + Math.floor(Math.random() * 899 + 100));
+        const nameToUse = parsed.username || parsed.name || getLocalGuestHandle();
         return {
           id: parsed._id || parsed.id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
           email: parsed.email || '',
@@ -62,7 +63,7 @@ export default function App() {
       }
     } catch (e) {}
 
-    const defaultName = 'Coder_' + Math.floor(Math.random() * 899 + 100);
+    const defaultName = getLocalGuestHandle();
     return {
       id: 'user_' + Math.floor(Math.random() * 89999 + 10000),
       email: '',

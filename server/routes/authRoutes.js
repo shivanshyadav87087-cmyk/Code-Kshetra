@@ -198,6 +198,29 @@ router.get('/check-handle', async (req, res) => {
   }
 });
 
+let globalGuestCounter = 0;
+
+// Next Sequential Guest Handle Generator Endpoint: Guest1, Guest2, Guest3 ... GuestN
+router.get('/next-guest', async (req, res) => {
+  try {
+    let nextNum = globalGuestCounter + 1;
+
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const guestCount = await User.countDocuments({ username: /^Guest\d+$/i });
+        nextNum = Math.max(nextNum, guestCount + 1);
+      } catch (e) {}
+    }
+
+    globalGuestCounter = nextNum;
+    const guestHandle = `Guest${nextNum}`;
+    return res.json({ guestHandle, guestNumber: nextNum });
+  } catch (err) {
+    globalGuestCounter += 1;
+    return res.json({ guestHandle: `Guest${globalGuestCounter}`, guestNumber: globalGuestCounter });
+  }
+});
+
 // Fetch Current User Profile by Email or Username
 router.get('/me', async (req, res) => {
   try {

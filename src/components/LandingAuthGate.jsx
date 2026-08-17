@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Swords, Code, BookOpen, Trophy, ChevronRight, Zap, Target, Award, ShieldCheck, CheckCircle2, Globe, Sparkles } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import MaintenanceBanner from './MaintenanceBanner';
+import { getNextGuestHandle } from '../engine/guestEngine';
 import Navbar from './Navbar';
 import AuthModal from './AuthModal';
 import { ExploreModal, DuelsInfoModal, ContestArenaModal } from './ExploreModals';
@@ -23,7 +24,7 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
     setAuthModalOpen(true);
   };
 
-  const handleDirectEnterArena = () => {
+  const handleDirectEnterArena = async () => {
     sounds.playClick();
     sounds.playSubmitSuccess();
 
@@ -32,13 +33,17 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
       savedUser = JSON.parse(localStorage.getItem('codeclash_user') || 'null');
     } catch (e) {}
 
-    const guestHandle = savedUser?.username || savedUser?.name || 'Coder_' + Math.floor(Math.random() * 899 + 100);
+    let guestHandle = savedUser?.username || savedUser?.name;
+    if (!guestHandle || guestHandle.startsWith('Coder_')) {
+      guestHandle = await getNextGuestHandle();
+    }
+
     const userObj = {
       id: savedUser?.id || savedUser?._id || ('user_' + Math.floor(Math.random() * 89999 + 10000)),
       email: savedUser?.email || '',
       username: guestHandle,
       name: guestHandle,
-      rating: savedUser?.rating !== undefined ? savedUser.rating : 1200,
+      rating: savedUser?.rating !== undefined ? savedUser.rating : 0,
       avatarUrl: savedUser?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
     };
 
