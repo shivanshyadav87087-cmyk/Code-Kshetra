@@ -152,8 +152,8 @@ export default function Navbar({
                 </div>
               </button>
 
-              {/* Leave Room Button if in match */}
-              {room && (
+              {/* Leave Room Button (Shown when in active match room) */}
+              {room ? (
                 <button
                   onClick={() => { sounds.playClick(); if (onLeaveRoom) onLeaveRoom(); }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/30 text-[#EF4444] text-xs font-bold transition-all cursor-pointer"
@@ -162,19 +162,19 @@ export default function Navbar({
                   <LogOut className="w-4 h-4" />
                   <span className="hidden md:inline">Leave Room</span>
                 </button>
+              ) : (
+                /* Sign Out Button (Shown ONLY when outside active match room) */
+                <button
+                  onClick={() => {
+                    sounds.playClick();
+                    if (onSignOut) onSignOut();
+                  }}
+                  className="p-2 rounded-[10px] bg-[#111318] border border-white/10 hover:border-[#EF4444]/40 text-[#94A3B8] hover:text-[#EF4444] transition-all cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               )}
-
-              {/* Sign Out Button */}
-              <button
-                onClick={() => {
-                  sounds.playClick();
-                  if (onSignOut) onSignOut();
-                }}
-                className="p-2 rounded-[10px] bg-[#111318] border border-white/10 hover:border-[#EF4444]/40 text-[#94A3B8] hover:text-[#EF4444] transition-all cursor-pointer"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
             </div>
           ) : (
             /* Logged-Out / Guest State: Sign In + Create Account Buttons ONLY */
