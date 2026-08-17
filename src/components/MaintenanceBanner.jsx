@@ -10,25 +10,30 @@ export default function MaintenanceBanner() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Check if maintenance mode is enabled locally or from server
-    const localMaintenance = localStorage.getItem('codeclash_maintenance_notice');
-    if (localMaintenance === 'true') {
-      setMaintenance(true);
-      setMessage('⚙️ SITE UPDATE NOTICE: New features are currently being deployed to Code क्षेत्र! Real-time duels and features are being updated live.');
-    }
+    const checkStatus = () => {
+      const localMaintenance = localStorage.getItem('codeclash_maintenance_notice');
+      if (localMaintenance === 'true') {
+        setMaintenance(true);
+        setMessage('⚙️ SITE UPDATE NOTICE: New features are currently being deployed to Code क्षेत्र! System is under active live maintenance.');
+        return;
+      }
 
-    // Fetch server health status
-    fetch(`${BACKEND_URL}/api/health`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.maintenance) {
-          setMaintenance(true);
-          setMessage(data.message || '⚙️ SITE UNDER MAINTENANCE: Live feature updates in progress!');
-        }
-      })
-      .catch(() => {
-        // Silent fallback
-      });
+      fetch(`${BACKEND_URL}/api/health`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.maintenance) {
+            setMaintenance(true);
+            setMessage(data.message || '⚙️ SITE UNDER MAINTENANCE: Live feature updates in progress!');
+          } else if (localMaintenance !== 'true') {
+            setMaintenance(false);
+          }
+        })
+        .catch(() => {});
+    };
+
+    checkStatus();
+    const timer = setInterval(checkStatus, 10000); // Check every 10s
+    return () => clearInterval(timer);
   }, []);
 
   if (!maintenance || dismissed) return null;

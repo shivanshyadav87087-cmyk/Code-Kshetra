@@ -76,7 +76,7 @@ export function Badge({ variant = 'default', className = '', children }) {
 }
 
 // 4. ELO BADGE
-export function EloBadge({ rating = 1200, className = '' }) {
+export function EloBadge({ rating = 0, className = '' }) {
   let tier = 'Newbie';
   let colorClass = 'bg-slate-800 text-slate-300 border-slate-700';
 
@@ -86,7 +86,7 @@ export function EloBadge({ rating = 1200, className = '' }) {
   } else if (rating >= 1600) {
     tier = 'Knight ⚔️';
     colorClass = 'bg-[#8B5CF6]/15 text-[#8B5CF6] border-[#8B5CF6]/40 shadow-sm shadow-[#8B5CF6]/20';
-  } else if (rating >= 1200) {
+  } else if (rating >= 900) {
     tier = 'Specialist ⚡';
     colorClass = 'bg-[#14B8A6]/15 text-[#14B8A6] border-[#14B8A6]/40 shadow-sm shadow-[#14B8A6]/20';
   }

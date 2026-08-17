@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Swords, Code, BookOpen, Trophy, ChevronRight, Zap, Target, Award, ShieldCheck, CheckCircle2, Globe, Sparkles } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
+import MaintenanceBanner from './MaintenanceBanner';
 import Navbar from './Navbar';
 import AuthModal from './AuthModal';
 import { ExploreModal, DuelsInfoModal, ContestArenaModal } from './ExploreModals';
@@ -52,6 +53,9 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
   return (
     <div className="min-h-screen bg-[#0A0B0F] text-[#F8FAFC] font-sans selection:bg-[#14B8A6]/30 selection:text-[#14B8A6] overflow-x-hidden flex flex-col">
       
+      {/* Maintenance & System Update Notice Banner */}
+      <MaintenanceBanner />
+
       {/* 1. SINGLE UNIFIED NAVBAR */}
       <Navbar
         isAuthenticated={isAuthenticated}
