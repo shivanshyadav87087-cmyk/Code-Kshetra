@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
+import MaintenanceBanner from './components/MaintenanceBanner';
 import RoomLobby from './components/RoomLobby';
 import ProblemDescription from './components/ProblemDescription';
 import CodeEditor from './components/CodeEditor';
@@ -696,6 +697,9 @@ export default function App() {
         />
       ) : (
         <>
+          {/* Maintenance & System Update Notice Banner */}
+          <MaintenanceBanner />
+
           {/* Single Unified Navbar */}
           <Navbar
             isAuthenticated={isAuthenticated}

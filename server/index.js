@@ -25,7 +25,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', serverTime: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    serverTime: new Date().toISOString(),
+    maintenance: process.env.MAINTENANCE_MODE === 'true' || false,
+    message: process.env.MAINTENANCE_MESSAGE || '⚙️ Code क्षेत्र is currently undergoing live feature updates and system maintenance.'
+  });
 });
 
 // Setup Socket.IO
