@@ -6,6 +6,8 @@ import { getNextGuestHandle } from '../engine/guestEngine';
 import Navbar from './Navbar';
 import AuthModal from './AuthModal';
 import { ExploreModal, DuelsInfoModal, ContestArenaModal } from './ExploreModals';
+import ReviewModal from './ReviewModal';
+import SupportModal from './SupportModal';
 import InstallPwaButton from './InstallPwaButton';
 import FestivalBanner from './FestivalBanner';
 import { Button, Card, Badge } from './ui';
@@ -17,6 +19,8 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
   const [exploreModalOpen, setExploreModalOpen] = useState(false);
   const [duelsModalOpen, setDuelsModalOpen] = useState(false);
   const [contestModalOpen, setContestModalOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
 
   const handleOpenAuth = (mode = 'login') => {
     sounds.playClick();
@@ -71,8 +75,14 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
         onOpenExplore={() => setExploreModalOpen(true)}
         onOpenDuels={() => setDuelsModalOpen(true)}
         onOpenContest={() => setContestModalOpen(true)}
+        onOpenReview={() => setReviewModalOpen(true)}
+        onOpenSupport={() => setSupportModalOpen(true)}
         onSignOut={onSignOut}
       />
+
+      {/* Modals */}
+      <ReviewModal isOpen={reviewModalOpen} onClose={() => setReviewModalOpen(false)} player={player} />
+      <SupportModal isOpen={supportModalOpen} onClose={() => setSupportModalOpen(false)} player={player} />
 
       {/* Auth Modal Popup */}
       <AuthModal

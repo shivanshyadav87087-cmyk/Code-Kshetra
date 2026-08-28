@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Swords, Trophy, User, Shield, Volume2, VolumeX, LogOut, Code, ExternalLink, Settings, BookOpen, ChevronRight, Menu, X } from 'lucide-react';
+import { Swords, Trophy, User, Shield, Volume2, VolumeX, LogOut, Code, ExternalLink, Settings, BookOpen, ChevronRight, Menu, X, MessageSquare, HelpCircle } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { getRatingTier } from '../engine/eloEngine';
+import LiveUsersBadge from './LiveUsersBadge';
 
 export default function Navbar({
   isAuthenticated,
@@ -14,6 +15,8 @@ export default function Navbar({
   onOpenExplore,
   onOpenDuels,
   onOpenContest,
+  onOpenReview,
+  onOpenSupport,
   onSignOut
 }) {
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -63,7 +66,9 @@ export default function Navbar({
           </div>
 
           {/* Center Links (Desktop Nav Links) */}
-          <div className="hidden md:flex items-center gap-6 text-xs font-bold text-[#94A3B8]">
+          <div className="hidden md:flex items-center gap-5 text-xs font-bold text-[#94A3B8]">
+            <LiveUsersBadge />
+
             <button
               onClick={() => { sounds.playClick(); if (onOpenExplore) onOpenExplore(); }}
               className="hover:text-[#14B8A6] transition-colors cursor-pointer flex items-center gap-1.5"
@@ -86,6 +91,22 @@ export default function Navbar({
             >
               <Trophy className="w-4 h-4 text-[#F59E0B]" />
               <span>Contest Arena</span>
+            </button>
+
+            <button
+              onClick={() => { sounds.playClick(); if (onOpenReview) onOpenReview(); }}
+              className="hover:text-[#14B8A6] transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <MessageSquare className="w-4 h-4 text-[#38BDF8]" />
+              <span>Reviews</span>
+            </button>
+
+            <button
+              onClick={() => { sounds.playClick(); if (onOpenSupport) onOpenSupport(); }}
+              className="hover:text-[#14B8A6] transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <HelpCircle className="w-4 h-4 text-[#A855F7]" />
+              <span>Support</span>
             </button>
           </div>
         </div>

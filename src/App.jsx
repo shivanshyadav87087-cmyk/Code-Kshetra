@@ -19,6 +19,8 @@ import LandingAuthGate from './components/LandingAuthGate';
 import Layer3MatchStartOverlay from './components/Layer3MatchStartOverlay';
 import HandleConfirmationModal from './components/HandleConfirmationModal';
 import BackgroundWatermark from './components/BackgroundWatermark';
+import ReviewModal from './components/ReviewModal';
+import SupportModal from './components/SupportModal';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
 import { getNextGuestHandle, getLocalGuestHandle } from './engine/guestEngine';
@@ -247,6 +249,8 @@ export default function App() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(false);
   const [showHandleConfirmationModal, setShowHandleConfirmationModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   // Global Chat, Rematch Timeout & Anti-Cheat Socket Handler
@@ -719,6 +723,8 @@ export default function App() {
             room={room}
             onOpenLeaderboard={() => setShowLeaderboardModal(true)}
             onOpenProfile={() => setShowProfileModal(true)}
+            onOpenReview={() => setShowReviewModal(true)}
+            onOpenSupport={() => setShowSupportModal(true)}
             onSignOut={handleSignOut}
             onLeaveRoom={handleLeaveRoom}
           />
@@ -933,6 +939,19 @@ export default function App() {
           winningSolution={winningSolutionData}
         />
       )}
+
+      {/* Community Review & Support Modals */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        player={player}
+      />
+
+      <SupportModal
+        isOpen={showSupportModal}
+        onClose={() => setShowSupportModal(false)}
+        player={player}
+      />
 
       {/* One-Time Post-Login Handle Confirmation Modal */}
       <HandleConfirmationModal

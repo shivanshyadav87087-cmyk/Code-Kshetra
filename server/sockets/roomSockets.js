@@ -214,6 +214,7 @@ export function setupRoomSockets(io) {
 
   io.on('connection', (socket) => {
     console.log(`[Socket Connected] ID: ${socket.id}`);
+    io.emit('online_users_count', { count: io.engine.clientsCount });
 
     // Auto Matchmaking Handlers
     const handleFindMatch = (data = {}, callback) => {
@@ -860,6 +861,7 @@ export function setupRoomSockets(io) {
       if (roomId) {
         handlePlayerDeparture(socket, roomId, 'disconnected');
       }
+      io.emit('online_users_count', { count: io.engine.clientsCount });
     });
   });
 

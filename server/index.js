@@ -6,6 +6,8 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import judgeRoutes from './routes/judgeRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+import supportRoutes from './routes/supportRoutes.js';
 import { setupRoomSockets } from './sockets/roomSockets.js';
 
 const app = express();
@@ -25,6 +27,8 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/judge', judgeRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/support', supportRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({
