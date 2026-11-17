@@ -8,6 +8,7 @@ import leaderboardRoutes from './routes/leaderboardRoutes.js';
 import judgeRoutes from './routes/judgeRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import { setupRoomSockets } from './sockets/roomSockets.js';
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/judge', judgeRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({

@@ -27,6 +27,7 @@
     "mongoose": "^9.9.1",
     "nodemailer": "^9.0.5",
     "oxlint": "^1.71.0",
+    "razorpay": "^2.9.8",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "socket.io": "^4.8.3",

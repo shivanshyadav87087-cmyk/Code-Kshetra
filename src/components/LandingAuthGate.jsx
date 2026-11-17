@@ -8,6 +8,7 @@ import AuthModal from './AuthModal';
 import { ExploreModal, DuelsInfoModal, ContestArenaModal } from './ExploreModals';
 import ReviewModal from './ReviewModal';
 import SupportModal from './SupportModal';
+import NotesModal from './NotesModal';
 import InstallPwaButton from './InstallPwaButton';
 import FestivalBanner from './FestivalBanner';
 import { Button, Card, Badge } from './ui';
@@ -21,6 +22,7 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
   const [contestModalOpen, setContestModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
 
   const handleOpenAuth = (mode = 'login') => {
     sounds.playClick();
@@ -77,12 +79,14 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
         onOpenContest={() => setContestModalOpen(true)}
         onOpenReview={() => setReviewModalOpen(true)}
         onOpenSupport={() => setSupportModalOpen(true)}
+        onOpenNotes={() => setNotesModalOpen(true)}
         onSignOut={onSignOut}
       />
 
       {/* Modals */}
       <ReviewModal isOpen={reviewModalOpen} onClose={() => setReviewModalOpen(false)} player={player} />
       <SupportModal isOpen={supportModalOpen} onClose={() => setSupportModalOpen(false)} player={player} />
+      <NotesModal isOpen={notesModalOpen} onClose={() => setNotesModalOpen(false)} player={player} />
 
       {/* Auth Modal Popup */}
       <AuthModal
@@ -307,6 +311,79 @@ export default function LandingAuthGate({ isAuthenticated, player, onAuthSuccess
 
           </div>
 
+        </div>
+      </section>
+
+      {/* 4.5 NOTES PURCHASE PROMO SECTION */}
+      <section className="py-16 px-6 bg-gradient-to-b from-[#0A0B0F] via-[#0F172A] to-[#0A0B0F] border-t border-b border-white/10 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#14B8A6]/15 via-[#8B5CF6]/15 to-transparent rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="bg-gradient-to-r from-[#111827] via-[#1E293B] to-[#111827] border border-[#14B8A6]/40 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
+            
+            <div className="space-y-4 max-w-xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#14B8A6]/15 border border-[#14B8A6]/40 text-[#14B8A6] text-xs font-mono font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Special Community Placement Resource • ₹19 Only</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white font-['Outfit'] leading-tight">
+                4-Week DSA & OOPS Mastery Homework Plan
+              </h2>
+
+              <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
+                60+ handpicked LeetCode problems categorized by patterns (Sliding Window, Two Pointers, Monotonic Stack, BST) plus real-world OOPS interface & polymorphism design assignments.
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 text-xs text-[#CBD5E1] pt-1">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
+                  <span>Day-by-day curated roadmap</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
+                  <span>OOPS Interview Challenges</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
+                  <span>One-click PDF download</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
+                  <span>Razorpay Instant Access</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Price Box & Action */}
+            <div className="bg-[#0A0B0F]/90 border border-white/10 rounded-2xl p-6 text-center w-full lg:w-auto min-w-[260px] space-y-4 shadow-xl">
+              <div>
+                <span className="text-xs text-[#64748B] line-through font-mono">Original: ₹199</span>
+                <div className="text-4xl font-black text-[#14B8A6] font-mono tracking-tight">
+                  ₹19
+                </div>
+                <span className="text-[11px] text-amber-400 font-bold block mt-1">
+                  🔥 90% OFF Flash Offer
+                </span>
+              </div>
+
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => { sounds.playClick(); setNotesModalOpen(true); }}
+                icon={BookOpen}
+                className="w-full justify-center shadow-lg shadow-[#14B8A6]/25 cursor-pointer font-black text-xs uppercase tracking-wider"
+              >
+                Unlock Notes for ₹19
+              </Button>
+
+              <div className="text-[10px] text-[#64748B] flex items-center justify-center gap-1 font-mono">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+                <span>Razorpay Gateway Verified</span>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 

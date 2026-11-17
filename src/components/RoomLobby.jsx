@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkles, Hash, CheckCircle2, Eye, AlertCircle, Lock, Loader2, Info, RotateCcw, Heart, UserCheck, Zap, XCircle, Target, Radio } from 'lucide-react';
+import { Swords, Bot, Shield, Clock, PlusCircle, LogIn, Search, Tag, Key, Sparkles, Hash, CheckCircle2, Eye, AlertCircle, Lock, Loader2, Info, RotateCcw, Heart, UserCheck, Zap, XCircle, Target, Radio, BookOpen } from 'lucide-react';
 import { TOPICS, DIFFICULTIES } from '../data/topics';
 import { PROBLEM_BANK } from '../data/problemBank';
 import { sounds } from '../engine/soundManager';
@@ -7,7 +7,7 @@ import FestivalBanner from './FestivalBanner';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
 
-export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCancelAutoMatch, isSearchingMatch, player, setPlayer }) {
+export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCancelAutoMatch, onOpenNotes, isSearchingMatch, player, setPlayer }) {
   const [activeTab, setActiveTab] = useState(isSearchingMatch ? 'automatch' : 'create');
   const [queueTimeSeconds, setQueueTimeSeconds] = useState(0);
   
@@ -325,6 +325,34 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
           </div>
           <div className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
             Saved & Locked 🔒
+          </div>
+        </div>
+
+        {/* 4-Week DSA Notes Flash Banner */}
+        <div
+          onClick={() => { sounds.playClick(); if (onOpenNotes) onOpenNotes(); }}
+          className="bg-gradient-to-r from-[#14B8A6]/20 via-[#1E1B4B]/40 to-[#8B5CF6]/20 border border-[#14B8A6]/40 hover:border-[#14B8A6]/80 p-3.5 rounded-2xl flex items-center justify-between gap-4 cursor-pointer transition-all hover:scale-[1.01] shadow-lg group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#14B8A6]/20 border border-[#14B8A6]/40 flex items-center justify-center text-[#14B8A6] group-hover:scale-110 transition-transform shrink-0">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-bold text-white">4-Week DSA & OOPS Mastery Notes</span>
+                <span className="bg-[#EF4444] text-white text-[10px] font-mono px-1.5 py-0.2 rounded-full font-black animate-pulse">
+                  ₹19 ONLY
+                </span>
+              </div>
+              <p className="text-[11px] text-[#94A3B8] font-mono hidden sm:block">
+                60+ Curated LeetCode problems, pattern categorization & real-world OOPS challenges
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#14B8A6] hover:bg-[#0D9488] text-[#0A0B0F] rounded-xl text-xs font-black font-mono shrink-0 transition-all shadow-md">
+            <span>Unlock Notes</span>
+            <Sparkles className="w-3.5 h-3.5" />
           </div>
         </div>
 
