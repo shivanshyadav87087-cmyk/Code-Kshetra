@@ -21,7 +21,6 @@ import HandleConfirmationModal from './components/HandleConfirmationModal';
 import BackgroundWatermark from './components/BackgroundWatermark';
 import ReviewModal from './components/ReviewModal';
 import SupportModal from './components/SupportModal';
-import NotesModal from './components/NotesModal';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
 import { getNextGuestHandle, getLocalGuestHandle } from './engine/guestEngine';
@@ -252,7 +251,6 @@ export default function App() {
   const [showHandleConfirmationModal, setShowHandleConfirmationModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
-  const [showNotesModal, setShowNotesModal] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   // Global Chat, Rematch Timeout & Anti-Cheat Socket Handler
@@ -727,7 +725,6 @@ export default function App() {
             onOpenProfile={() => setShowProfileModal(true)}
             onOpenReview={() => setShowReviewModal(true)}
             onOpenSupport={() => setShowSupportModal(true)}
-            onOpenNotes={() => setShowNotesModal(true)}
             onSignOut={handleSignOut}
             onLeaveRoom={handleLeaveRoom}
           />
@@ -741,7 +738,6 @@ export default function App() {
                 onJoinRoom={handleJoinRoom}
                 onAutoMatch={handleAutoMatch}
                 onCancelAutoMatch={handleCancelAutoMatch}
-                onOpenNotes={() => setShowNotesModal(true)}
                 isSearchingMatch={isSearchingMatch}
                 player={player}
                 setPlayer={setPlayer}
@@ -954,13 +950,6 @@ export default function App() {
       <SupportModal
         isOpen={showSupportModal}
         onClose={() => setShowSupportModal(false)}
-        player={player}
-      />
-
-      {/* 4-Week DSA & OOPS Mastery Notes Modal (₹19 via Razorpay) */}
-      <NotesModal
-        isOpen={showNotesModal}
-        onClose={() => setShowNotesModal(false)}
         player={player}
       />
 

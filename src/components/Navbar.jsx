@@ -17,7 +17,6 @@ export default function Navbar({
   onOpenContest,
   onOpenReview,
   onOpenSupport,
-  onOpenNotes,
   onSignOut
 }) {
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -108,17 +107,6 @@ export default function Navbar({
             >
               <HelpCircle className="w-4 h-4 text-[#A855F7]" />
               <span>Support</span>
-            </button>
-
-            <button
-              onClick={() => { sounds.playClick(); if (onOpenNotes) onOpenNotes(); }}
-              className="px-2.5 py-1 rounded-full bg-gradient-to-r from-[#14B8A6]/20 to-[#8B5CF6]/20 hover:from-[#14B8A6]/30 hover:to-[#8B5CF6]/30 border border-[#14B8A6]/50 text-white font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(20,184,166,0.25)] hover:scale-105"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-[#14B8A6]" />
-              <span>Notes</span>
-              <span className="bg-[#EF4444] text-white text-[10px] px-1.5 py-0.2 rounded-full font-black animate-pulse">
-                ₹19
-              </span>
             </button>
           </div>
         </div>
@@ -271,19 +259,6 @@ export default function Navbar({
           >
             <Trophy className="w-4 h-4 text-[#F59E0B]" />
             <span>Contest Arena</span>
-          </button>
-
-          <button
-            onClick={() => { setMobileMenuOpen(false); if (onOpenNotes) onOpenNotes(); }}
-            className="w-full text-left py-2 px-3 rounded-[8px] bg-gradient-to-r from-[#14B8A6]/20 to-[#8B5CF6]/20 text-[#F8FAFC] flex items-center justify-between font-bold border border-[#14B8A6]/40"
-          >
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-[#14B8A6]" />
-              <span>4-Week DSA Notes</span>
-            </div>
-            <span className="bg-[#EF4444] text-white text-[10px] font-mono px-2 py-0.5 rounded-full font-black">
-              ₹19
-            </span>
           </button>
         </div>
       )}
