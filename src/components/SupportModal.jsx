@@ -7,7 +7,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.on
 
 const FAQS = [
   {
-    q: 'How does 1v1 Matchmaking & ELO rating work?',
+    q: 'How do 1v1 Duels & ELO rating work?',
     a: 'Every player starts at 0 ELO (Newbie rating). Winning a duel against a real player grants +25 ELO points. Losing deducts -5 ELO. Rating bounds progress across 6 ranks: Newbie (0-499), Apprentice (500-899), Specialist (900-1299), Expert (1300-1699), Master (1700-2099), and Grandmaster (2100+).'
   },
   {

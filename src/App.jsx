@@ -116,10 +116,9 @@ export default function App() {
   const [showPostMatch, setShowPostMatch] = useState(false);
   const [showMatchStartOverlay, setShowMatchStartOverlay] = useState(false);
 
-  // Solution Viewer & Auto Matchmaking State
+  // Solution Viewer State
   const [showSolutionViewerModal, setShowSolutionViewerModal] = useState(false);
   const [winningSolutionData, setWinningSolutionData] = useState(null);
-  const [isSearchingMatch, setIsSearchingMatch] = useState(false);
 
   // SPECTATOR MODE STATE
   const [isSpectator, setIsSpectator] = useState(false);
@@ -450,7 +449,6 @@ export default function App() {
       } else if (eventType === 'ROOM_UPDATED') {
         setRoom({ ...payload });
       } else if (eventType === 'MATCH_START') {
-        setIsSearchingMatch(false);
         sounds.playSubmitSuccess();
         
         const freshRoom = JSON.parse(JSON.stringify(payload));
@@ -638,41 +636,6 @@ export default function App() {
     });
   };
 
-  const handleAutoMatch = ({ userName, rating }) => {
-    const validName = userName || player.name || ('Coder_' + Math.floor(Math.random() * 899 + 100));
-    const p = { ...player, name: validName, rating: rating !== undefined ? rating : player.rating };
-    setPlayer(p);
-    setIsSpectator(false);
-    setIsSearchingMatch(true);
-
-    roomEngine.findMatch({ player: p }, (res) => {
-      if (res && !res.success) {
-        setIsSearchingMatch(false);
-        sounds.playFail();
-        alert(res.error || 'Failed to enter matchmaking queue.');
-      }
-    });
-  };
-
-  const handleCancelAutoMatch = () => {
-    roomEngine.cancelMatch();
-    setIsSearchingMatch(false);
-  };
-
-  useEffect(() => {
-    const handleDisconnect = () => {
-      if (isSearchingMatch) {
-        setIsSearchingMatch(false);
-        setJoinNotification({
-          username: 'Matchmaking Error',
-          text: 'Disconnected from server while searching for match.'
-        });
-      }
-    };
-    socket.on('disconnect', handleDisconnect);
-    return () => socket.off('disconnect', handleDisconnect);
-  }, [isSearchingMatch]);
-
   const handleLeaveRoom = () => {
     if (room && room.status === 'in-progress' && !isSpectator) {
       sounds.playFail();
@@ -765,9 +728,6 @@ export default function App() {
               <RoomLobby
                 onCreateRoom={handleCreateRoom}
                 onJoinRoom={handleJoinRoom}
-                onAutoMatch={handleAutoMatch}
-                onCancelAutoMatch={handleCancelAutoMatch}
-                isSearchingMatch={isSearchingMatch}
                 player={player}
                 setPlayer={setPlayer}
               />
