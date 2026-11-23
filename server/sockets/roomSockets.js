@@ -11,7 +11,6 @@ const socketRoomMap = new Map();
 const rematchTimeoutMap = new Map();
 const matchmakingQueue = new Map();
 let matchmakingInterval = null;
-let onlineSyncInterval = null;
 
 function cleanRoomCode(raw) {
   if (!raw) return '';
@@ -211,17 +210,6 @@ export function setupRoomSockets(io) {
     matchmakingInterval = setInterval(() => {
       checkMatchmakingQueue(io);
     }, 2000);
-  }
-
-  if (!onlineSyncInterval) {
-    onlineSyncInterval = setInterval(() => {
-      try {
-        if (io && io.engine) {
-          const current = Math.max(1, io.engine.clientsCount || 1);
-          io.emit('online_users_count', { count: current });
-        }
-      } catch (e) {}
-    }, 10000);
   }
 
   io.on('connection', (socket) => {

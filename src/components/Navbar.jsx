@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Swords, Trophy, User, Shield, Volume2, VolumeX, LogOut, Code, ExternalLink, Settings, BookOpen, ChevronRight, Menu, X, MessageSquare, HelpCircle, Snowflake } from 'lucide-react';
 import { sounds } from '../engine/soundManager';
 import { getRatingTier } from '../engine/eloEngine';
-import LiveUsersBadge from './LiveUsersBadge';
 
 export default function Navbar({
   isAuthenticated,
@@ -67,9 +66,6 @@ export default function Navbar({
               </span>
             </div>
           </div>
-
-          {/* Live Users Counter (Always Visible) */}
-          <LiveUsersBadge />
 
           {/* Center Links (Desktop Nav Links) */}
           <div className="hidden md:flex items-center gap-5 text-xs font-bold text-slate-300">
