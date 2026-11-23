@@ -23,22 +23,6 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Connect Database
 connectDB();
 
-// REST API Endpoints
-app.use('/api/auth', authRoutes);
-app.use('/api/leaderboard', leaderboardRoutes);
-app.use('/api/judge', judgeRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/support', supportRoutes);
-
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    serverTime: new Date().toISOString(),
-    maintenance: process.env.MAINTENANCE_MODE === 'true' || false,
-    message: process.env.MAINTENANCE_MESSAGE || '⚙️ Code क्षेत्र is currently undergoing live feature updates and system maintenance.'
-  });
-});
-
 // Setup Socket.IO
 const io = new Server(server, {
   cors: {
@@ -48,6 +32,34 @@ const io = new Server(server, {
 });
 
 setupRoomSockets(io);
+
+// REST API Endpoints
+app.use('/api/auth', authRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/judge', judgeRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/support', supportRoutes);
+
+app.get('/api/health', (req, res) => {
+  const activeCount = Math.max(1, io?.engine?.clientsCount || 0);
+  res.json({
+    status: 'ok',
+    serverTime: new Date().toISOString(),
+    onlineUsers: activeCount,
+    count: activeCount,
+    maintenance: process.env.MAINTENANCE_MODE === 'true' || false,
+    message: process.env.MAINTENANCE_MESSAGE || '⚙️ Code क्षेत्र is currently undergoing live feature updates and system maintenance.'
+  });
+});
+
+app.get('/api/online-users', (req, res) => {
+  const activeCount = Math.max(1, io?.engine?.clientsCount || 0);
+  res.json({
+    status: 'ok',
+    count: activeCount,
+    onlineUsers: activeCount
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

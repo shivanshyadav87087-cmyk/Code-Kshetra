@@ -41,7 +41,7 @@ export default function Navbar({
       <div className="max-w-[1920px] mx-auto flex items-center justify-between">
         
         {/* Left: Brand Logo & 1v1 Pill */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <div
             className="flex items-center gap-2.5 cursor-pointer group"
             onClick={() => {
@@ -68,9 +68,11 @@ export default function Navbar({
             </div>
           </div>
 
+          {/* Live Users Counter (Always Visible) */}
+          <LiveUsersBadge />
+
           {/* Center Links (Desktop Nav Links) */}
           <div className="hidden md:flex items-center gap-5 text-xs font-bold text-slate-300">
-            <LiveUsersBadge />
 
             <button
               onClick={() => { sounds.playClick(); if (onOpenExplore) onOpenExplore(); }}
@@ -259,7 +261,7 @@ export default function Navbar({
       {mobileMenuOpen && (
         <div className="md:hidden pt-4 pb-2 border-t border-sky-500/20 mt-3 space-y-3 font-sans text-xs">
           <button
-            onClick={() => { setMobileMenuOpen(false); if (onOpenExplore) onOpenExplore(); }}
+            onClick={() => { sounds.playClick(); setMobileMenuOpen(false); if (onOpenExplore) onOpenExplore(); }}
             className="w-full text-left py-2 px-3 rounded-[8px] hover:bg-[#111C38] text-[#F8FAFC] flex items-center gap-2 font-bold"
           >
             <BookOpen className="w-4 h-4 text-sky-400" />
@@ -267,7 +269,7 @@ export default function Navbar({
           </button>
 
           <button
-            onClick={() => { setMobileMenuOpen(false); if (onOpenDuels) onOpenDuels(); }}
+            onClick={() => { sounds.playClick(); setMobileMenuOpen(false); if (onOpenDuels) onOpenDuels(); }}
             className="w-full text-left py-2 px-3 rounded-[8px] hover:bg-[#111C38] text-[#F8FAFC] flex items-center gap-2 font-bold"
           >
             <Swords className="w-4 h-4 text-cyan-400" />
@@ -275,11 +277,27 @@ export default function Navbar({
           </button>
 
           <button
-            onClick={() => { setMobileMenuOpen(false); if (onOpenContest) onOpenContest(); }}
+            onClick={() => { sounds.playClick(); setMobileMenuOpen(false); if (onOpenContest) onOpenContest(); }}
             className="w-full text-left py-2 px-3 rounded-[8px] hover:bg-[#111C38] text-[#F8FAFC] flex items-center gap-2 font-bold"
           >
             <Trophy className="w-4 h-4 text-amber-400" />
             <span>Contest Arena</span>
+          </button>
+
+          <button
+            onClick={() => { sounds.playClick(); setMobileMenuOpen(false); if (onOpenReview) onOpenReview(); }}
+            className="w-full text-left py-2 px-3 rounded-[8px] hover:bg-[#111C38] text-[#F8FAFC] flex items-center gap-2 font-bold"
+          >
+            <MessageSquare className="w-4 h-4 text-sky-300" />
+            <span>Reviews</span>
+          </button>
+
+          <button
+            onClick={() => { sounds.playClick(); setMobileMenuOpen(false); if (onOpenSupport) onOpenSupport(); }}
+            className="w-full text-left py-2 px-3 rounded-[8px] hover:bg-[#111C38] text-[#F8FAFC] flex items-center gap-2 font-bold"
+          >
+            <HelpCircle className="w-4 h-4 text-blue-400" />
+            <span>Support</span>
           </button>
         </div>
       )}
