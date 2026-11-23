@@ -43,16 +43,16 @@ export function ExploreModal({ isOpen, onClose, onStartPractice }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
-      <div className="w-full max-w-2xl bg-[#1a1f2c] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 max-h-[90vh] overflow-y-auto text-left">
+      <div className="w-full max-w-2xl bg-[#0B1120] border border-sky-500/25 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 max-h-[90vh] overflow-y-auto text-left shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Top Header Control Buttons: Backward Arrow & Close */}
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={() => { sounds.playClick(); onClose(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans shadow"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-[#0B132B] hover:bg-[#111C38] border border-sky-500/20 transition-all cursor-pointer text-xs font-bold font-sans shadow"
           >
-            <ArrowLeft className="w-4 h-4 text-cyan-400" />
+            <ArrowLeft className="w-4 h-4 text-sky-400" />
             <span>← Back</span>
           </button>
 
@@ -121,7 +121,7 @@ export function ExploreModal({ isOpen, onClose, onStartPractice }) {
         {/* Action Button */}
         <button
           onClick={() => { sounds.playSubmitSuccess(); onClose(); onStartPractice(); }}
-          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-400 to-teal-400 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-sky-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
         >
           <Play className="w-4 h-4 fill-slate-950" />
           <span>Start Practicing Track Problems ➔</span>
@@ -138,16 +138,16 @@ export function DuelsInfoModal({ isOpen, onClose, onStartDuel }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
-      <div className="w-full max-w-xl bg-[#1a1f2c] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left">
+      <div className="w-full max-w-xl bg-[#0B1120] border border-sky-500/25 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Top Header Control Buttons: Backward Arrow & Close */}
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={() => { sounds.playClick(); onClose(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans shadow z-20"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-[#0B132B] hover:bg-[#111C38] border border-sky-500/20 transition-all cursor-pointer text-xs font-bold font-sans shadow z-20"
           >
-            <ArrowLeft className="w-4 h-4 text-cyan-400" />
+            <ArrowLeft className="w-4 h-4 text-sky-400" />
             <span>← Back</span>
           </button>
 
@@ -205,9 +205,9 @@ export function DuelsInfoModal({ isOpen, onClose, onStartDuel }) {
         {/* Action Button */}
         <button
           onClick={() => { sounds.playSubmitSuccess(); onClose(); onStartDuel(); }}
-          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500 text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-sky-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
         >
-          <Swords className="w-4 h-4 text-white" />
+          <Swords className="w-4 h-4 text-slate-950" />
           <span>Enter 1v1 Battle Arena ⚔️</span>
         </button>
 
@@ -222,14 +222,14 @@ export function ContestArenaModal({ isOpen, onClose, onRegisterContest }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
-      <div className="w-full max-w-xl bg-[#1a1f2c] border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left">
+      <div className="w-full max-w-xl bg-[#0B1120] border border-sky-500/25 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Top Header Control Buttons: Backward Arrow & Close */}
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={() => { sounds.playClick(); onClose(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer text-xs font-bold font-sans shadow z-20"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-300 hover:text-white bg-[#0B132B] hover:bg-[#111C38] border border-sky-500/20 transition-all cursor-pointer text-xs font-bold font-sans shadow z-20"
           >
             <ArrowLeft className="w-4 h-4 text-amber-400" />
             <span>← Back</span>

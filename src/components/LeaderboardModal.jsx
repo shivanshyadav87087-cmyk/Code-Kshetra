@@ -41,17 +41,17 @@ export default function LeaderboardModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md font-sans">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md font-sans animate-fadeIn">
+      <div className="w-full max-w-xl bg-[#0B1120] border border-sky-500/25 rounded-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 bg-[#070B14] border-b border-sky-500/20">
           <div className="flex items-center gap-3">
             <button
               onClick={() => { onClose(); sounds.playClick(); }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-slate-300 hover:text-white bg-slate-800 border border-slate-700 transition-all cursor-pointer text-xs font-bold font-sans shadow"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-slate-300 hover:text-white bg-[#0B132B] border border-sky-500/20 transition-all cursor-pointer text-xs font-bold font-sans shadow"
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
+              <ArrowLeft className="w-3.5 h-3.5 text-sky-400" />
               <span>← Back</span>
             </button>
 
@@ -60,7 +60,7 @@ export default function LeaderboardModal({ isOpen, onClose }) {
               <div>
                 <h2 className="text-base font-black text-slate-100 flex items-center gap-1.5">
                   <span>Code क्षेत्र Hall of Fame</span>
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-200 border border-sky-400/30">Winter ❄️</span>
                 </h2>
                 <p className="text-[10px] text-slate-400 font-mono">Ranked by ELO Points, EXP Levels & Daily Streaks</p>
               </div>

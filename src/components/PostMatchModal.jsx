@@ -54,7 +54,7 @@ export default function PostMatchModal({ room, mySubmission, opponentSubmission,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-lg font-sans">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-center animate-in fade-in zoom-in duration-300">
+      <div className="w-full max-w-lg bg-[#0B1120] border border-sky-500/25 rounded-3xl shadow-2xl overflow-hidden relative p-6 sm:p-8 text-center animate-in fade-in zoom-in duration-300 shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Victory / Defeat Header Badge */}
         <div className="mb-6">
@@ -156,7 +156,7 @@ export default function PostMatchModal({ room, mySubmission, opponentSubmission,
             className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
               requestedRematch
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse cursor-not-allowed'
-                : 'bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/20'
+                : 'bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-black shadow-lg shadow-sky-500/25'
             }`}
           >
             {requestedRematch ? (

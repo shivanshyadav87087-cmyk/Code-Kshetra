@@ -287,20 +287,20 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
     <div className="flex-1 flex flex-col items-center justify-center py-6 px-4 relative max-w-5xl mx-auto w-full font-sans">
       
       {/* Background Glow Overlay */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Header Banner */}
       <div className="text-center mb-8 space-y-2 w-full">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-mono font-bold uppercase tracking-widest">
-          <Swords className="w-4 h-4 text-cyan-400 animate-pulse" />
-          <span>Real-Time 1v1 Code Arena</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300 text-sm font-mono font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+          <Swords className="w-4 h-4 text-sky-400 animate-pulse" />
+          <span>Real-Time 1v1 Code Arena • Winter Frost ❄️</span>
         </div>
 
         {/* Dynamic Festival & Holiday Greetings Banner */}
         <FestivalBanner />
 
         <h1 className="text-4xl sm:text-6xl font-black tracking-tight flex items-center justify-center gap-3">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-emerald-300 to-purple-300">CODE</span>
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-cyan-200 to-blue-300">CODE</span>
           <span className="text-slate-100 font-['Noto_Sans_Devanagari'] font-extrabold">क्षेत्र</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto font-mono">
@@ -309,21 +309,21 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
       </div>
 
       {/* Main Lobby Card */}
-      <div className="w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+      <div className="w-full bg-slate-900/85 border border-sky-500/25 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
         
         {/* Permanent Player Handle Badge */}
-        <div className="flex items-center justify-between bg-slate-950/80 border border-slate-800/80 px-5 py-3.5 rounded-2xl">
+        <div className="flex items-center justify-between bg-slate-950/80 border border-sky-500/20 px-5 py-3.5 rounded-2xl">
           <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-cyan-400" />
+            <Shield className="w-5 h-5 text-sky-400" />
             <div>
               <div className="text-xs text-slate-400 font-mono">Permanent Arena Handle</div>
               <div className="text-base font-extrabold text-slate-100 font-mono flex items-center gap-2">
                 <span>{userName || 'Anonymous Coder'}</span>
-                <Lock className="w-3.5 h-3.5 text-emerald-400 inline" />
+                <Lock className="w-3.5 h-3.5 text-sky-400 inline" />
               </div>
             </div>
           </div>
-          <div className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-xl font-bold">
+          <div className="text-xs font-mono text-sky-300 bg-sky-500/15 border border-sky-400/40 px-3 py-1 rounded-xl font-bold">
             Saved & Locked 🔒
           </div>
         </div>
@@ -338,11 +338,11 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
             }}
             className={`flex-1 py-3.5 text-sm sm:text-base font-bold flex items-center justify-center gap-2 border-b-2 btn-glow transition-all ${
               activeTab === 'create'
-                ? 'border-cyan-400 text-cyan-300 bg-slate-800/40'
+                ? 'border-sky-400 text-sky-300 bg-sky-950/30'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <PlusCircle className="w-4.5 h-4.5 text-cyan-400" />
+            <PlusCircle className="w-4.5 h-4.5 text-sky-400" />
             <span>Create 1v1 Room</span>
           </button>
 
@@ -354,11 +354,11 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
             }}
             className={`flex-1 py-3.5 text-sm sm:text-base font-bold flex items-center justify-center gap-2 border-b-2 btn-glow transition-all ${
               activeTab === 'automatch'
-                ? 'border-purple-400 text-purple-300 bg-slate-800/40'
+                ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Zap className="w-4.5 h-4.5 text-purple-400 animate-pulse" />
+            <Zap className="w-4.5 h-4.5 text-cyan-400 animate-pulse" />
             <span>Auto Match ⚡</span>
           </button>
 
@@ -370,11 +370,11 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
             }}
             className={`flex-1 py-3.5 text-sm sm:text-base font-bold flex items-center justify-center gap-2 border-b-2 btn-glow transition-all ${
               activeTab === 'join'
-                ? 'border-emerald-400 text-emerald-300 bg-slate-800/40'
+                ? 'border-blue-400 text-blue-300 bg-blue-950/30'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <LogIn className="w-4.5 h-4.5 text-emerald-400" />
+            <LogIn className="w-4.5 h-4.5 text-blue-400" />
             <span>Join Room</span>
           </button>
         </div>
@@ -501,9 +501,9 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
                 <button
                   type="button"
                   onClick={handleAutoMatchSubmit}
-                  className="w-full py-5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:via-indigo-500 hover:to-cyan-500 text-white font-mono font-black text-lg shadow-xl shadow-purple-500/25 btn-glow flex items-center justify-center gap-3 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+                  className="w-full py-5 rounded-2xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-mono font-black text-lg shadow-xl shadow-sky-500/25 btn-glow-sky flex items-center justify-center gap-3 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  <Zap className="w-6 h-6 text-yellow-300 fill-yellow-300 animate-pulse" />
+                  <Zap className="w-6 h-6 text-slate-950 fill-slate-950 animate-pulse" />
                   <span>FIND OPPONENT NOW ⚡</span>
                 </button>
               </div>
@@ -761,10 +761,10 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
             {/* Submit Create Button */}
             <button
               type="submit"
-              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-base btn-glow-cyan transition-all shadow-xl shadow-cyan-500/20 flex items-center justify-center gap-2.5 cursor-pointer"
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-black text-base btn-glow-sky transition-all shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2.5 cursor-pointer"
             >
               <Swords className="w-5 h-5 text-slate-950" />
-              <span>{isBotMatch ? 'Start AI Practice Match' : 'Create 1v1 Room Code & Wait for Opponent'}</span>
+              <span>{isBotMatch ? 'Start AI Practice Match 🤖' : 'Create 1v1 Room Code & Wait for Opponent ❄️'}</span>
             </button>
 
           </form>
@@ -811,7 +811,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
               <button
                 type="submit"
                 disabled={!joinRoomId.trim()}
-                className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-sm btn-glow-emerald transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-black text-sm btn-glow-sky transition-all shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <LogIn className="w-5 h-5 text-slate-950" />
                 <span>Join Match as Player (1v1)</span>
@@ -821,9 +821,9 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, onAutoMatch, onCan
                 type="button"
                 disabled={!joinRoomId.trim()}
                 onClick={(e) => handleJoinSubmit(e, true)}
-                className="w-full py-4 px-5 rounded-2xl bg-purple-900/80 hover:bg-purple-800 text-purple-200 font-black text-sm border border-purple-500/60 btn-glow-purple transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 px-5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-sky-200 font-black text-sm border border-sky-400/40 btn-glow-frost transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-sky-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Eye className="w-5 h-5 text-purple-300 animate-pulse" />
+                <Eye className="w-5 h-5 text-sky-300 animate-pulse" />
                 <span>Watch Live as Spectator 👁️</span>
               </button>
             </div>

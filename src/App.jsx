@@ -21,6 +21,8 @@ import HandleConfirmationModal from './components/HandleConfirmationModal';
 import BackgroundWatermark from './components/BackgroundWatermark';
 import ReviewModal from './components/ReviewModal';
 import SupportModal from './components/SupportModal';
+import Snowfall from './components/Snowfall';
+import { getInitialTheme, saveTheme, getInitialSnow, saveSnow, WINTER_THEME_CONFIG } from './engine/themeEngine';
 import { Heart, Sparkles, Maximize2, ShieldAlert } from 'lucide-react';
 
 import { getNextGuestHandle, getLocalGuestHandle } from './engine/guestEngine';
@@ -85,6 +87,26 @@ export default function App() {
   const [room, setRoom] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [code, setCode] = useState('');
+  
+  // Theme & Snowfall System (Winter Theme by Default)
+  const [currentTheme, setCurrentTheme] = useState(() => getInitialTheme());
+  const [snowEnabled, setSnowEnabled] = useState(() => getInitialSnow());
+
+  const handleToggleSnow = () => {
+    setSnowEnabled(prev => {
+      const next = !prev;
+      saveSnow(next);
+      return next;
+    });
+  };
+
+  const handleToggleTheme = () => {
+    setCurrentTheme(prev => {
+      const next = prev === 'winter' ? 'cyberpunk' : 'winter';
+      saveTheme(next);
+      return next;
+    });
+  };
   
   const [myProgress, setMyProgress] = useState({ passed: 0, total: 4, status: 'Coding...' });
   const [opponentProgress, setOpponentProgress] = useState({ passed: 0, total: 4, status: 'Waiting...' });
@@ -693,13 +715,16 @@ export default function App() {
   };
 
   const activeFest = getCurrentFestival();
-  const ambientThemeGlow = activeFest?.theme?.ambientGlow || 'from-cyan-500/20 via-emerald-600/20 to-purple-500/20';
+  const ambientThemeGlow = activeFest?.theme?.ambientGlow || (currentTheme === 'winter' ? WINTER_THEME_CONFIG.ambientGlow : 'from-cyan-500/20 via-emerald-600/20 to-purple-500/20');
 
   return (
-    <div className="min-h-screen bg-[#0A0B0F] text-[#F8FAFC] flex flex-col font-sans selection:bg-[#14B8A6]/30 selection:text-[#14B8A6] overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#070B14] text-[#F8FAFC] flex flex-col font-sans selection:bg-sky-500/30 selection:text-sky-300 overflow-x-hidden relative">
       
       {/* Dynamic Ambient Background Mesh */}
       <div className={`fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr ${ambientThemeGlow} rounded-full blur-[140px] pointer-events-none -z-10 animate-float-slow`} />
+
+      {/* Snowfall Animation Overlay */}
+      <Snowfall enabled={snowEnabled} flakeCount={45} />
 
       {/* Animated Background Watermark Thoughts & Emblem */}
       <BackgroundWatermark />
@@ -708,6 +733,8 @@ export default function App() {
         <LandingAuthGate
           isAuthenticated={isAuthenticated}
           player={player}
+          snowEnabled={snowEnabled}
+          onToggleSnow={handleToggleSnow}
           onAuthSuccess={handleAuthSuccess}
           onSignOut={handleSignOut}
         />
@@ -721,6 +748,8 @@ export default function App() {
             isAuthenticated={isAuthenticated}
             player={player}
             room={room}
+            snowEnabled={snowEnabled}
+            onToggleSnow={handleToggleSnow}
             onOpenLeaderboard={() => setShowLeaderboardModal(true)}
             onOpenProfile={() => setShowProfileModal(true)}
             onOpenReview={() => setShowReviewModal(true)}

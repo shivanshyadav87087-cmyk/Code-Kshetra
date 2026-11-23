@@ -147,11 +147,11 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
             onClick={() => setActiveTab('testcases')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold btn-glow transition-all cursor-pointer ${
               activeTab === 'testcases'
-                ? 'bg-slate-800 text-cyan-300 border border-slate-700 shadow-md'
+                ? 'bg-slate-800 text-sky-300 border border-sky-500/40 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <Layers className="w-3.5 h-3.5 text-sky-400" />
             <span>Testcase</span>
           </button>
 
@@ -160,14 +160,14 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
             onClick={() => setActiveTab('results')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold btn-glow transition-all relative cursor-pointer ${
               activeTab === 'results'
-                ? 'bg-slate-800 text-emerald-300 border border-slate-700 shadow-md'
+                ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
             <span>Test Result</span>
             {testResults && (
-              <span className={`w-2 h-2 rounded-full ${testResults.success ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-rose-400 shadow-sm shadow-rose-400'}`} />
+              <span className={`w-2 h-2 rounded-full ${testResults.success ? 'bg-sky-400 shadow-sm shadow-sky-400' : 'bg-rose-400 shadow-sm shadow-rose-400'}`} />
             )}
           </button>
         </div>
@@ -186,9 +186,9 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                 onClick={handleRunCode}
                 disabled={isRunning || isSubmitting}
                 style={{ touchAction: 'manipulation' }}
-                className="px-4 py-2 min-h-[40px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-cyan-300 hover:text-white font-bold text-xs border border-slate-700 btn-glow-cyan transition-all flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 min-h-[40px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-sky-300 hover:text-white font-bold text-xs border border-sky-500/30 btn-glow-sky transition-all flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
               >
-                <Play className="w-4 h-4 text-cyan-400 fill-cyan-400" />
+                <Play className="w-4 h-4 text-sky-400 fill-sky-400" />
                 <span>{isRunning ? 'Running...' : 'Run Code'}</span>
               </button>
 
@@ -197,7 +197,7 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                 onClick={handleSubmitCode}
                 disabled={isRunning || isSubmitting}
                 style={{ touchAction: 'manipulation' }}
-                className="px-5 py-2 min-h-[40px] rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 active:scale-95 text-slate-950 font-extrabold text-xs btn-glow-emerald transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 min-h-[40px] rounded-xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 active:scale-95 text-slate-950 font-black text-xs btn-glow-sky transition-all flex items-center gap-1.5 shadow-lg shadow-sky-500/25 cursor-pointer disabled:opacity-50"
               >
                 <Send className="w-4 h-4 text-slate-950 fill-slate-950" />
                 <span>{isSubmitting ? 'Evaluating...' : 'Submit Solution'}</span>
@@ -223,7 +223,7 @@ export default function TestConsole({ problem, selectedLanguage, code, onProgres
                   onClick={() => setSelectedCaseIdx(idx)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border cursor-pointer whitespace-nowrap ${
                     selectedCaseIdx === idx
-                      ? 'bg-slate-800 text-cyan-300 border-cyan-500/40 shadow-sm'
+                      ? 'bg-slate-800 text-sky-300 border-sky-400/40 shadow-sm'
                       : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
                   }`}
                 >

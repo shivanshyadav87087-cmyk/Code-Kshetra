@@ -85,24 +85,24 @@ export default function SupportModal({ isOpen, onClose, player }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0A0B0F]/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#121827] border border-[#1E293B] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative my-8">
+    <div className="fixed inset-0 z-50 bg-[#070B14]/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-[#0B1120] border border-sky-500/25 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative my-8 shadow-[0_0_40px_rgba(56,189,248,0.15)]">
 
         {/* Header */}
-        <div className="bg-[#0F172A] border-b border-[#1E293B] p-5 flex items-center justify-between">
+        <div className="bg-[#070B14] border-b border-sky-500/20 p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#38BDF8]/10 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8]">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-300">
               <HelpCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#F8FAFC]">Code क्षेत्र Support & Help Center</h2>
-              <p className="text-xs text-[#94A3B8]">Get help, submit bug reports, or explore platform FAQs</p>
+              <h2 className="text-lg font-bold text-[#F8FAFC]">Code क्षेत्र Support & Help Center • Winter ❄️</h2>
+              <p className="text-xs text-slate-400">Get help, submit bug reports, or explore platform FAQs</p>
             </div>
           </div>
 
           <button
             onClick={() => { sounds.playClick(); onClose(); }}
-            className="p-2 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1E293B] transition-all cursor-pointer"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

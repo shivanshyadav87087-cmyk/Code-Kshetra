@@ -76,27 +76,27 @@ export default function OpponentPanel({
   }
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 shadow-xl backdrop-blur-md font-sans">
+    <div className="bg-slate-900/85 border border-sky-500/25 rounded-2xl p-3.5 shadow-xl backdrop-blur-md font-sans">
       
       {/* SPECTATOR HUD BAR */}
       {isSpectator ? (
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold shrink-0">
-              <Eye className="w-4 h-4 text-purple-400 animate-pulse" />
-              <span>LIVE SPECTATOR</span>
-              <span className="text-[10px] text-purple-300 bg-purple-950 px-2 py-0.5 rounded-full border border-purple-800 font-mono">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/15 border border-sky-400/40 text-sky-200 text-xs font-bold shrink-0">
+              <Eye className="w-4 h-4 text-sky-400 animate-pulse" />
+              <span>LIVE SPECTATOR ❄️</span>
+              <span className="text-[10px] text-sky-300 bg-slate-950 px-2 py-0.5 rounded-full border border-sky-800 font-mono">
                 👀 {spectatorCount}/3 Watching
               </span>
             </div>
 
-            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold flex-1 md:flex-none">
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-sky-500/20 text-xs font-semibold flex-1 md:flex-none">
               <button
                 type="button"
                 onClick={() => onSwitchSpectateTarget('host')}
                 className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
                   spectateTarget === 'host'
-                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20'
+                    ? 'bg-gradient-to-r from-sky-400 to-cyan-400 text-slate-950 font-black shadow-md shadow-sky-500/20'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -109,7 +109,7 @@ export default function OpponentPanel({
                 onClick={() => onSwitchSpectateTarget('guest')}
                 className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
                   spectateTarget === 'guest'
-                    ? 'bg-fuchsia-500 text-white font-bold shadow-md shadow-fuchsia-500/20'
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-md shadow-blue-500/20'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -126,14 +126,14 @@ export default function OpponentPanel({
                 <span>Waiting for Player 2 to Join...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl font-mono font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>🟢 Live Match in Progress</span>
+              <div className="flex items-center gap-1.5 text-[11px] text-sky-300 bg-sky-500/15 border border-sky-400/40 px-3 py-1.5 rounded-xl font-mono font-semibold">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+                <span>❄️ Live Match in Progress</span>
               </div>
             )}
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300">
-              <Clock className="w-4 h-4 text-cyan-400" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-sky-500/20 text-sky-300">
+              <Clock className="w-4 h-4 text-sky-400" />
               <span className="font-mono font-extrabold text-sm">{formattedTime}</span>
             </div>
           </div>
@@ -145,34 +145,34 @@ export default function OpponentPanel({
           {/* Left: Matchup */}
           <div className="flex items-center gap-3 w-full lg:w-auto">
             {/* YOU */}
-            <div className="flex items-center gap-2.5 bg-slate-950/80 border border-cyan-500/30 rounded-xl px-3 py-1.5 min-w-[160px]">
-              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center font-bold text-cyan-300 text-xs shrink-0">
+            <div className="flex items-center gap-2.5 bg-slate-950/80 border border-sky-400/40 rounded-xl px-3 py-1.5 min-w-[160px] shadow-[0_0_10px_rgba(56,189,248,0.1)]">
+              <div className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-400 flex items-center justify-center font-bold text-sky-300 text-xs shrink-0">
                 YOU
               </div>
               <div className="overflow-hidden">
                 <div className="text-xs font-bold text-slate-100 truncate">
                   {room?.me?.name || room?.me?.username || 'You'}
                 </div>
-                <div className="text-[10px] text-cyan-400 font-mono">
+                <div className="text-[10px] text-sky-300 font-mono">
                   {isWaitingForOpponent ? 'Waiting...' : (myProgress?.status || 'Coding...')}
                 </div>
               </div>
             </div>
 
-            <div className="font-extrabold text-xs text-slate-600 uppercase tracking-widest shrink-0">
+            <div className="font-extrabold text-xs text-sky-400/60 uppercase tracking-widest shrink-0">
               VS
             </div>
 
             {/* OPPONENT */}
-            <div className="flex items-center gap-2.5 bg-slate-950/80 border border-fuchsia-500/30 rounded-xl px-3 py-1.5 min-w-[170px]">
-              <div className="w-7 h-7 rounded-lg bg-fuchsia-500/20 border border-fuchsia-400 flex items-center justify-center font-bold text-fuchsia-300 text-xs shrink-0">
+            <div className="flex items-center gap-2.5 bg-slate-950/80 border border-blue-500/40 rounded-xl px-3 py-1.5 min-w-[170px] shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+              <div className="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-400 flex items-center justify-center font-bold text-blue-300 text-xs shrink-0">
                 {room?.isBot ? <Bot className="w-3.5 h-3.5" /> : <Swords className="w-3.5 h-3.5" />}
               </div>
               <div className="overflow-hidden">
                 <div className="text-xs font-bold text-slate-100 truncate">
                   {opponentName}
                 </div>
-                <div className={`text-[10px] font-mono ${isWaitingForOpponent ? 'text-amber-400 animate-pulse font-bold' : 'text-fuchsia-400'}`}>
+                <div className={`text-[10px] font-mono ${isWaitingForOpponent ? 'text-amber-400 animate-pulse font-bold' : 'text-blue-300'}`}>
                   {isWaitingForOpponent ? '⌛ Opponent Joining...' : (opponentProgress?.status || 'Coding...')}
                 </div>
               </div>
@@ -197,9 +197,9 @@ export default function OpponentPanel({
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${
                 isUrgent
                   ? 'bg-rose-500/10 border-rose-500/40 text-rose-400 animate-pulse'
-                  : 'bg-slate-950 border-slate-800 text-cyan-300'
+                  : 'bg-[#0B132B] border-sky-500/30 text-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.2)]'
               }`} title="Server-Authoritative Match Countdown">
-                <Clock className={`w-4 h-4 ${isUrgent ? 'text-rose-400' : 'text-cyan-400'}`} />
+                <Clock className={`w-4 h-4 ${isUrgent ? 'text-rose-400' : 'text-sky-400'}`} />
                 <span className="font-mono font-extrabold text-base tracking-wider">
                   {formattedTime}
                 </span>
@@ -208,19 +208,19 @@ export default function OpponentPanel({
 
             <button
               onClick={() => { onOpenShare(); sounds.playClick(); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-sky-500/20 transition-all"
               title="Share Room Link"
             >
-              <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+              <Share2 className="w-3.5 h-3.5 text-sky-400" />
               <span className="hidden sm:inline">Share</span>
             </button>
 
             <button
               onClick={() => { onOpenChat(); sounds.playClick(); }}
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-xs font-semibold transition-all"
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600/15 hover:bg-sky-600/25 text-sky-300 border border-sky-500/30 text-xs font-semibold transition-all"
               title="Opponent Live Chat"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+              <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
               <span className="hidden sm:inline">Chat</span>
               {unreadChatCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-bounce shadow-md">
@@ -235,11 +235,11 @@ export default function OpponentPanel({
             <div className="flex-1">
               <div className="flex justify-between text-[10px] font-mono text-slate-400 mb-1">
                 <span>Your Passes</span>
-                <span className="text-cyan-300 font-bold">{myProgress?.passed || 0}/{totalCases}</span>
+                <span className="text-sky-300 font-bold">{myProgress?.passed || 0}/{totalCases}</span>
               </div>
               <div className="h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                 <div
-                  className="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all duration-500 shadow-[0_0_8px_rgba(56,189,248,0.5)]"
                   style={{ width: `${Math.round(((myProgress?.passed || 0) / totalCases) * 100)}%` }}
                 />
               </div>
@@ -248,11 +248,11 @@ export default function OpponentPanel({
             <div className="flex-1">
               <div className="flex justify-between text-[10px] font-mono text-slate-400 mb-1">
                 <span>Opponent Passes</span>
-                <span className="text-fuchsia-300 font-bold">{opponentProgress?.passed || 0}/{totalCases}</span>
+                <span className="text-blue-300 font-bold">{opponentProgress?.passed || 0}/{totalCases}</span>
               </div>
               <div className="h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                 <div
-                  className="h-full bg-gradient-to-r from-fuchsia-500 to-indigo-500 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
                   style={{ width: `${Math.round(((opponentProgress?.passed || 0) / totalCases) * 100)}%` }}
                 />
               </div>

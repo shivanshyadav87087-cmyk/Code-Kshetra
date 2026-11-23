@@ -105,13 +105,13 @@ export default function ProfileModal({ isOpen, onClose, player, setPlayer }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn font-sans">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-lg bg-[#0B1120] border border-sky-500/25 rounded-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh] shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-950 border-b border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 bg-[#070B14] border-b border-sky-500/20">
           <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-base font-black text-slate-100">User Profile Settings</h2>
+            <User className="w-5 h-5 text-sky-400" />
+            <h2 className="text-base font-black text-slate-100">User Profile Settings • Winter Edition ❄️</h2>
           </div>
           <button
             onClick={() => { onClose(); sounds.playClick(); }}
@@ -261,7 +261,7 @@ export default function ProfileModal({ isOpen, onClose, player, setPlayer }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-black text-xs btn-glow-cyan transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 hover:from-sky-300 hover:via-cyan-300 hover:to-blue-400 text-slate-950 font-black text-xs btn-glow-sky transition-all shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
           >
             <Save className="w-4 h-4 text-slate-950" />
             <span>{loading ? 'Saving...' : 'Save Profile Settings'}</span>

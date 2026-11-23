@@ -14,19 +14,19 @@ export default function ProblemDescription({ problem }) {
   const officialUrl = problem.leetcodeUrl || `https://leetcode.com/problems/${problem.id}/`;
 
   return (
-    <div className="h-full flex flex-col bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden backdrop-blur-md">
+    <div className="h-full flex flex-col bg-slate-900/70 border border-sky-500/20 rounded-2xl overflow-hidden backdrop-blur-md">
       {/* Tab Navigation */}
-      <div className="flex items-center justify-between bg-slate-950/80 border-b border-slate-800 px-4 py-2.5">
+      <div className="flex items-center justify-between bg-slate-950/80 border-b border-sky-500/20 px-4 py-2.5">
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setActiveTab('description')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeTab === 'description'
-                ? 'bg-slate-800 text-cyan-300 border border-slate-700 shadow-sm'
+                ? 'bg-slate-800 text-sky-300 border border-sky-500/40 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-4 h-4 text-sky-400" />
             Problem Statement
           </button>
 
@@ -34,11 +34,11 @@ export default function ProblemDescription({ problem }) {
             onClick={() => setActiveTab('hints')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
               activeTab === 'hints'
-                ? 'bg-slate-800 text-amber-300 border border-slate-700 shadow-sm'
+                ? 'bg-slate-800 text-amber-300 border border-amber-500/40 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Lightbulb className="w-4 h-4" />
+            <Lightbulb className="w-4 h-4 text-amber-400" />
             Strategy & Hints
           </button>
         </div>

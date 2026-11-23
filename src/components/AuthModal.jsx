@@ -95,8 +95,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A0B0F]/80 backdrop-blur-md font-sans select-none animate-fadeIn">
-      <div className="w-full max-w-md bg-[#111318] border border-white/10 rounded-[24px] shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070B14]/85 backdrop-blur-md font-sans select-none animate-fadeIn">
+      <div className="w-full max-w-md bg-[#0B1120] border border-sky-500/25 rounded-[24px] shadow-2xl overflow-hidden relative p-6 sm:p-8 text-left shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Header Controls: Backward Arrow & Close */}
         <div className="flex items-center justify-between mb-4">
@@ -106,9 +106,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
               sounds.playClick();
               onClose();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[#94A3B8] hover:text-[#F8FAFC] bg-[#0A0B0F] hover:bg-[#1A1D26] border border-white/10 transition-all cursor-pointer text-xs font-bold font-sans shadow"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-slate-300 hover:text-[#F8FAFC] bg-[#070B14] hover:bg-[#111C38] border border-sky-500/20 transition-all cursor-pointer text-xs font-bold font-sans shadow"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#14B8A6]" />
+            <ArrowLeft className="w-3.5 h-3.5 text-sky-400" />
             <span>← Back</span>
           </button>
 
@@ -118,7 +118,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
               sounds.playClick();
               onClose();
             }}
-            className="p-2 rounded-[10px] text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1A1D26] transition-all cursor-pointer"
+            className="p-2 rounded-[10px] text-slate-400 hover:text-[#F8FAFC] hover:bg-[#111C38] transition-all cursor-pointer"
             title="Close"
           >
             <X className="w-5 h-5" />
@@ -127,8 +127,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
 
         {/* Brand Logo & Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-[14px] bg-gradient-to-tr from-[#14B8A6] via-emerald-400 to-[#8B5CF6] p-0.5 shadow-xl shadow-[#14B8A6]/20 mx-auto mb-3">
-            <div className="w-full h-full bg-[#0A0B0F] rounded-[12px] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-[14px] bg-gradient-to-tr from-sky-400 via-cyan-300 to-blue-500 p-0.5 shadow-xl shadow-sky-500/25 mx-auto mb-3">
+            <div className="w-full h-full bg-[#070B14] rounded-[12px] flex items-center justify-center">
               <img src="/favicon.svg" alt="Code क्षेत्र logo" className="w-7 h-7" />
             </div>
           </div>
@@ -136,13 +136,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
           <h2 className="text-xl font-black text-[#F8FAFC] tracking-wide font-['Outfit']">
             {mode === 'login' ? 'Sign In to your Account' : 'Create your Coder Account'}
           </h2>
-          <p className="text-xs text-[#94A3B8] mt-1">
-            Real-time 1v1 Competitive Duels & LeetCode Arena
+          <p className="text-xs text-slate-400 mt-1">
+            Real-time 1v1 Competitive Duels & LeetCode Arena • Winter Edition ❄️
           </p>
         </div>
 
         {/* Segmented Control Tabs */}
-        <div className="flex bg-[#0A0B0F] p-1 rounded-[12px] border border-white/10 mb-6 font-mono text-xs font-bold">
+        <div className="flex bg-[#070B14] p-1 rounded-[12px] border border-sky-500/20 mb-6 font-mono text-xs font-bold">
           <button
             type="button"
             onClick={() => {
@@ -152,8 +152,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
             }}
             className={`flex-1 py-2 rounded-[8px] transition-all cursor-pointer text-center ${
               mode === 'login'
-                ? 'bg-[#14B8A6] text-[#0A0B0F] font-black shadow'
-                : 'text-[#94A3B8] hover:text-[#F8FAFC]'
+                ? 'bg-gradient-to-r from-sky-400 to-cyan-400 text-slate-950 font-black shadow'
+                : 'text-slate-400 hover:text-[#F8FAFC]'
             }`}
           >
             Sign In
@@ -168,8 +168,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
             }}
             className={`flex-1 py-2 rounded-[8px] transition-all cursor-pointer text-center ${
               mode === 'register'
-                ? 'bg-[#14B8A6] text-[#0A0B0F] font-black shadow'
-                : 'text-[#94A3B8] hover:text-[#F8FAFC]'
+                ? 'bg-gradient-to-r from-sky-400 to-cyan-400 text-slate-950 font-black shadow'
+                : 'text-slate-400 hover:text-[#F8FAFC]'
             }`}
           >
             Sign Up

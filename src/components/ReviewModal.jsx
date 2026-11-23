@@ -89,29 +89,29 @@ export default function ReviewModal({ isOpen, onClose, player }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0A0B0F]/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#121827] border border-[#1E293B] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative my-8">
+    <div className="fixed inset-0 z-50 bg-[#070B14]/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-[#0B1120] border border-sky-500/25 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative my-8 shadow-[0_0_40px_rgba(56,189,248,0.15)]">
         
         {/* Header */}
-        <div className="bg-[#0F172A] border-b border-[#1E293B] p-5 flex items-center justify-between">
+        <div className="bg-[#070B14] border-b border-sky-500/20 p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#14B8A6]/10 border border-[#14B8A6]/30 flex items-center justify-center text-[#14B8A6]">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-300">
               <MessageSquare className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-[#F8FAFC] flex items-center gap-2">
                 Community Reviews & Ratings
-                <span className="bg-[#14B8A6]/20 text-[#14B8A6] text-xs px-2 py-0.5 rounded-full border border-[#14B8A6]/40">
+                <span className="bg-sky-500/20 text-sky-300 text-xs px-2 py-0.5 rounded-full border border-sky-400/40 font-mono font-bold">
                   ★ {averageRating} / 5.0
                 </span>
               </h2>
-              <p className="text-xs text-[#94A3B8]">Read feedback from coders & submit your experience on Code क्षेत्र</p>
+              <p className="text-xs text-slate-400">Read feedback from coders & submit your experience on Code क्षेत्र • Winter Edition ❄️</p>
             </div>
           </div>
 
           <button
             onClick={() => { sounds.playClick(); onClose(); }}
-            className="p-2 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1E293B] transition-all cursor-pointer"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

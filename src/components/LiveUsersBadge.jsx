@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Radio } from 'lucide-react';
+import { Users, Snowflake } from 'lucide-react';
 import { socket } from '../engine/socketClient';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://code-kshetra.onrender.com';
@@ -33,12 +33,12 @@ export default function LiveUsersBadge({ className = '' }) {
   }, []);
 
   return (
-    <div className={`inline-flex items-center gap-2 bg-[#0F172A]/80 border border-[#10B981]/40 text-[#34D399] px-3 py-1.5 rounded-full text-xs font-mono font-bold shadow-[0_0_12px_rgba(16,185,129,0.2)] backdrop-blur-md transition-all hover:border-[#10B981]/80 ${className}`}>
+    <div className={`inline-flex items-center gap-2 bg-[#0B132B]/85 border border-sky-400/40 text-sky-200 px-3 py-1.5 rounded-full text-xs font-mono font-bold shadow-[0_0_15px_rgba(56,189,248,0.25)] backdrop-blur-md transition-all hover:border-sky-300 hover:shadow-[0_0_20px_rgba(56,189,248,0.4)] ${className}`}>
       <span className="relative flex h-2.5 w-2.5">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#10B981]"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,1)]"></span>
       </span>
-      <Users className="w-3.5 h-3.5 text-[#10B981]" />
+      <Users className="w-3.5 h-3.5 text-sky-400" />
       <span>{onlineCount} {onlineCount === 1 ? 'Coder Live' : 'Coders Live'}</span>
     </div>
   );
